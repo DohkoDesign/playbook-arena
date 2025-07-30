@@ -143,6 +143,26 @@ const JoinTeam = () => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Utilisateur non créé");
 
+      console.log("✅ Compte créé:", authData.user.id);
+
+      // Mettre à jour le profil avec le bon rôle
+      const userRole = (invitation.role === "joueur" || invitation.role === "remplacant") ? "player" : "staff";
+      
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ 
+          role: userRole,
+          pseudo: formData.pseudo 
+        })
+        .eq("user_id", authData.user.id);
+
+      if (profileError) {
+        console.error("❌ Erreur mise à jour profil:", profileError);
+        // On continue même si le profil n'est pas mis à jour
+      }
+
+      console.log("✅ Profil mis à jour avec rôle:", userRole);
+
       // Ajouter à l'équipe
       const { error: memberError } = await supabase
         .from("team_members")
