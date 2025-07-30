@@ -49,24 +49,18 @@ const JoinTeam = () => {
 
   const checkInvitation = async () => {
     try {
-      const { data, error } = await supabase
+      // Récupérer l'invitation
+      const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
-        .select(`
-          *,
-          teams (
-            id,
-            nom,
-            jeu
-          )
-        `)
+        .select("*")
         .eq("token", token)
         .is("used_at", null)
         .gt("expires_at", new Date().toISOString())
         .single();
 
-      if (error) throw error;
+      if (invitationError) throw invitationError;
 
-      if (!data) {
+      if (!invitationData) {
         toast({
           title: "Lien invalide",
           description: "Ce lien d'invitation est expiré ou invalide",
@@ -76,8 +70,17 @@ const JoinTeam = () => {
         return;
       }
 
-      setInvitation(data);
-      setTeam(data.teams);
+      // Récupérer l'équipe
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", invitationData.team_id)
+        .single();
+
+      if (teamError) throw teamError;
+
+      setInvitation(invitationData);
+      setTeam(teamData);
     } catch (error: any) {
       toast({
         title: "Erreur",
