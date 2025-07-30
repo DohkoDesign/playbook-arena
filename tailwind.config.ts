@@ -62,23 +62,12 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom design system colors
-				glass: 'hsl(var(--glass))',
-				'glass-dark': 'hsl(var(--glass-dark))',
-				'hover-light': 'hsl(var(--hover))',
-				'hover-dark': 'hsl(var(--hover-dark))'
-			},
-			backgroundImage: {
-				'gradient-brand': 'var(--gradient-brand)',
-				'gradient-glass': 'var(--gradient-glass)'
+				// Keep colors minimal and use existing tokens
 			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
-				'glass': 'var(--shadow-glass)'
-			},
-			transitionDuration: {
-				'smooth': 'var(--transition-smooth)',
-				'fast': 'var(--transition-fast)'
+				'card': 'var(--shadow-card)',
+				'dropdown': 'var(--shadow-dropdown)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
