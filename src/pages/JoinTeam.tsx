@@ -42,8 +42,12 @@ const JoinTeam = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("useEffect called, token:", token);
     if (token) {
       checkInvitation();
+    } else {
+      console.log("No token found in URL");
+      setLoading(false);
     }
   }, [token]);
 
