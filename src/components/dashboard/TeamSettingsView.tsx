@@ -11,6 +11,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getGameConfig } from "@/data/gameConfigs";
+import { DeleteTeamModal } from "./DeleteTeamModal";
 
 interface TeamSettingsViewProps {
   teamId: string;
@@ -164,10 +165,16 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     window.location.reload();
   };
 
-  const deleteTeam = async (teamId: string, teamName: string) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'équipe "${teamName}" ? Cette action est irréversible.`)) {
-      return;
-    }
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [teamToDelete, setTeamToDelete] = useState<{id: string, name: string} | null>(null);
+
+  const handleDeleteClick = (teamId: string, teamName: string) => {
+    setTeamToDelete({id: teamId, name: teamName});
+    setShowDeleteModal(true);
+  };
+
+  const deleteTeam = async () => {
+    if (!teamToDelete) return;
 
     try {
       setLoading(true);
@@ -182,15 +189,17 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
       await supabase.from("events").delete().eq("team_id", teamId);
       
       // Supprimer l'équipe
-      const { error } = await supabase.from("teams").delete().eq("id", teamId);
+      const { error } = await supabase.from("teams").delete().eq("id", teamToDelete.id);
 
       if (error) throw error;
 
       toast({
         title: "Équipe supprimée",
-        description: `L'équipe "${teamName}" a été supprimée`,
+        description: `L'équipe "${teamToDelete.name}" a été supprimée`,
       });
 
+      setShowDeleteModal(false);
+      setTeamToDelete(null);
       onTeamUpdated();
     } catch (error: any) {
       toast({
@@ -423,7 +432,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => deleteTeam(team.id, team.nom)}
+                              onClick={() => handleDeleteClick(team.id, team.nom)}
                               className="text-red-500 hover:text-red-700"
                               disabled={loading}
                             >
@@ -622,6 +631,17 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
           </Card>
         </TabsContent>
       </Tabs>
+
+      <DeleteTeamModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setTeamToDelete(null);
+        }}
+        onConfirm={deleteTeam}
+        teamName={teamToDelete?.name || ""}
+        loading={loading}
+      />
     </div>
   );
 };

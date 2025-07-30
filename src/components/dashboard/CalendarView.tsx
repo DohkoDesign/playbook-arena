@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { EventModal } from "./EventModal";
+import { SmartScheduleModal } from "./SmartScheduleModal";
 
 interface CalendarViewProps {
   teamId: string;
@@ -311,7 +311,7 @@ export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
       />
 
       {showEventModal && (
-        <EventModal
+        <SmartScheduleModal
           isOpen={showEventModal}
           onClose={() => setShowEventModal(false)}
           teamId={teamId}
