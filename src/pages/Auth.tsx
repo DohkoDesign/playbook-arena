@@ -40,7 +40,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}/setup`,
             data: {
               pseudo: pseudo,
             },

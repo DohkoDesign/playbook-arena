@@ -74,8 +74,8 @@ const Dashboard = () => {
       console.log("✅ Teams loaded:", data?.length || 0);
       
       if (!data || data.length === 0) {
-        console.log("🎯 No teams found, showing setup modal");
-        setShowTeamSetup(true);
+        console.log("🚨 No teams found, redirecting to setup");
+        navigate("/setup");
       } else {
         console.log("🏆 Teams found, selecting first:", data[0].id);
         setSelectedTeam(data[0].id);
