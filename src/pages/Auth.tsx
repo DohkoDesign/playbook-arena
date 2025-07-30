@@ -30,11 +30,43 @@ const Auth = () => {
         
         if (error) throw error;
         
+        // Vérifier le rôle de l'utilisateur après connexion
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Utilisateur non trouvé");
+
+        // Vérifier si l'utilisateur est membre d'une équipe
+        const { data: teamMember } = await supabase
+          .from("team_members")
+          .select("role")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        // Vérifier si l'utilisateur a créé des équipes
+        const { data: createdTeams } = await supabase
+          .from("teams")
+          .select("*")
+          .eq("created_by", user.id);
+
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shadow Hub !",
         });
-        navigate("/dashboard");
+
+        // Redirection selon le statut de l'utilisateur
+        if (teamMember) {
+          // L'utilisateur est membre d'une équipe
+          if (teamMember.role === "joueur" || teamMember.role === "remplacant") {
+            navigate("/player");
+          } else {
+            navigate("/dashboard");
+          }
+        } else if (createdTeams && createdTeams.length > 0) {
+          // L'utilisateur a créé des équipes
+          navigate("/dashboard");
+        } else {
+          // Nouvel utilisateur sans équipe
+          navigate("/setup");
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
