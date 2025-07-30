@@ -64,7 +64,7 @@ export const InvitationModal = ({ isOpen, onClose, teamId, teamName }: Invitatio
 
       if (error) throw error;
 
-      const link = `${window.location.origin}/join/${token}`;
+      const link = `${window.location.origin}/join-team/${token}`;
       setInvitationLink(link);
       
       toast({
@@ -220,7 +220,7 @@ export const InvitationModal = ({ isOpen, onClose, teamId, teamName }: Invitatio
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => copyToClipboard(`${window.location.origin}/join/${invitation.token}`)}
+                        onClick={() => copyToClipboard(`${window.location.origin}/join-team/${invitation.token}`)}
                       >
                         <Copy className="w-4 h-4" />
                       </Button>
