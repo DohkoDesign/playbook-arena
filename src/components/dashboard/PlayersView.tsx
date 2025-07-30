@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, UserPlus } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Users, UserPlus, Edit, Target, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { InvitationModal } from "./InvitationModal";
+import { PlayerProfileModal } from "./PlayerProfileModal";
 
 interface PlayersViewProps {
   teamId: string;
@@ -12,14 +15,34 @@ interface PlayersViewProps {
 
 export const PlayersView = ({ teamId }: PlayersViewProps) => {
   const [members, setMembers] = useState<any[]>([]);
+  const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (teamId) {
       fetchTeamMembers();
+      fetchTeamInfo();
     }
   }, [teamId]);
+
+  const fetchTeamInfo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", teamId)
+        .single();
+
+      if (error) throw error;
+      setTeam(data);
+    } catch (error: any) {
+      console.error("Erreur lors du chargement de l'équipe:", error);
+    }
+  };
 
   const fetchTeamMembers = async () => {
     try {
@@ -30,6 +53,12 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
           profiles (
             pseudo,
             photo_profil
+          ),
+          player_profiles (
+            points_forts,
+            points_faibles,
+            objectifs_individuels,
+            notes
           )
         `)
         .eq("team_id", teamId);
@@ -45,6 +74,11 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openPlayerProfile = (member: any) => {
+    setSelectedPlayer(member);
+    setShowProfileModal(true);
   };
 
   const getRoleColor = (role: string) => {
@@ -79,7 +113,7 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
           <Users className="w-5 h-5" />
           <h2 className="text-2xl font-bold">Gestion de l'équipe</h2>
         </div>
-        <Button>
+        <Button onClick={() => setShowInviteModal(true)}>
           <UserPlus className="w-4 h-4 mr-2" />
           Inviter un joueur
         </Button>
@@ -96,33 +130,81 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
           </Card>
         ) : (
           members.map((member) => (
-            <Card key={member.id}>
+            <Card key={member.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
-                    {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
+                      {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">
+                        {member.profiles?.pseudo || "Joueur"}
+                      </CardTitle>
+                      <Badge className={getRoleColor(member.role)}>
+                        {member.role}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      {member.profiles?.pseudo || "Joueur"}
-                    </CardTitle>
-                    <Badge className={getRoleColor(member.role)}>
-                      {member.role}
-                    </Badge>
-                  </div>
+                  {(member.role === "joueur" || member.role === "remplacant") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openPlayerProfile(member)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  )}
                 </div>
               </CardHeader>
-              <CardContent>
+              
+              <CardContent className="space-y-3">
+                {/* Personnages favoris */}
                 {member.personnages_favoris && member.personnages_favoris.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Personnages favoris:</p>
                     <div className="flex flex-wrap gap-1">
-                      {member.personnages_favoris.map((char: string, index: number) => (
+                      {member.personnages_favoris.slice(0, 3).map((char: string, index: number) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           {char}
                         </Badge>
                       ))}
+                      {member.personnages_favoris.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{member.personnages_favoris.length - 3}
+                        </Badge>
+                      )}
                     </div>
+                  </div>
+                )}
+
+                {/* Aperçu des points forts/faibles pour les joueurs */}
+                {member.player_profiles && member.player_profiles.length > 0 && (
+                  <div className="space-y-2">
+                    {member.player_profiles[0].points_forts && member.player_profiles[0].points_forts.length > 0 && (
+                      <div className="flex items-center space-x-2 text-green-600">
+                        <TrendingUp className="w-4 h-4" />
+                        <span className="text-xs">
+                          {member.player_profiles[0].points_forts.length} point(s) fort(s)
+                        </span>
+                      </div>
+                    )}
+                    {member.player_profiles[0].points_faibles && member.player_profiles[0].points_faibles.length > 0 && (
+                      <div className="flex items-center space-x-2 text-red-600">
+                        <TrendingDown className="w-4 h-4" />
+                        <span className="text-xs">
+                          {member.player_profiles[0].points_faibles.length} point(s) à améliorer
+                        </span>
+                      </div>
+                    )}
+                    {member.player_profiles[0].objectifs_individuels && member.player_profiles[0].objectifs_individuels.length > 0 && (
+                      <div className="flex items-center space-x-2 text-blue-600">
+                        <Target className="w-4 h-4" />
+                        <span className="text-xs">
+                          {member.player_profiles[0].objectifs_individuels.length} objectif(s)
+                        </span>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -130,6 +212,29 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
           ))
         )}
       </div>
+
+      {/* Modals */}
+      {showInviteModal && team && (
+        <InvitationModal
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          teamId={teamId}
+          teamName={team.nom}
+        />
+      )}
+
+      {showProfileModal && selectedPlayer && (
+        <PlayerProfileModal
+          isOpen={showProfileModal}
+          onClose={() => {
+            setShowProfileModal(false);
+            setSelectedPlayer(null);
+          }}
+          player={selectedPlayer}
+          teamId={teamId}
+          onProfileUpdated={fetchTeamMembers}
+        />
+      )}
     </div>
   );
 };
