@@ -49,6 +49,8 @@ const JoinTeam = () => {
 
   const checkInvitation = async () => {
     try {
+      console.log("Token from URL:", token);
+      
       // Récupérer l'invitation
       const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
@@ -56,7 +58,9 @@ const JoinTeam = () => {
         .eq("token", token)
         .is("used_at", null)
         .gt("expires_at", new Date().toISOString())
-        .single();
+        .maybeSingle();
+
+      console.log("Invitation query result:", { invitationData, invitationError });
 
       if (invitationError) throw invitationError;
 
