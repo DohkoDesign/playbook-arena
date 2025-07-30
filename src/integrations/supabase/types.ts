@@ -14,7 +14,321 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      coaching_sessions: {
+        Row: {
+          composition_adversaire: Json | null
+          composition_equipe: Json | null
+          created_at: string
+          event_id: string
+          id: string
+          notes: string | null
+          resultat: string | null
+          updated_at: string
+          vods: Json | null
+        }
+        Insert: {
+          composition_adversaire?: Json | null
+          composition_equipe?: Json | null
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          resultat?: string | null
+          updated_at?: string
+          vods?: Json | null
+        }
+        Update: {
+          composition_adversaire?: Json | null
+          composition_equipe?: Json | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          resultat?: string | null
+          updated_at?: string
+          vods?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coaching_sessions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          created_by: string
+          date_debut: string
+          date_fin: string
+          description: string | null
+          id: string
+          team_id: string
+          titre: string
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date_debut: string
+          date_fin: string
+          description?: string | null
+          id?: string
+          team_id: string
+          titre: string
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date_debut?: string
+          date_fin?: string
+          description?: string | null
+          id?: string
+          team_id?: string
+          titre?: string
+          type?: Database["public"]["Enums"]["event_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          role: Database["public"]["Enums"]["player_role"]
+          team_id: string
+          token: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["player_role"]
+          team_id: string
+          token: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["player_role"]
+          team_id?: string
+          token?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      player_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          objectifs_individuels: string[] | null
+          points_faibles: string[] | null
+          points_forts: string[] | null
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          objectifs_individuels?: string[] | null
+          points_faibles?: string[] | null
+          points_forts?: string[] | null
+          team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          objectifs_individuels?: string[] | null
+          points_faibles?: string[] | null
+          points_forts?: string[] | null
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_profiles_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          is_staff: boolean | null
+          photo_profil: string | null
+          pseudo: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_staff?: boolean | null
+          photo_profil?: string | null
+          pseudo: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_staff?: boolean | null
+          photo_profil?: string | null
+          pseudo?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      strategies: {
+        Row: {
+          contenu: Json | null
+          created_at: string
+          created_by: string
+          id: string
+          map_name: string | null
+          nom: string
+          team_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          contenu?: Json | null
+          created_at?: string
+          created_by: string
+          id?: string
+          map_name?: string | null
+          nom: string
+          team_id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          contenu?: Json | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          map_name?: string | null
+          nom?: string
+          team_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategies_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          id: string
+          personnages_favoris: string[] | null
+          role: Database["public"]["Enums"]["player_role"]
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          personnages_favoris?: string[] | null
+          role?: Database["public"]["Enums"]["player_role"]
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          personnages_favoris?: string[] | null
+          role?: Database["public"]["Enums"]["player_role"]
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          jeu: Database["public"]["Enums"]["game_type"]
+          nom: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          jeu: Database["public"]["Enums"]["game_type"]
+          nom: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          jeu?: Database["public"]["Enums"]["game_type"]
+          nom?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +337,39 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      event_type:
+        | "scrim"
+        | "match"
+        | "tournoi"
+        | "coaching"
+        | "session_individuelle"
+      game_type:
+        | "valorant"
+        | "rocket_league"
+        | "league_of_legends"
+        | "counter_strike"
+        | "overwatch"
+        | "apex_legends"
+        | "fortnite"
+        | "call_of_duty"
+        | "rainbow_six"
+        | "dota2"
+        | "fifa"
+        | "street_fighter"
+        | "tekken"
+        | "mortal_kombat"
+        | "hearthstone"
+        | "starcraft2"
+        | "age_of_empires"
+        | "world_of_warcraft"
+        | "pubg"
+        | "fall_guys"
+        | "among_us"
+        | "minecraft"
+        | "chess"
+        | "trackmania"
+        | "rocket_league_sideswipe"
+      player_role: "joueur" | "remplacant" | "coach" | "manager" | "capitaine"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +496,42 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_type: [
+        "scrim",
+        "match",
+        "tournoi",
+        "coaching",
+        "session_individuelle",
+      ],
+      game_type: [
+        "valorant",
+        "rocket_league",
+        "league_of_legends",
+        "counter_strike",
+        "overwatch",
+        "apex_legends",
+        "fortnite",
+        "call_of_duty",
+        "rainbow_six",
+        "dota2",
+        "fifa",
+        "street_fighter",
+        "tekken",
+        "mortal_kombat",
+        "hearthstone",
+        "starcraft2",
+        "age_of_empires",
+        "world_of_warcraft",
+        "pubg",
+        "fall_guys",
+        "among_us",
+        "minecraft",
+        "chess",
+        "trackmania",
+        "rocket_league_sideswipe",
+      ],
+      player_role: ["joueur", "remplacant", "coach", "manager", "capitaine"],
+    },
   },
 } as const
