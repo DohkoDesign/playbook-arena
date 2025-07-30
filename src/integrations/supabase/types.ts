@@ -201,8 +201,11 @@ export type Database = {
           created_at: string
           id: string
           is_staff: boolean | null
+          jeux_joues: string[] | null
+          personnages_favoris: string[] | null
           photo_profil: string | null
           pseudo: string
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
           user_id: string
         }
@@ -210,8 +213,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_staff?: boolean | null
+          jeux_joues?: string[] | null
+          personnages_favoris?: string[] | null
           photo_profil?: string | null
           pseudo: string
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id: string
         }
@@ -219,8 +225,11 @@ export type Database = {
           created_at?: string
           id?: string
           is_staff?: boolean | null
+          jeux_joues?: string[] | null
+          personnages_favoris?: string[] | null
           photo_profil?: string | null
           pseudo?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
           user_id?: string
         }
@@ -340,7 +349,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_staff_user: {
+        Args: { check_user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
       event_type:
@@ -385,6 +397,7 @@ export type Database = {
         | "manager"
         | "capitaine"
         | "test"
+      user_role: "staff" | "player"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -557,6 +570,7 @@ export const Constants = {
         "capitaine",
         "test",
       ],
+      user_role: ["staff", "player"],
     },
   },
 } as const
