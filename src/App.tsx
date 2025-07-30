@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
 
 import JoinTeam from "./pages/JoinTeam";
+import TestJoin from "./pages/TestJoin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />
             
+            <Route path="/test-join/:token" element={<TestJoin />} />
             <Route path="/join-team/:token" element={<JoinTeam />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
