@@ -56,22 +56,32 @@ const Dashboard = () => {
   }, [navigate]);
 
   const checkUserTeams = async (userId: string) => {
+    console.log("🔍 Checking user teams for:", userId);
     try {
       const { data, error } = await supabase
         .from("teams")
         .select("*")
         .eq("created_by", userId);
 
-      if (error) throw error;
+      console.log("📊 Teams query result:", { data, error });
+
+      if (error) {
+        console.error("❌ Error fetching teams:", error);
+        throw error;
+      }
 
       setTeams(data || []);
+      console.log("✅ Teams loaded:", data?.length || 0);
       
       if (!data || data.length === 0) {
+        console.log("🎯 No teams found, showing setup modal");
         setShowTeamSetup(true);
       } else {
+        console.log("🏆 Teams found, selecting first:", data[0].id);
         setSelectedTeam(data[0].id);
       }
     } catch (error: any) {
+      console.error("💥 Full error in checkUserTeams:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger vos équipes",

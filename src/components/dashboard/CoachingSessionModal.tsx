@@ -62,8 +62,8 @@ export const CoachingSessionModal = ({
         setResultat(data.resultat || "");
         setNotes(data.notes || "");
         setVods(data.vods || {});
-        setCompositionEquipe(Array.isArray(data.composition_equipe) ? data.composition_equipe : []);
-        setCompositionAdversaire(Array.isArray(data.composition_adversaire) ? data.composition_adversaire : []);
+        setCompositionEquipe(Array.isArray(data.composition_equipe) ? data.composition_equipe as string[] : []);
+        setCompositionAdversaire(Array.isArray(data.composition_adversaire) ? data.composition_adversaire as string[] : []);
       } else {
         // Nouvelle session
         setSession(null);

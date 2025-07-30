@@ -28,7 +28,10 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
   const { toast } = useToast();
 
   const handleCreateTeam = async () => {
+    console.log("🚀 Starting team creation:", { teamName, selectedGame });
+    
     if (!teamName || !selectedGame) {
+      console.log("❌ Missing required fields");
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs",
@@ -41,8 +44,15 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("👤 Current user:", user?.id);
       
       if (!user) throw new Error("Utilisateur non connecté");
+
+      console.log("📝 Creating team with data:", {
+        nom: teamName,
+        jeu: selectedGame,
+        created_by: user.id,
+      });
 
       const { data, error } = await supabase
         .from("teams")
@@ -54,16 +64,31 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
         .select()
         .single();
 
-      if (error) throw error;
+      console.log("📊 Team creation result:", { data, error });
+
+      if (error) {
+        console.error("❌ Team creation error:", error);
+        throw error;
+      }
+
+      console.log("✅ Team created successfully:", data);
 
       // Ajouter le créateur comme membre de l'équipe avec le rôle de manager
-      await supabase
+      console.log("👑 Adding creator as team manager");
+      const { error: memberError } = await supabase
         .from("team_members")
         .insert({
           team_id: data.id,
           user_id: user.id,
           role: "manager",
         });
+
+      if (memberError) {
+        console.error("❌ Error adding team member:", memberError);
+        throw memberError;
+      }
+
+      console.log("🎉 Team setup completed successfully");
 
       toast({
         title: "Équipe créée",
@@ -72,6 +97,7 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
 
       onTeamCreated(data);
     } catch (error: any) {
+      console.error("💥 Full error in handleCreateTeam:", error);
       toast({
         title: "Erreur",
         description: error.message,
