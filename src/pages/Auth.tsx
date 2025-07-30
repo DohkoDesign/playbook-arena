@@ -34,12 +34,24 @@ const Auth = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Utilisateur non trouvé");
 
-        // Vérifier si l'utilisateur est membre d'une équipe
-        const { data: teamMember } = await supabase
-          .from("team_members")
+        console.log("🔍 Checking user teams and role for:", user.id);
+
+        // Vérifier d'abord le profil utilisateur pour le rôle
+        const { data: profile } = await supabase
+          .from("profiles")
           .select("role")
           .eq("user_id", user.id)
-          .maybeSingle();
+          .single();
+
+        console.log("👤 User profile role:", profile?.role);
+
+        // Vérifier si l'utilisateur est membre d'une équipe
+        const { data: teamMembers } = await supabase
+          .from("team_members")
+          .select("role, team_id")
+          .eq("user_id", user.id);
+
+        console.log("🏆 Team memberships:", teamMembers);
 
         // Vérifier si l'utilisateur a créé des équipes
         const { data: createdTeams } = await supabase
@@ -47,24 +59,29 @@ const Auth = () => {
           .select("*")
           .eq("created_by", user.id);
 
+        console.log("🎯 Created teams:", createdTeams);
+
         toast({
           title: "Connexion réussie",
           description: "Bienvenue sur Shadow Hub !",
         });
 
         // Redirection selon le statut de l'utilisateur
-        if (teamMember) {
-          // L'utilisateur est membre d'une équipe
-          if (teamMember.role === "joueur" || teamMember.role === "remplacant") {
-            navigate("/player");
-          } else {
-            navigate("/dashboard");
-          }
+        if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
+          // L'utilisateur a le rôle player et est membre d'au moins une équipe
+          console.log("➡️ Redirecting to /player");
+          navigate("/player");
         } else if (createdTeams && createdTeams.length > 0) {
           // L'utilisateur a créé des équipes
+          console.log("➡️ Redirecting to /dashboard");
+          navigate("/dashboard");
+        } else if (teamMembers && teamMembers.length > 0) {
+          // L'utilisateur est membre d'une équipe mais pas player
+          console.log("➡️ Redirecting to /dashboard (team member)");
           navigate("/dashboard");
         } else {
           // Nouvel utilisateur sans équipe
+          console.log("➡️ Redirecting to /setup");
           navigate("/setup");
         }
       } else {
