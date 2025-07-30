@@ -259,13 +259,45 @@ const JoinTeam = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Rejoindre l'équipe</CardTitle>
+            <CardTitle>
+              {invitation.role === 'joueur' || invitation.role === 'remplacant' 
+                ? 'Créer votre compte joueur' 
+                : invitation.role === 'coach' 
+                ? 'Créer votre compte coach'
+                : invitation.role === 'manager'
+                ? 'Créer votre compte manager'
+                : invitation.role === 'capitaine'
+                ? 'Créer votre compte capitaine'
+                : 'Créer votre compte'
+              }
+            </CardTitle>
             <CardDescription>
               Vous êtes invité(e) à rejoindre <strong>{team.nom}</strong> en tant que{" "}
-              <Badge variant="secondary">{invitation.role}</Badge>
+              <Badge variant="secondary" className="capitalize">{invitation.role}</Badge>
             </CardDescription>
             <div className="text-sm text-muted-foreground">
               Jeu: <span className="capitalize">{team.jeu.replace('_', ' ')}</span>
+            </div>
+            
+            {/* Message personnalisé selon le rôle */}
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <p className="text-sm">
+                {invitation.role === 'joueur' && 
+                  "En tant que joueur, vous aurez accès aux stratégies d'équipe, calendrier des matchs et statistiques personnelles."
+                }
+                {invitation.role === 'remplacant' && 
+                  "En tant que remplaçant, vous serez prêt à intervenir et aurez accès aux mêmes ressources que les joueurs titulaires."
+                }
+                {invitation.role === 'coach' && 
+                  "En tant que coach, vous pourrez créer des stratégies, analyser les performances et programmer des sessions d'entraînement."
+                }
+                {invitation.role === 'manager' && 
+                  "En tant que manager, vous gérerez l'équipe, les plannings et aurez accès aux outils d'administration."
+                }
+                {invitation.role === 'capitaine' && 
+                  "En tant que capitaine, vous dirigerez l'équipe et aurez des privilèges étendus sur la gestion de l'équipe."
+                }
+              </p>
             </div>
           </CardHeader>
           <CardContent>
@@ -306,7 +338,8 @@ const JoinTeam = () => {
                 />
               </div>
 
-              {gameCharacters.length > 0 && (
+              {/* Champs spécifiques aux joueurs */}
+              {(invitation.role === 'joueur' || invitation.role === 'remplacant') && gameCharacters.length > 0 && (
                 <div className="space-y-2">
                   <Label>Personnages favoris (optionnel)</Label>
                   <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
@@ -322,6 +355,18 @@ const JoinTeam = () => {
                       </Button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Champs spécifiques aux coach/manager */}
+              {(invitation.role === 'coach' || invitation.role === 'manager') && (
+                <div className="space-y-2">
+                  <Label htmlFor="experience">Expérience (optionnel)</Label>
+                  <Input
+                    id="experience"
+                    type="text"
+                    placeholder="Ex: 3 ans d'expérience en coaching"
+                  />
                 </div>
               )}
               
