@@ -548,7 +548,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
                     Sauvegarde et Exportation
@@ -565,21 +565,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                   </div>
                 </div>
                 
-                <div className="space-y-4">
-                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
-                    Intégrations
-                  </h4>
-                  <div className="space-y-3">
-                    <Button variant="outline" className="w-full justify-start" disabled>
-                      <Settings className="w-4 h-4 mr-2" />
-                      Connecter Discord (Bientôt)
-                    </Button>
-                    <Button variant="outline" className="w-full justify-start" disabled>
-                      <Settings className="w-4 h-4 mr-2" />
-                      API Webhooks (Bientôt)
-                    </Button>
-                  </div>
-                </div>
               </div>
               
               <div className="border-t pt-6">
