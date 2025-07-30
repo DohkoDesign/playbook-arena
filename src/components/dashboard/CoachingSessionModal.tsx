@@ -118,6 +118,39 @@ export const CoachingSessionModal = ({
     }
   };
 
+  // Déterminer les options de composition selon le jeu
+  const getCompositionOptions = () => {
+    if (!gameConfig) return VALORANT_AGENTS;
+    
+    switch (gameConfig.id) {
+      case 'csgo':
+        return gameConfig.roles; // Utiliser les rôles pour CS:GO
+      case 'rocket_league':
+        return gameConfig.characters; // Voitures pour Rocket League
+      default:
+        return gameConfig.characters; // Personnages/agents pour les autres jeux
+    }
+  };
+
+  const getCompositionLabel = () => {
+    if (!gameConfig) return 'Agents';
+    
+    switch (gameConfig.id) {
+      case 'csgo':
+        return 'Rôles';
+      case 'rocket_league':
+        return 'Voitures';
+      case 'valorant':
+        return 'Agents';
+      case 'league_of_legends':
+        return 'Champions';
+      case 'overwatch':
+        return 'Héros';
+      default:
+        return 'Personnages';
+    }
+  };
+
   const handleSave = async () => {
     setLoading(true);
 
@@ -239,23 +272,20 @@ export const CoachingSessionModal = ({
                     </div>
                     
                     <div className="text-xs text-muted-foreground mb-2">
-                      {gameConfig?.characters ? 
-                        `${gameConfig.characters.length > 20 ? 'Personnages' : 'Personnages'} disponibles (${compositionEquipe.length}/${gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):` :
-                        `Agents disponibles (${compositionEquipe.length}/5):`
-                      }
+                      {getCompositionLabel()} disponibles ({compositionEquipe.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):
                     </div>
                     
                     <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {(gameConfig?.characters || VALORANT_AGENTS).filter(character => !compositionEquipe.includes(character)).map((character) => (
+                      {getCompositionOptions().filter(option => !compositionEquipe.includes(option)).map((option) => (
                         <Button
-                          key={character}
+                          key={option}
                           size="sm"
                           variant="outline"
                           className="text-xs"
                           disabled={compositionEquipe.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
-                          onClick={() => toggleCharacterInComposition(character, true)}
+                          onClick={() => toggleCharacterInComposition(option, true)}
                         >
-                          {character}
+                          {option}
                         </Button>
                       ))}
                     </div>
@@ -288,23 +318,20 @@ export const CoachingSessionModal = ({
                     </div>
                     
                     <div className="text-xs text-muted-foreground mb-2">
-                      {gameConfig?.characters ? 
-                        `${gameConfig.characters.length > 20 ? 'Personnages' : 'Personnages'} disponibles (${compositionAdversaire.length}/${gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):` :
-                        `Agents disponibles (${compositionAdversaire.length}/5):`
-                      }
+                      {getCompositionLabel()} disponibles ({compositionAdversaire.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):
                     </div>
                     
                     <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {(gameConfig?.characters || VALORANT_AGENTS).filter(character => !compositionAdversaire.includes(character)).map((character) => (
+                      {getCompositionOptions().filter(option => !compositionAdversaire.includes(option)).map((option) => (
                         <Button
-                          key={character}
+                          key={option}
                           size="sm"
                           variant="outline"
                           className="text-xs"
                           disabled={compositionAdversaire.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
-                          onClick={() => toggleCharacterInComposition(character, false)}
+                          onClick={() => toggleCharacterInComposition(option, false)}
                         >
-                          {character}
+                          {option}
                         </Button>
                       ))}
                     </div>

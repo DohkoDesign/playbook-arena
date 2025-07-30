@@ -23,7 +23,8 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   const [currentTeam, setCurrentTeam] = useState<any>(null);
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [teamNames, setTeamNames] = useState<{[key: string]: string}>({});
-  const [teamLogos, setTeamLogos] = useState<{[key: string]: string}>({});
+  const [organizationLogo, setOrganizationLogo] = useState<string>("");
+  const [organizationName, setOrganizationName] = useState<string>("");
   const [colors, setColors] = useState({
     primary: "220 38% 57%", // Bleu par défaut en HSL
     secondary: "142 76% 36%", // Vert par défaut en HSL  
@@ -42,15 +43,25 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   }, [teamId]);
 
   useEffect(() => {
-    // Initialiser les noms et logos des équipes
+    // Initialiser les noms des équipes et le logo de l'organisation
     const names: {[key: string]: string} = {};
-    const logos: {[key: string]: string} = {};
     teams.forEach(team => {
       names[team.id] = team.nom;
-      logos[team.id] = team.logo || "";
     });
     setTeamNames(names);
-    setTeamLogos(logos);
+    
+    // Charger les données de l'organisation depuis le localStorage
+    const savedLogo = localStorage.getItem("organization_logo");
+    if (savedLogo) {
+      setOrganizationLogo(savedLogo);
+    }
+    
+    const savedName = localStorage.getItem("organization_name");
+    if (savedName) {
+      setOrganizationName(savedName);
+    } else {
+      setOrganizationName("Esport Manager");
+    }
   }, [teams]);
 
   const fetchTeamData = async () => {
@@ -99,13 +110,13 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     });
   };
 
-  const updateTeam = async (teamId: string, field: 'nom' | 'logo') => {
-    const value = field === 'nom' ? teamNames[teamId] : teamLogos[teamId];
-    if (!value?.trim() && field === 'nom') return;
+  const updateTeam = async (teamId: string, field: 'nom') => {
+    const value = teamNames[teamId];
+    if (!value?.trim()) return;
 
     try {
       setLoading(true);
-      const updateData = field === 'nom' ? { nom: value } : { logo: value };
+      const updateData = { nom: value };
       
       const { error } = await supabase
         .from("teams")
@@ -116,7 +127,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
 
       toast({
         title: "Équipe mise à jour",
-        description: `${field === 'nom' ? 'Le nom' : 'Le logo'} de l'équipe a été modifié`,
+        description: "Le nom de l'équipe a été modifié",
       });
 
       setEditingTeam(null);
@@ -130,6 +141,27 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateOrganizationLogo = () => {
+    localStorage.setItem("organization_logo", organizationLogo);
+    
+    toast({
+      title: "Logo mis à jour",
+      description: "Le logo de l'organisation a été modifié",
+    });
+  };
+
+  const updateOrganizationName = () => {
+    localStorage.setItem("organization_name", organizationName);
+    
+    toast({
+      title: "Nom mis à jour",
+      description: "Le nom de l'organisation a été modifié",
+    });
+    
+    // Recharger la page pour mettre à jour la sidebar
+    window.location.reload();
   };
 
   const deleteTeam = async (teamId: string, teamName: string) => {
@@ -237,6 +269,70 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
         </TabsList>
 
         <TabsContent value="teams" className="space-y-6 mt-6">
+          {/* Informations de l'organisation */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Building className="w-5 h-5" />
+                <span>Informations de l'organisation</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Nom de l'organisation */}
+              <div className="space-y-2">
+                <Label htmlFor="orgName">Nom de l'organisation</Label>
+                <div className="flex space-x-2">
+                  <Input
+                    id="orgName"
+                    type="text"
+                    placeholder="Nom de votre organisation"
+                    value={organizationName}
+                    onChange={(e) => setOrganizationName(e.target.value)}
+                  />
+                  <Button onClick={updateOrganizationName}>
+                    <Save className="w-4 h-4 mr-2" />
+                    Sauvegarder
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Logo de l'organisation */}
+              <div className="flex items-center space-x-4">
+                {organizationLogo ? (
+                  <img 
+                    src={organizationLogo} 
+                    alt="Logo de l'organisation" 
+                    className="w-16 h-16 rounded-lg object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center text-primary-foreground font-bold text-xl">
+                    {organizationName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="orgLogo">URL du logo de l'organisation</Label>
+                  <div className="flex space-x-2">
+                    <Input
+                      id="orgLogo"
+                      type="url"
+                      placeholder="https://example.com/logo.png"
+                      value={organizationLogo}
+                      onChange={(e) => setOrganizationLogo(e.target.value)}
+                    />
+                    <Button onClick={updateOrganizationLogo}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Sauvegarder
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -260,47 +356,11 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div className="space-y-2 flex-1">
-                            <div className="flex items-center space-x-3">
-                              {/* Logo de l'équipe */}
-                              <div className="flex flex-col items-center space-y-2">
-                                {teamLogos[team.id] ? (
-                                  <img 
-                                    src={teamLogos[team.id]} 
-                                    alt="Logo de l'équipe" 
-                                    className="w-10 h-10 rounded-full object-cover"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
-                                    {team.nom.charAt(0).toUpperCase()}
-                                  </div>
-                                )}
-                                
-                                {/* Upload logo */}
-                                <div className="space-y-1">
-                                  <Input
-                                    type="url"
-                                    placeholder="URL du logo"
-                                    value={teamLogos[team.id] || ""}
-                                    onChange={(e) => setTeamLogos({
-                                      ...teamLogos,
-                                      [team.id]: e.target.value
-                                    })}
-                                    className="w-32 text-xs"
-                                  />
-                                  <Button 
-                                    size="sm" 
-                                    onClick={() => updateTeam(team.id, 'logo')}
-                                    disabled={loading}
-                                    className="w-full text-xs"
-                                  >
-                                    <Upload className="w-3 h-3 mr-1" />
-                                    Mettre à jour
-                                  </Button>
-                                </div>
-                              </div>
+                             <div className="flex items-center space-x-3">
+                               {/* Icône de l'équipe */}
+                               <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
+                                 {team.nom.charAt(0).toUpperCase()}
+                               </div>
                               
                               <div className="flex-1">
                                 {editingTeam === team.id ? (
@@ -313,11 +373,11 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                                       })}
                                       className="w-48"
                                     />
-                                    <Button 
-                                      size="sm" 
-                                      onClick={() => updateTeam(team.id, 'nom')}
-                                      disabled={loading}
-                                    >
+                                     <Button 
+                                       size="sm" 
+                                       onClick={() => updateTeam(team.id, 'nom')}
+                                       disabled={loading}
+                                     >
                                       <Save className="w-4 h-4" />
                                     </Button>
                                     <Button 

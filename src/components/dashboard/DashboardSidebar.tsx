@@ -46,6 +46,10 @@ export const DashboardSidebar = ({
   ];
   
   const currentTeamData = teams.find(team => team.id === selectedTeam);
+  
+  // Récupérer le logo de l'organisation depuis localStorage
+  const organizationLogo = localStorage.getItem("organization_logo");
+  const organizationName = localStorage.getItem("organization_name") || "Esport Manager";
 
   // Obtenir le nom du jeu pour l'équipe
   const getGameDisplayName = (gameType: string) => {
@@ -63,12 +67,12 @@ export const DashboardSidebar = ({
 
   return (
     <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-8">
-      {/* Informations de l'équipe sélectionnée */}
+      {/* Header avec logo de l'organisation */}
       <div className="flex items-center space-x-3">
-        {currentTeamData?.logo ? (
+        {organizationLogo ? (
           <img 
-            src={currentTeamData.logo} 
-            alt="Logo de l'équipe" 
+            src={organizationLogo} 
+            alt="Logo de l'organisation" 
             className="w-10 h-10 rounded-2xl object-cover shadow-md"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
@@ -76,18 +80,12 @@ export const DashboardSidebar = ({
           />
         ) : (
           <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg">
-              {currentTeamData?.nom?.charAt(0)?.toUpperCase() || 'T'}
-            </span>
+            <span className="text-white font-bold text-lg">EM</span>
           </div>
         )}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">
-            {currentTeamData?.nom || 'Aucune équipe'}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            {currentTeamData ? getGameDisplayName(currentTeamData.jeu) : 'Sélectionnez une équipe'}
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{organizationName}</h1>
+          <p className="text-xs text-muted-foreground">Esport Manager</p>
         </div>
       </div>
 
