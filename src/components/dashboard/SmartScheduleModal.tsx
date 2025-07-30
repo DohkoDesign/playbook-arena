@@ -224,6 +224,11 @@ export const SmartScheduleModal = ({
           </TabsList>
           
           <TabsContent value="quick" className="space-y-4">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-medium">Choisir un type d'événement</h3>
+              <p className="text-sm text-muted-foreground">Sélectionnez un modèle pour créer rapidement votre événement</p>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {quickTemplates.map((template) => (
                 <Card 
