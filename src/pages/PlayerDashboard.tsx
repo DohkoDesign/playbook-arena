@@ -148,7 +148,8 @@ const PlayerDashboard = () => {
         .from("team_members")
         .select(`
           role,
-          teams:team_id (
+          team_id,
+          teams!inner (
             id,
             nom,
             jeu
@@ -161,7 +162,7 @@ const PlayerDashboard = () => {
         throw new Error("Impossible de charger vos équipes");
       }
 
-      console.log("🏆 Teams loaded:", teamMembers);
+      console.log("🏆 Raw teams data:", JSON.stringify(teamMembers, null, 2));
 
       if (!teamMembers || teamMembers.length === 0) {
         throw new Error("Vous n'êtes membre d'aucune équipe");
@@ -169,10 +170,15 @@ const PlayerDashboard = () => {
 
       // Prendre la première équipe
       const firstTeam = teamMembers[0];
+      console.log("🎯 First team structure:", JSON.stringify(firstTeam, null, 2));
+      
       const teamInfo = firstTeam.teams;
+      console.log("📋 Team info:", JSON.stringify(teamInfo, null, 2));
 
       if (!teamInfo) {
-        throw new Error("Données d'équipe invalides");
+        console.error("❌ Team info is null/undefined");
+        console.error("Full team member object:", firstTeam);
+        throw new Error("Données d'équipe invalides - relation manquante");
       }
 
       setTeamData({
