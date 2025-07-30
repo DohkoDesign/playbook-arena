@@ -5,9 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getGameConfig } from "@/data/gameConfigs";
+import { Calendar as CalendarIcon, Clock, MapPin } from "lucide-react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface EventModalProps {
   isOpen: boolean;
@@ -22,8 +28,9 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
   const [mapName, setMapName] = useState("");
-  const [dateDebut, setDateDebut] = useState("");
-  const [dateFin, setDateFin] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [startTime, setStartTime] = useState("");
+  const [duration, setDuration] = useState(60);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -37,8 +44,24 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
     { value: "session_individuelle", label: "Session individuelle" },
   ];
 
+  const getTimeSuggestions = () => {
+    const suggestions = ["18:00", "19:00", "20:00", "21:00"];
+    return suggestions;
+  };
+
+  const calculateEndTime = () => {
+    if (!startTime || !selectedDate) return "";
+    
+    const [hours, minutes] = startTime.split(':');
+    const startDate = new Date(selectedDate);
+    startDate.setHours(parseInt(hours), parseInt(minutes));
+    
+    const endDate = new Date(startDate.getTime() + duration * 60000);
+    return endDate.toTimeString().slice(0, 5);
+  };
+
   const handleCreateEvent = async () => {
-    if (!title || !type || !dateDebut || !dateFin) {
+    if (!title || !type || !selectedDate || !startTime) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -54,6 +77,13 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
       
       if (!user) throw new Error("Utilisateur non connecté");
 
+      // Calcul des dates
+      const [hours, minutes] = startTime.split(':');
+      const dateDebut = new Date(selectedDate);
+      dateDebut.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+      
+      const dateFin = new Date(dateDebut.getTime() + duration * 60000);
+
       const { error } = await supabase
         .from("events")
         .insert({
@@ -61,9 +91,9 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
           titre: title,
           description: description || null,
           type: type as any,
-          date_debut: dateDebut,
-          date_fin: dateFin,
-          map_name: (type === "scrim" && mapName) ? mapName : null,
+          date_debut: dateDebut.toISOString(),
+          date_fin: dateFin.toISOString(),
+          map_name: mapName || null,
           created_by: user.id,
         });
 
@@ -75,6 +105,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
       });
 
       onEventCreated();
+      onClose();
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -88,9 +119,12 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-background border shadow-2xl">
         <DialogHeader>
-          <DialogTitle>Créer un nouvel événement</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-primary" />
+            Créer un nouvel événement
+          </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
@@ -120,30 +154,130 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="dateDebut">Date/Heure début *</Label>
-              <Input
-                id="dateDebut"
-                type="datetime-local"
-                value={dateDebut}
-                onChange={(e) => setDateDebut(e.target.value)}
-              />
+              <Label>Date *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? (
+                      format(selectedDate, "PPP", { locale: fr })
+                    ) : (
+                      <span>Choisir une date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-background border shadow-lg" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="dateFin">Date/Heure fin *</Label>
-              <Input
-                id="dateFin"
-                type="datetime-local"
-                value={dateFin}
-                onChange={(e) => setDateFin(e.target.value)}
-              />
+              <Label>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  Heure de début *
+                </div>
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !startTime && "text-muted-foreground"
+                    )}
+                  >
+                    <Clock className="mr-2 h-4 w-4" />
+                    {startTime ? (
+                      startTime
+                    ) : (
+                      <span>Choisir une heure</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4 bg-background border shadow-lg" align="start">
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Heure personnalisée</Label>
+                      <Input
+                        type="time"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="w-full"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Suggestions populaires</Label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {getTimeSuggestions().map((time) => (
+                          <Button
+                            key={time}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setStartTime(time)}
+                          >
+                            {time}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration">Durée (minutes)</Label>
+            <Select 
+              value={duration.toString()} 
+              onValueChange={(value) => setDuration(parseInt(value))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="30">30 min</SelectItem>
+                <SelectItem value="60">1h</SelectItem>
+                <SelectItem value="90">1h30</SelectItem>
+                <SelectItem value="120">2h</SelectItem>
+                <SelectItem value="150">2h30</SelectItem>
+                <SelectItem value="180">3h</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {startTime && (
+            <div className="text-sm text-muted-foreground p-2 bg-muted/50 rounded">
+              <strong>Fin prévue :</strong> {calculateEndTime()}
+            </div>
+          )}
           
-          {type === "scrim" && gameConfig?.maps && gameConfig.maps.length > 0 && (
+          {gameConfig?.maps && gameConfig.maps.length > 0 && (
             <div className="space-y-2">
-              <Label htmlFor="mapName">Map (optionnel)</Label>
+              <Label htmlFor="mapName">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  Map (optionnel)
+                </div>
+              </Label>
               <Select value={mapName} onValueChange={setMapName}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner une map" />
@@ -168,7 +302,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
             />
           </div>
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button variant="outline" onClick={onClose}>
               Annuler
             </Button>
