@@ -29,7 +29,10 @@ const GAME_CHARACTERS = {
 };
 
 const JoinTeam = () => {
-  const { token } = useParams<{ token: string }>();
+  // Extraction directe du token depuis l'URL
+  const pathParts = window.location.pathname.split('/');
+  const token = pathParts[pathParts.length - 1];
+  
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<any>(null);
   const [team, setTeam] = useState<any>(null);
