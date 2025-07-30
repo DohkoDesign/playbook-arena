@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, User, Mail, Lock, Camera } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { User as SupabaseUser } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
+import { User as SupabaseUser } from "@supabase/supabase-js";
+import { Loader2, Upload } from "lucide-react";
 
 interface ProfileSettingsProps {
   user: SupabaseUser | null;
@@ -17,12 +17,11 @@ interface ProfileSettingsProps {
 export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps) => {
   const [pseudo, setPseudo] = useState("");
   const [email, setEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -36,56 +35,66 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   const loadProfile = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("photo_profil")
-      .eq("user_id", user.id)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("photo_profil")
+        .eq("user_id", user.id)
+        .single();
 
-    if (data?.photo_profil) {
-      setAvatarUrl(data.photo_profil);
+      if (error && error.code !== "PGRST116") {
+        console.error("Error loading profile:", error);
+      } else if (data?.photo_profil) {
+        setAvatarUrl(data.photo_profil);
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error);
     }
   };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0 || !user) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+
+    setUploading(true);
+
     try {
-      setUploading(true);
-      
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}.${fileExt}`;
-
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        throw uploadError;
+      }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          pseudo: user.user_metadata?.pseudo || user.email?.split('@')[0] || 'Utilisateur',
+          photo_profil: publicUrl
+        });
+
+      if (updateError) {
+        throw updateError;
+      }
 
       setAvatarUrl(publicUrl);
-
-      // Update profile
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ photo_profil: publicUrl })
-        .eq("user_id", user?.id);
-
-      if (updateError) throw updateError;
-
+      onProfileUpdate?.();
+      
       toast({
-        title: "Photo de profil mise à jour",
-        description: "Votre photo de profil a été mise à jour avec succès.",
+        title: "Succès",
+        description: "Photo de profil mise à jour",
       });
-
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -99,32 +108,29 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
 
   const handleUpdateProfile = async () => {
     if (!user) return;
-    
-    try {
-      setLoading(true);
 
-      // Update pseudo in profiles table
+    setLoading(true);
+    try {
       const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ pseudo })
-        .eq("user_id", user.id);
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          pseudo: pseudo
+        });
 
       if (profileError) throw profileError;
 
-      // Update user metadata
-      const { error: authError } = await supabase.auth.updateUser({
-        data: { pseudo }
+      const { error: userError } = await supabase.auth.updateUser({
+        data: { pseudo: pseudo }
       });
 
-      if (authError) throw authError;
-
-      toast({
-        title: "Profil mis à jour",
-        description: "Vos informations ont été mises à jour avec succès.",
-      });
+      if (userError) throw userError;
 
       onProfileUpdate?.();
-
+      toast({
+        title: "Succès",
+        description: "Profil mis à jour",
+      });
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -137,11 +143,10 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   };
 
   const handleUpdateEmail = async () => {
-    if (!user || !email) return;
-    
-    try {
-      setLoading(true);
+    if (!user) return;
 
+    setLoading(true);
+    try {
       const { error } = await supabase.auth.updateUser({
         email: email
       });
@@ -149,10 +154,9 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       if (error) throw error;
 
       toast({
-        title: "Email mis à jour",
-        description: "Un email de confirmation a été envoyé à votre nouvelle adresse.",
+        title: "Succès",
+        description: "Un email de confirmation a été envoyé à votre nouvelle adresse",
       });
-
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -165,33 +169,39 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   };
 
   const handleUpdatePassword = async () => {
-    if (!newPassword || newPassword !== confirmPassword) {
+    if (newPassword !== confirmPassword) {
       toast({
         title: "Erreur",
-        description: "Les mots de passe ne correspondent pas.",
+        description: "Les mots de passe ne correspondent pas",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      setLoading(true);
+    if (newPassword.length < 6) {
+      toast({
+        title: "Erreur",
+        description: "Le mot de passe doit contenir au moins 6 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setLoading(true);
+    try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) throw error;
 
-      setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-
+      
       toast({
-        title: "Mot de passe mis à jour",
-        description: "Votre mot de passe a été modifié avec succès.",
+        title: "Succès",
+        description: "Mot de passe mis à jour",
       });
-
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -204,55 +214,60 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   };
 
   return (
-    <div className="space-y-8 max-w-2xl">
-      {/* Photo de profil */}
-      <Card className="overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Camera className="w-5 h-5" />
-            Photo de profil
-          </CardTitle>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-semibold">Paramètres du profil</h2>
+        <p className="text-muted-foreground">Gérez vos informations personnelles</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Photo de profil</CardTitle>
           <CardDescription>
-            Changez votre photo de profil visible par votre équipe
+            Changez votre photo de profil
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-6">
-            <Avatar className="w-20 h-20 border-2 border-border/50">
-              <AvatarImage src={avatarUrl} alt="Profile" />
-              <AvatarFallback className="text-lg bg-muted">
-                {pseudo?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase()}
+          <div className="flex items-center space-x-4">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={avatarUrl} />
+              <AvatarFallback className="text-lg">
+                {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
+            <div className="space-y-2">
               <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted/50 transition-colors">
-                  <Upload className="w-4 h-4" />
-                  {uploading ? "Upload en cours..." : "Changer la photo"}
-                </div>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
+                <Button variant="outline" disabled={uploading} asChild>
+                  <span>
+                    {uploading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Changer la photo
+                  </span>
+                </Button>
               </Label>
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+              />
+              <p className="text-xs text-muted-foreground">
+                JPG, PNG jusqu'à 2MB
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Informations personnelles */}
-      <Card className="overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <User className="w-5 h-5" />
-            Informations personnelles
-          </CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Informations personnelles</CardTitle>
           <CardDescription>
-            Modifiez vos informations de profil
+            Mettez à jour vos informations de base
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -265,25 +280,18 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
               placeholder="Votre pseudo"
             />
           </div>
-          <Button 
-            onClick={handleUpdateProfile} 
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Mise à jour..." : "Mettre à jour le profil"}
+          <Button onClick={handleUpdateProfile} disabled={loading}>
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Mettre à jour le profil
           </Button>
         </CardContent>
       </Card>
 
-      {/* Email */}
-      <Card className="overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Mail className="w-5 h-5" />
-            Adresse email
-          </CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Adresse email</CardTitle>
           <CardDescription>
-            Changez votre adresse email de connexion
+            Changez votre adresse email
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -297,25 +305,18 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
               placeholder="votre@email.com"
             />
           </div>
-          <Button 
-            onClick={handleUpdateEmail} 
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Mise à jour..." : "Mettre à jour l'email"}
+          <Button onClick={handleUpdateEmail} disabled={loading}>
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Mettre à jour l'email
           </Button>
         </CardContent>
       </Card>
 
-      {/* Mot de passe */}
-      <Card className="overflow-hidden border-border/40 bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Lock className="w-5 h-5" />
-            Mot de passe
-          </CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Mot de passe</CardTitle>
           <CardDescription>
-            Modifiez votre mot de passe de connexion
+            Changez votre mot de passe
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -339,12 +340,9 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
               placeholder="Confirmer le mot de passe"
             />
           </div>
-          <Button 
-            onClick={handleUpdatePassword} 
-            disabled={loading || !newPassword || !confirmPassword}
-            className="w-full"
-          >
-            {loading ? "Mise à jour..." : "Changer le mot de passe"}
+          <Button onClick={handleUpdatePassword} disabled={loading}>
+            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Mettre à jour le mot de passe
           </Button>
         </CardContent>
       </Card>

@@ -81,7 +81,7 @@ export const DashboardSidebar = ({
             {currentTeam.jeu.replace('_', ' ')}
           </p>
           <div className="flex items-center mt-3 space-x-1">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
             <span className="text-xs text-muted-foreground">Équipe active</span>
           </div>
         </div>
@@ -123,14 +123,6 @@ export const DashboardSidebar = ({
           >
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle équipe
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start rounded-xl border-border/50 hover:bg-accent/50"
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Paramètres
           </Button>
         </div>
       </div>

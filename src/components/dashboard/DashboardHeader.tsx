@@ -2,6 +2,9 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { User } from "@supabase/supabase-js";
 import { LogOut, Settings, Bell } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ProfileSettings } from "./ProfileSettings";
+import { useState } from "react";
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -9,6 +12,7 @@ interface DashboardHeaderProps {
 }
 
 export const DashboardHeader = ({ user, onLogout }: DashboardHeaderProps) => {
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
   return (
     <header className="glass h-16 border-b border-border/50 flex items-center justify-between px-8 sticky top-0 z-40">
       <div className="flex items-center space-x-6">
@@ -27,6 +31,15 @@ export const DashboardHeader = ({ user, onLogout }: DashboardHeaderProps) => {
           className="rounded-full w-9 h-9 p-0 hover:bg-accent/60"
         >
           <Bell className="w-4 h-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="rounded-full w-9 h-9 p-0 hover:bg-accent/60"
+          onClick={() => setShowProfileSettings(true)}
+        >
+          <Settings className="w-4 h-4" />
         </Button>
 
         <div className="flex items-center space-x-3">
@@ -50,6 +63,12 @@ export const DashboardHeader = ({ user, onLogout }: DashboardHeaderProps) => {
           Déconnexion
         </Button>
       </div>
+
+      <Dialog open={showProfileSettings} onOpenChange={setShowProfileSettings}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <ProfileSettings user={user} onProfileUpdate={() => {}} />
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };
