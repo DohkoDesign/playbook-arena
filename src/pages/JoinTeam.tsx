@@ -55,6 +55,10 @@ const JoinTeam = () => {
     try {
       console.log("Token from URL:", token);
       
+      if (!token) {
+        throw new Error("Aucun token fourni");
+      }
+      
       // Récupérer l'invitation
       const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
