@@ -209,8 +209,7 @@ export const SmartScheduleModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <div className="fixed inset-0 z-50 bg-black/80" />
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50 bg-background border shadow-2xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50 bg-background/95 backdrop-blur-md border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -340,7 +339,7 @@ export const SmartScheduleModal = ({
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-[60]" align="start">
+                    <PopoverContent className="w-auto p-0 z-40 bg-background border shadow-lg" align="start">
                       <Calendar
                         mode="single"
                         selected={selectedDate}
@@ -376,7 +375,7 @@ export const SmartScheduleModal = ({
                         )}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-4 z-[60]" align="start">
+                    <PopoverContent className="w-auto p-4 z-40 bg-background border shadow-lg" align="start">
                       <div className="space-y-3">
                         <div className="space-y-2">
                           <Label className="text-sm font-medium">Heure personnalisée</Label>
