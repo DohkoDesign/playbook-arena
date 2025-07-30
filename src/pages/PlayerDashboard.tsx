@@ -55,6 +55,7 @@ const PlayerDashboard = () => {
 
   const checkPlayerStatus = async (userId: string) => {
     try {
+      console.log("🔍 Checking player status for:", userId);
       // Vérifier le profil utilisateur
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -71,7 +72,7 @@ const PlayerDashboard = () => {
       }
 
       // Récupérer les données de l'équipe du joueur
-      const { data: teamMember, error: teamError } = await supabase
+      const { data: teamMembers, error: teamError } = await supabase
         .from("team_members")
         .select(`
           *,
@@ -82,12 +83,19 @@ const PlayerDashboard = () => {
             logo
           )
         `)
-        .eq("user_id", userId)
-        .single();
+        .eq("user_id", userId);
 
-      if (teamError) {
+      console.log("🏆 Team memberships found:", teamMembers);
+
+      if (teamError) throw teamError;
+      
+      if (!teamMembers || teamMembers.length === 0) {
         throw new Error("Vous n'êtes membre d'aucune équipe");
       }
+
+      // Prendre la première équipe trouvée
+      const teamMember = teamMembers[0];
+      console.log("✅ Using team:", teamMember);
 
       setPlayerProfile(profile);
       setTeamData(teamMember);
