@@ -49,26 +49,24 @@ const JoinTeam = () => {
     try {
       console.log("🔍 Vérification invitation pour token:", invitationToken);
       
-      const { data: invitationData, error } = await supabase
+      // 1. D'abord récupérer l'invitation seule
+      const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
-        .select(`
-          *,
-          teams (
-            id,
-            nom,
-            jeu
-          )
-        `)
+        .select("*")
         .eq("token", invitationToken)
         .is("used_at", null)
         .gt("expires_at", new Date().toISOString())
         .maybeSingle();
 
-      console.log("📋 Résultat:", { invitationData, error });
+      console.log("📋 Invitation data:", { invitationData, invitationError });
 
-      if (error) throw error;
+      if (invitationError) {
+        console.error("❌ Erreur invitation:", invitationError);
+        throw invitationError;
+      }
 
       if (!invitationData) {
+        console.log("❌ Aucune invitation trouvée");
         toast({
           title: "Invitation invalide",
           description: "Cette invitation est expirée ou n'existe pas",
@@ -78,15 +76,33 @@ const JoinTeam = () => {
         return;
       }
 
+      console.log("✅ Invitation trouvée:", invitationData);
+
+      // 2. Ensuite récupérer l'équipe
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", invitationData.team_id)
+        .single();
+
+      console.log("📋 Team data:", { teamData, teamError });
+
+      if (teamError) {
+        console.error("❌ Erreur équipe:", teamError);
+        throw teamError;
+      }
+
+      console.log("✅ Équipe trouvée:", teamData);
+
       setInvitation(invitationData);
-      setTeam(invitationData.teams);
+      setTeam(teamData);
       setIsLoading(false);
 
     } catch (error: any) {
-      console.error("❌ Erreur:", error);
+      console.error("❌ Erreur générale:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de vérifier l'invitation",
+        description: "Impossible de vérifier l'invitation: " + error.message,
         variant: "destructive",
       });
       navigate("/");
