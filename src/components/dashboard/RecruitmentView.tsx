@@ -62,7 +62,7 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
           )
         `)
         .eq("team_id", teamId)
-        .eq("role", "test");
+        .eq("role", "test" as const);
 
       setTestPlayers(testMembers || []);
       // Les prospects seront stockés localement ou dans une table dédiée
@@ -118,6 +118,9 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
 
   const inviteForTest = async (prospect: any) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Utilisateur non connecté");
+
       const token = Math.random().toString(36).substr(2, 15);
       
       const { error } = await supabase
@@ -125,8 +128,8 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
         .insert({
           team_id: teamId,
           token,
-          role: "test",
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          role: "test" as const,
+          created_by: user.id,
         });
 
       if (error) throw error;
