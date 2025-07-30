@@ -365,65 +365,60 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                     <Card key={team.id} className="border-l-4 border-l-primary">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="space-y-2 flex-1">
-                             <div className="flex items-center space-x-3">
-                               {/* Icône de l'équipe */}
-                               <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
-                                 {team.nom.charAt(0).toUpperCase()}
-                               </div>
-                              
-                              <div className="flex-1">
-                                {editingTeam === team.id ? (
-                                  <div className="flex items-center space-x-2">
-                                    <Input
-                                      value={teamNames[team.id] || ""}
-                                      onChange={(e) => setTeamNames({
-                                        ...teamNames,
-                                        [team.id]: e.target.value
-                                      })}
-                                      className="w-48"
-                                    />
+                           <div className="space-y-2 flex-1">
+                              <div className="flex items-center space-x-3">
+                               <div className="flex-1">
+                                 {editingTeam === team.id ? (
+                                   <div className="flex items-center space-x-2">
+                                     <Input
+                                       value={teamNames[team.id] || ""}
+                                       onChange={(e) => setTeamNames({
+                                         ...teamNames,
+                                         [team.id]: e.target.value
+                                       })}
+                                       className="w-48"
+                                     />
+                                      <Button 
+                                        size="sm" 
+                                        onClick={() => updateTeam(team.id, 'nom')}
+                                        disabled={loading}
+                                      >
+                                       <Save className="w-4 h-4" />
+                                     </Button>
                                      <Button 
                                        size="sm" 
-                                       onClick={() => updateTeam(team.id, 'nom')}
-                                       disabled={loading}
+                                       variant="outline" 
+                                       onClick={() => setEditingTeam(null)}
                                      >
-                                      <Save className="w-4 h-4" />
-                                    </Button>
-                                    <Button 
-                                      size="sm" 
-                                      variant="outline" 
-                                      onClick={() => setEditingTeam(null)}
-                                    >
-                                      Annuler
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center space-x-2">
-                                    <h4 className="font-semibold">{team.nom}</h4>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => setEditingTeam(team.id)}
-                                    >
-                                      <Edit className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                )}
-                                
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <span className="text-sm text-muted-foreground capitalize">
-                                    {gameConfig?.name || team.jeu}
-                                  </span>
-                                  {team.id === teamId && (
-                                    <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
-                                      Équipe active
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                                       Annuler
+                                     </Button>
+                                   </div>
+                                 ) : (
+                                   <div className="flex items-center space-x-2">
+                                     <h4 className="font-semibold">{team.nom}</h4>
+                                     <Button
+                                       size="sm"
+                                       variant="ghost"
+                                       onClick={() => setEditingTeam(team.id)}
+                                     >
+                                       <Edit className="w-4 h-4" />
+                                     </Button>
+                                   </div>
+                                 )}
+                                 
+                                 <div className="flex items-center space-x-2 mt-1">
+                                   <span className="text-sm text-muted-foreground capitalize">
+                                     {gameConfig?.name || team.jeu}
+                                   </span>
+                                   {team.id === teamId && (
+                                     <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                                       Équipe active
+                                     </span>
+                                   )}
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
                           
                           <div className="flex items-center space-x-2">
                             <span className="text-xs text-muted-foreground">
