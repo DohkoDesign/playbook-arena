@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { 
   Settings, Users, TrendingUp, Mail, Download, Calendar,
-  UserPlus, Trophy, Clock, Target, BarChart3
+  UserPlus, Trophy, Clock, Target, BarChart3, Trash2, Edit,
+  UserMinus, Shield, Crown, Save
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +27,9 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
   const [strategies, setStrategies] = useState<any[]>([]);
   const [coachingSessions, setCoachingSessions] = useState<any[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [editingTeam, setEditingTeam] = useState(false);
+  const [teamName, setTeamName] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -34,8 +38,14 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
   useEffect(() => {
     if (teamId) {
       fetchAllData();
+      getCurrentUser();
     }
   }, [teamId]);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setCurrentUserId(user?.id || null);
+  };
 
   const fetchAllData = async () => {
     try {
@@ -84,6 +94,7 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
         .eq("events.team_id", teamId);
 
       setTeamData(team);
+      setTeamName(team?.nom || "");
       setMembers(teamMembers || []);
       setEvents(teamEvents || []);
       setStrategies(teamStrategies || []);
@@ -99,11 +110,63 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
     }
   };
 
+  const removeMember = async (memberId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir retirer ce membre de l'équipe ?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("team_members")
+        .delete()
+        .eq("id", memberId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Membre retiré",
+        description: "Le membre a été retiré de l'équipe",
+      });
+
+      fetchAllData();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateTeamName = async () => {
+    if (!teamName.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from("teams")
+        .update({ nom: teamName })
+        .eq("id", teamId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Équipe mise à jour",
+        description: "Le nom de l'équipe a été modifié",
+      });
+
+      setEditingTeam(false);
+      fetchAllData();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const sendInvitation = async () => {
     if (!inviteEmail.trim()) return;
 
     try {
-      // Génération d'un token simple (en production, utiliser crypto.randomUUID())
       const token = Math.random().toString(36).substr(2, 15);
       
       const { error } = await supabase
@@ -112,12 +175,11 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
           team_id: teamId,
           token,
           role: "joueur",
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          created_by: currentUserId,
         });
 
       if (error) throw error;
 
-      // Simulation d'envoi d'email (en production, utiliser un service d'email)
       toast({
         title: "Invitation envoyée",
         description: `Invitation envoyée à ${inviteEmail}`,
@@ -134,12 +196,13 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
   };
 
   const exportData = (type: string) => {
-    // Simulation d'export de données
     toast({
       title: "Export en cours",
       description: `Export des données ${type} en cours...`,
     });
   };
+
+  const isTeamCreator = currentUserId === teamData?.created_by;
 
   const getPerformanceStats = () => {
     const totalEvents = events.length;
@@ -328,6 +391,9 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
                             <Badge variant="outline" className="text-xs">
                               {member.role}
                             </Badge>
+                            {member.user_id === teamData?.created_by && (
+                              <Crown className="w-3 h-3 text-yellow-500" />
+                            )}
                             {member.personnages_favoris && gameConfig && (
                               <span className="text-xs text-muted-foreground">
                                 {member.personnages_favoris.slice(0, 2).join(', ')}
@@ -337,8 +403,20 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
                           </div>
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Rejoint le {new Date(member.created_at).toLocaleDateString("fr-FR")}
+                      <div className="flex items-center space-x-2">
+                        <div className="text-xs text-muted-foreground">
+                          Rejoint le {new Date(member.created_at).toLocaleDateString("fr-FR")}
+                        </div>
+                        {isTeamCreator && member.user_id !== teamData?.created_by && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => removeMember(member.id)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <UserMinus className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -459,7 +537,32 @@ export const StaffManagementView = ({ teamId, gameType }: StaffManagementViewPro
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Nom de l'équipe</Label>
-                <Input value={teamData?.nom || ''} disabled />
+                <div className="flex items-center space-x-2">
+                  {editingTeam ? (
+                    <>
+                      <Input 
+                        value={teamName} 
+                        onChange={(e) => setTeamName(e.target.value)}
+                        disabled={!isTeamCreator}
+                      />
+                      <Button size="sm" onClick={updateTeamName} disabled={!isTeamCreator}>
+                        <Save className="w-4 h-4" />
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingTeam(false)}>
+                        Annuler
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Input value={teamData?.nom || ''} disabled />
+                      {isTeamCreator && (
+                        <Button size="sm" variant="outline" onClick={() => setEditingTeam(true)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-2">

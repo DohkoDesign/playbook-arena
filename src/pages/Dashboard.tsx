@@ -10,9 +10,10 @@ import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { StaffManagementView } from "@/components/dashboard/StaffManagementView";
+import { RecruitmentView } from "@/components/dashboard/RecruitmentView";
 import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "staff";
+type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "staff" | "recruitment";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -124,6 +125,8 @@ const Dashboard = () => {
         return <CoachingView teamId={selectedTeam} gameType={gameType} />;
       case "staff":
         return <StaffManagementView teamId={selectedTeam} gameType={gameType} />;
+      case "recruitment":
+        return <RecruitmentView teamId={selectedTeam} gameType={gameType} />;
       default:
         return <CalendarView teamId={selectedTeam} />;
     }
