@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface DashboardSidebarProps {
   teams: any[];
@@ -20,27 +21,69 @@ export const DashboardSidebar = ({
   onViewChange,
   onNewTeam,
 }: DashboardSidebarProps) => {
-  const menuItems = [
-    { id: "calendar", label: "Calendrier", icon: Calendar },
-    { id: "strategies", label: "Stratégies", icon: BookOpen },
-    { id: "players", label: "Équipe", icon: Users },
-    { id: "coaching", label: "Coaching", icon: Video },
-    { id: "recruitment", label: "Recrutement", icon: UserSearch },
-    { id: "staff", label: "Gestion Staff", icon: Settings },
+  const [orgSettings, setOrgSettings] = useState({
+    name: "Shadow Hub",
+    logo: "",
+    subtitle: "Esport Manager"
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("org_settings");
+    if (saved) {
+      setOrgSettings(JSON.parse(saved));
+    }
+  }, []);
+
+  // Navigation organisée par catégories
+  const navigationSections = [
+    {
+      title: "Navigation",
+      items: [
+        { id: "calendar", label: "Calendrier", icon: Calendar },
+      ]
+    },
+    {
+      title: "Équipe",
+      items: [
+        { id: "players", label: "Membres", icon: Users },
+        { id: "strategies", label: "Stratégies", icon: BookOpen },
+        { id: "coaching", label: "Coaching", icon: Video },
+      ]
+    },
+    {
+      title: "Gestion",
+      items: [
+        { id: "recruitment", label: "Recrutement", icon: UserSearch },
+        { id: "settings", label: "Paramètres", icon: Settings },
+      ]
+    }
   ];
 
   const currentTeam = teams.find(team => team.id === selectedTeam);
 
   return (
     <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-8">
-      {/* Logo */}
+      {/* Logo personnalisable */}
       <div className="flex items-center space-x-3">
-        <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
-          <span className="text-white font-bold text-lg">S</span>
-        </div>
+        {orgSettings.logo ? (
+          <img 
+            src={orgSettings.logo} 
+            alt="Logo" 
+            className="w-10 h-10 rounded-2xl object-cover shadow-md"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        ) : (
+          <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
+            <span className="text-white font-bold text-lg">
+              {orgSettings.name.charAt(0)}
+            </span>
+          </div>
+        )}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Shadow Hub</h1>
-          <p className="text-xs text-muted-foreground">Esport Manager</p>
+          <h1 className="text-xl font-semibold tracking-tight">{orgSettings.name}</h1>
+          <p className="text-xs text-muted-foreground">{orgSettings.subtitle}</p>
         </div>
       </div>
 
@@ -51,85 +94,90 @@ export const DashboardSidebar = ({
         </label>
         {teams.length > 0 ? (
           <Select value={selectedTeam || ""} onValueChange={onTeamSelect}>
-            <SelectTrigger className="rounded-xl border-border/50 bg-card hover:bg-accent/50 transition-colors">
-              <SelectValue placeholder="Sélectionner une équipe" />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl border-border/50 bg-card shadow-dropdown">
-              {teams.map((team) => (
-                <SelectItem 
-                  key={team.id} 
-                  value={team.id}
-                  className="rounded-lg mx-1 my-0.5"
-                >
+            <SelectTrigger className="nav-item">
+              <SelectValue placeholder="Sélectionner une équipe">
+                {currentTeam ? (
                   <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <div className="w-6 h-6 bg-gradient-brand rounded-lg flex items-center justify-center text-white text-xs font-medium">
+                      {currentTeam.nom.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="truncate">{currentTeam.nom}</span>
+                  </div>
+                ) : (
+                  "Sélectionner une équipe"
+                )}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {teams.map((team) => (
+                <SelectItem key={team.id} value={team.id}>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 bg-gradient-brand rounded flex items-center justify-center text-white text-xs font-medium">
+                      {team.nom.charAt(0).toUpperCase()}
+                    </div>
                     <span>{team.nom}</span>
-                    <span className="text-xs text-muted-foreground">({team.jeu.replace('_', ' ')})</span>
                   </div>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         ) : (
-          <div className="text-sm text-muted-foreground bg-muted/50 rounded-xl p-3">
+          <div className="text-sm text-muted-foreground">
             Aucune équipe créée
           </div>
         )}
       </div>
 
-      {/* Current Team Info */}
-      {currentTeam && (
-        <div className="card-apple p-4">
-          <h3 className="font-semibold text-base">{currentTeam.nom}</h3>
-          <p className="text-sm text-muted-foreground capitalize mt-1">
-            {currentTeam.jeu.replace('_', ' ')}
-          </p>
-          <div className="flex items-center mt-3 space-x-1">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-            <span className="text-xs text-muted-foreground">Équipe active</span>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation Menu */}
-      <nav className="space-y-2">
-        <div className="text-sm font-medium text-muted-foreground mb-3">
-          Navigation
-        </div>
-        {menuItems.map((item) => (
-          <Button
-            key={item.id}
-            variant="ghost"
-            className={cn(
-              "w-full justify-start rounded-xl h-11 font-medium transition-all duration-200",
-              currentView === item.id 
-                ? "bg-primary text-primary-foreground shadow-md hover:bg-primary/90" 
-                : "hover:bg-accent/60 text-muted-foreground hover:text-foreground"
+      {/* Navigation par sections */}
+      <nav className="space-y-6">
+        {navigationSections.map((section, sectionIndex) => (
+          <div key={section.title} className="space-y-3">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              {section.title}
+            </h3>
+            <div className="space-y-1">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = currentView === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onViewChange(item.id)}
+                    className={cn(
+                      "nav-item w-full flex items-center space-x-3 px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200",
+                      isActive
+                        ? "bg-gradient-subtle text-primary shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <Icon className={cn("w-4 h-4", isActive && "text-primary")} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Séparateur entre les sections (sauf pour la dernière) */}
+            {sectionIndex < navigationSections.length - 1 && (
+              <div className="pt-2">
+                <div className="h-px bg-border/50"></div>
+              </div>
             )}
-            onClick={() => onViewChange(item.id)}
-          >
-            <item.icon className="w-5 h-5 mr-3" />
-            {item.label}
-          </Button>
+          </div>
         ))}
       </nav>
 
-      {/* Quick Actions */}
-      <div className="space-y-3">
-        <div className="text-sm font-medium text-muted-foreground">
-          Actions rapides
-        </div>
-        <div className="space-y-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start rounded-xl border-border/50 hover:bg-accent/50"
-            onClick={onNewTeam}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle équipe
-          </Button>
-        </div>
+      {/* Create Team Button */}
+      <div className="pt-4 border-t border-border/50">
+        <Button 
+          onClick={onNewTeam}
+          className="w-full justify-start space-x-2"
+          variant="outline"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Nouvelle équipe</span>
+        </Button>
       </div>
     </div>
   );
