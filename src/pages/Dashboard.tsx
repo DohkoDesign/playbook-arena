@@ -132,10 +132,15 @@ const Dashboard = () => {
           onTeamSelect={setSelectedTeam}
           currentView={currentView}
           onViewChange={(view) => setCurrentView(view as DashboardView)}
+          onNewTeam={() => setShowTeamSetup(true)}
         />
         
         <div className="flex-1 ml-72">
-          <DashboardHeader user={user} onLogout={handleLogout} />
+          <DashboardHeader 
+            user={user} 
+            onLogout={handleLogout} 
+            currentTeam={teams.find(team => team.id === selectedTeam)}
+          />
           
           <main className="p-8">
             {renderCurrentView()}
@@ -148,9 +153,13 @@ const Dashboard = () => {
           isOpen={showTeamSetup}
           onClose={() => setShowTeamSetup(false)}
           onTeamCreated={(team) => {
-            setTeams([team]);
+            setTeams(prev => [...prev, team]);
             setSelectedTeam(team.id);
             setShowTeamSetup(false);
+            toast({
+              title: "Équipe créée !",
+              description: `Bienvenue dans votre équipe ${team.nom}`,
+            });
           }}
         />
       )}

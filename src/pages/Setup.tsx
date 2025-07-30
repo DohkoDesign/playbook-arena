@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Users, Upload, Loader2 } from "lucide-react";
 
 const GAMES = [
   { value: "valorant", label: "Valorant", players: 5 },
@@ -29,6 +30,8 @@ const Setup = () => {
   const [submitting, setSubmitting] = useState(false);
   const [teamName, setTeamName] = useState("");
   const [selectedGame, setSelectedGame] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -77,6 +80,59 @@ const Setup = () => {
       }
     } catch (error: any) {
       console.error("Erreur lors de la vérification des équipes:", error);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0 || !user) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/${Math.random()}.${fileExt}`;
+
+    setUploading(true);
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: user.id,
+          pseudo: user.user_metadata?.pseudo || user.email?.split('@')[0] || 'Utilisateur',
+          photo_profil: publicUrl
+        });
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      setAvatarUrl(publicUrl);
+      
+      toast({
+        title: "Photo de profil ajoutée !",
+        description: "Votre photo a été sauvegardée avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -182,10 +238,56 @@ const Setup = () => {
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">Bienvenue {user?.user_metadata?.pseudo || user?.email} !</h1>
             <p className="text-muted-foreground">
-              Créez votre première équipe esport pour commencer
+              Configurez votre profil et créez votre première équipe esport
             </p>
           </div>
         </div>
+
+        {/* Profile Picture Setup */}
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle>Photo de profil</CardTitle>
+            <CardDescription>
+              Ajoutez une photo pour personnaliser votre profil (optionnel)
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-4">
+            <div className="flex flex-col items-center space-y-4">
+              <Avatar className="w-24 h-24">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="text-2xl">
+                  {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              
+              <div className="text-center">
+                <Label htmlFor="avatar-upload" className="cursor-pointer">
+                  <Button variant="outline" disabled={uploading} asChild>
+                    <span>
+                      {uploading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {avatarUrl ? "Changer la photo" : "Ajouter une photo"}
+                    </span>
+                  </Button>
+                </Label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  JPG, PNG jusqu'à 2MB
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Setup Card */}
         <Card>

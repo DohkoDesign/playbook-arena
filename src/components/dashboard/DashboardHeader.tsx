@@ -9,16 +9,19 @@ import { useState } from "react";
 interface DashboardHeaderProps {
   user: User | null;
   onLogout: () => void;
+  currentTeam?: any;
 }
 
-export const DashboardHeader = ({ user, onLogout }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeaderProps) => {
   const [showProfileSettings, setShowProfileSettings] = useState(false);
   return (
     <header className="glass h-16 border-b border-border/50 flex items-center justify-between px-8 sticky top-0 z-40">
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-3">
           <div className="w-1 h-6 bg-primary rounded-full"></div>
-          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <h1 className="text-lg font-semibold">
+            {currentTeam?.nom || "Dashboard"}
+          </h1>
         </div>
       </div>
 

@@ -9,6 +9,7 @@ interface DashboardSidebarProps {
   onTeamSelect: (teamId: string) => void;
   currentView: string;
   onViewChange: (view: string) => void;
+  onNewTeam: () => void;
 }
 
 export const DashboardSidebar = ({
@@ -17,6 +18,7 @@ export const DashboardSidebar = ({
   onTeamSelect,
   currentView,
   onViewChange,
+  onNewTeam,
 }: DashboardSidebarProps) => {
   const menuItems = [
     { id: "calendar", label: "Calendrier", icon: Calendar },
@@ -120,6 +122,7 @@ export const DashboardSidebar = ({
             variant="outline" 
             size="sm" 
             className="w-full justify-start rounded-xl border-border/50 hover:bg-accent/50"
+            onClick={onNewTeam}
           >
             <Plus className="w-4 h-4 mr-2" />
             Nouvelle équipe
