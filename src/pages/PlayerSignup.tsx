@@ -56,27 +56,28 @@ export default function PlayerSignup() {
       // Vérifier l'invitation
       const { data: invitationData, error: invError } = await supabase
         .from("invitations")
-        .select(`
-          *,
-          teams:team_id (
-            id,
-            nom,
-            jeu,
-            created_by
-          )
-        `)
+        .select("*")
         .eq("token", token)
-        .eq("used_at", null)
+        .is("used_at", null)
         .gt("expires_at", new Date().toISOString())
         .single();
 
       if (invError) throw new Error("Invitation invalide ou expirée");
 
+      // Récupérer l'équipe
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", invitationData.team_id)
+        .single();
+
+      if (teamError) throw new Error("Équipe introuvable");
+
       setInvitation(invitationData);
-      setTeam(invitationData.teams);
+      setTeam(teamData);
       
       // Charger la configuration du jeu
-      const config = getGameConfig(invitationData.teams.jeu);
+      const config = getGameConfig(teamData.jeu);
       setGameConfig(config);
       
     } catch (error: any) {
