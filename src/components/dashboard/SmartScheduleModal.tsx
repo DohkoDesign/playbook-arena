@@ -209,7 +209,8 @@ export const SmartScheduleModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50 bg-background border shadow-2xl">
+      <div className="fixed inset-0 z-50 bg-black/80" />
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50 bg-background border shadow-2xl fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
