@@ -8,235 +8,247 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Loader2 } from "lucide-react";
 
+// Personnages par jeu
 const GAME_CHARACTERS = {
-  valorant: [
-    "Jett", "Phoenix", "Sage", "Sova", "Brimstone", "Viper", "Cypher", "Reyna",
-    "Killjoy", "Breach", "Omen", "Raze", "Skye", "Yoru", "Astra", "KAY/O",
-    "Chamber", "Neon", "Fade", "Harbor", "Gekko", "Deadlock", "Iso", "Clove"
-  ],
-  league_of_legends: [
-    "Ahri", "Akali", "Ashe", "Azir", "Caitlyn", "Darius", "Diana", "Draven",
-    "Ezreal", "Garen", "Jinx", "Katarina", "LeBlanc", "Lee Sin", "Lux", "Yasuo",
-    "Zed", "Thresh", "Vayne", "Vi"
-  ],
-  overwatch: [
-    "Tracer", "Soldier: 76", "McCree", "Pharah", "Reaper", "Sombra", "Bastion",
-    "Hanzo", "Junkrat", "Mei", "Torbjörn", "Widowmaker", "D.Va", "Orisa",
-    "Reinhardt", "Roadhog", "Winston", "Wrecking Ball", "Zarya", "Ana",
-    "Baptiste", "Brigitte", "Lúcio", "Mercy", "Moira", "Zenyatta"
-  ]
+  valorant: ["Jett", "Phoenix", "Sage", "Sova", "Brimstone", "Viper", "Cypher", "Reyna"],
+  league_of_legends: ["Ahri", "Akali", "Ashe", "Ezreal", "Jinx", "Yasuo", "Zed", "Thresh"],
+  overwatch: ["Tracer", "Soldier: 76", "Pharah", "Reaper", "D.Va", "Reinhardt", "Mercy", "Ana"],
+  apex_legends: ["Wraith", "Pathfinder", "Lifeline", "Bloodhound", "Bangalore", "Octane"],
+  csgo: ["T-Side", "CT-Side", "AWP", "Rifle", "Entry Fragger", "Support"]
 };
 
 const JoinTeam = () => {
-  // Extraction directe du token depuis l'URL
-  const pathParts = window.location.pathname.split('/');
-  const token = pathParts[pathParts.length - 1];
-  
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const [invitation, setInvitation] = useState<any>(null);
-  const [team, setTeam] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [pseudo, setPseudo] = useState("");
-  const [selectedCharacters, setSelectedCharacters] = useState<string[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    console.log("=== JoinTeam Component Loaded ===");
-    console.log("Token extracted:", token);
-    console.log("Current URL:", window.location.href);
-    
-    if (token && token !== 'join-team') {
-      checkInvitation();
-    } else {
-      console.error("Invalid token:", token);
-      toast({
-        title: "Erreur",
-        description: "Lien d'invitation invalide",
-        variant: "destructive",
-      });
-      navigate("/");
-    }
-  }, []);
+  // États
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [invitation, setInvitation] = useState<any>(null);
+  const [team, setTeam] = useState<any>(null);
+  
+  // Formulaire
+  const [formData, setFormData] = useState({
+    pseudo: "",
+    email: "",
+    password: "",
+    selectedCharacters: [] as string[]
+  });
 
-  const checkInvitation = async () => {
+  // Vérification de l'invitation au chargement
+  useEffect(() => {
+    console.log("🚀 JoinTeam - Token reçu:", token);
+    
     if (!token) {
-      console.error("checkInvitation called without token");
+      console.error("❌ Aucun token dans l'URL");
+      showErrorAndRedirect("Lien d'invitation invalide");
       return;
     }
 
+    verifyInvitation(token);
+  }, [token]);
+
+  const showErrorAndRedirect = (message: string) => {
+    toast({
+      title: "Erreur",
+      description: message,
+      variant: "destructive",
+    });
+    setTimeout(() => navigate("/"), 2000);
+  };
+
+  const verifyInvitation = async (invitationToken: string) => {
     try {
-      console.log("=== Checking invitation with token:", token);
+      console.log("🔍 Vérification de l'invitation avec token:", invitationToken);
       
-      // Récupérer l'invitation avec le token exact
+      // 1. Chercher l'invitation
       const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
         .select("*")
-        .eq("token", token)
+        .eq("token", invitationToken)
         .is("used_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .maybeSingle();
+        .single();
 
-      console.log("=== Invitation query result:", { invitationData, invitationError });
-
-      if (invitationError) {
-        console.error("Invitation query error:", invitationError);
-        throw invitationError;
-      }
-
-      if (!invitationData) {
-        console.error("No invitation found for token:", token);
-        toast({
-          title: "Lien invalide",
-          description: "Ce lien d'invitation est expiré ou invalide",
-          variant: "destructive",
-        });
-        navigate("/");
+      if (invitationError || !invitationData) {
+        console.error("❌ Invitation non trouvée:", invitationError);
+        showErrorAndRedirect("Invitation non trouvée ou déjà utilisée");
         return;
       }
 
-      console.log("=== Invitation found, fetching team...");
+      // 2. Vérifier l'expiration
+      const now = new Date();
+      const expiresAt = new Date(invitationData.expires_at);
+      
+      if (now > expiresAt) {
+        console.error("❌ Invitation expirée");
+        showErrorAndRedirect("Cette invitation a expiré");
+        return;
+      }
 
-      // Récupérer l'équipe
+      console.log("✅ Invitation valide:", invitationData);
+
+      // 3. Récupérer les infos de l'équipe
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
         .select("*")
         .eq("id", invitationData.team_id)
         .single();
 
-      console.log("=== Team query result:", { teamData, teamError });
-
-      if (teamError) {
-        console.error("Team query error:", teamError);
-        throw teamError;
+      if (teamError || !teamData) {
+        console.error("❌ Équipe non trouvée:", teamError);
+        showErrorAndRedirect("Équipe non trouvée");
+        return;
       }
 
-      console.log("=== Setting state with invitation and team data");
+      console.log("✅ Équipe trouvée:", teamData);
+
+      // Tout est OK
       setInvitation(invitationData);
       setTeam(teamData);
-    } catch (error: any) {
-      console.error("=== Error in checkInvitation:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de vérifier l'invitation: " + error.message,
-        variant: "destructive",
-      });
-      navigate("/");
-    } finally {
-      setLoading(false);
+      setIsLoading(false);
+
+    } catch (error) {
+      console.error("❌ Erreur lors de la vérification:", error);
+      showErrorAndRedirect("Erreur lors de la vérification de l'invitation");
     }
   };
 
-  const handleJoinTeam = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!invitation || !team) return;
+    
+    const { pseudo, email, password, selectedCharacters } = formData;
+    
+    if (!pseudo || !email || !password) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setSubmitting(true);
+    setIsSubmitting(true);
 
     try {
-      // Créer le compte utilisateur
+      console.log("🔐 Création du compte utilisateur...");
+      
+      // 1. Créer le compte utilisateur
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/setup`,
-          data: {
-            pseudo: pseudo,
-          },
-        },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: { pseudo }
+        }
       });
 
       if (authError) throw authError;
+      if (!authData.user) throw new Error("Utilisateur non créé");
 
-      if (authData.user) {
-        // Ajouter le joueur à l'équipe
-        const { error: memberError } = await supabase
-          .from("team_members")
+      console.log("✅ Compte créé:", authData.user.id);
+
+      // 2. Ajouter à l'équipe
+      const { error: memberError } = await supabase
+        .from("team_members")
+        .insert({
+          team_id: team.id,
+          user_id: authData.user.id,
+          role: invitation.role,
+          personnages_favoris: selectedCharacters
+        });
+
+      if (memberError) throw memberError;
+
+      // 3. Marquer l'invitation comme utilisée
+      const { error: updateError } = await supabase
+        .from("invitations")
+        .update({
+          used_at: new Date().toISOString(),
+          used_by: authData.user.id
+        })
+        .eq("id", invitation.id);
+
+      if (updateError) throw updateError;
+
+      // 4. Créer le profil joueur si nécessaire
+      if (invitation.role === "joueur" || invitation.role === "remplacant") {
+        await supabase
+          .from("player_profiles")
           .insert({
             team_id: team.id,
             user_id: authData.user.id,
-            role: invitation.role,
-            personnages_favoris: selectedCharacters,
+            points_forts: [],
+            points_faibles: [],
+            objectifs_individuels: []
           });
-
-        if (memberError) throw memberError;
-
-        // Marquer l'invitation comme utilisée
-        await supabase
-          .from("invitations")
-          .update({
-            used_at: new Date().toISOString(),
-            used_by: authData.user.id,
-          })
-          .eq("id", invitation.id);
-
-        // Créer une fiche joueur si c'est un joueur
-        if (invitation.role === "joueur" || invitation.role === "remplacant") {
-          await supabase
-            .from("player_profiles")
-            .insert({
-              team_id: team.id,
-              user_id: authData.user.id,
-              points_forts: [],
-              points_faibles: [],
-              objectifs_individuels: [],
-            });
-        }
-
-        toast({
-          title: "Bienvenue dans l'équipe !",
-          description: `Vous avez rejoint ${team.nom} en tant que ${invitation.role}`,
-        });
-
-        navigate("/dashboard");
       }
+
+      console.log("✅ Inscription terminée avec succès!");
+
+      toast({
+        title: "Bienvenue !",
+        description: `Vous avez rejoint ${team.nom} en tant que ${invitation.role}`,
+      });
+
+      // Redirection
+      setTimeout(() => navigate("/dashboard"), 1500);
+
     } catch (error: any) {
+      console.error("❌ Erreur lors de l'inscription:", error);
       toast({
         title: "Erreur",
-        description: error.message,
+        description: error.message || "Une erreur est survenue",
         variant: "destructive",
       });
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
   const toggleCharacter = (character: string) => {
-    setSelectedCharacters(prev => 
-      prev.includes(character) 
-        ? prev.filter(c => c !== character)
-        : [...prev, character]
-    );
+    setFormData(prev => ({
+      ...prev,
+      selectedCharacters: prev.selectedCharacters.includes(character)
+        ? prev.selectedCharacters.filter(c => c !== character)
+        : [...prev.selectedCharacters, character]
+    }));
   };
 
-  if (loading) {
+  const updateFormData = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // État de chargement
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-8 h-8 bg-gradient-brand rounded-lg mx-auto"></div>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto" />
           <p>Vérification de l'invitation...</p>
         </div>
       </div>
     );
   }
 
+  // Erreur si pas d'invitation/équipe
   if (!invitation || !team) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
-          <p>Invitation introuvable ou expirée</p>
-          <Button onClick={() => navigate("/")}>
-            Retour à l'accueil
-          </Button>
+          <p className="text-destructive">Invitation invalide ou expirée</p>
+          <Button onClick={() => navigate("/")}>Retour à l'accueil</Button>
         </div>
       </div>
     );
   }
 
   const gameCharacters = GAME_CHARACTERS[team.jeu as keyof typeof GAME_CHARACTERS] || [];
+  const isPlayerRole = invitation.role === "joueur" || invitation.role === "remplacant";
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -245,6 +257,7 @@ const JoinTeam = () => {
       </div>
       
       <div className="w-full max-w-md space-y-6">
+        {/* En-tête */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center space-x-2">
             <div className="w-10 h-10 bg-gradient-brand rounded-lg flex items-center justify-center">
@@ -252,94 +265,69 @@ const JoinTeam = () => {
             </div>
             <span className="text-2xl font-bold tracking-tight">Shadow Hub</span>
           </div>
-          <p className="text-muted-foreground">
-            Invitation à rejoindre une équipe
-          </p>
+          <p className="text-muted-foreground">Rejoindre une équipe</p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>
-              {invitation.role === 'joueur' || invitation.role === 'remplacant' 
-                ? 'Créer votre compte joueur' 
-                : invitation.role === 'coach' 
-                ? 'Créer votre compte coach'
-                : invitation.role === 'manager'
-                ? 'Créer votre compte manager'
-                : invitation.role === 'capitaine'
-                ? 'Créer votre compte capitaine'
-                : 'Créer votre compte'
-              }
+            <CardTitle className="text-center">
+              Créer votre compte {invitation.role}
             </CardTitle>
-            <CardDescription>
-              Vous êtes invité(e) à rejoindre <strong>{team.nom}</strong> en tant que{" "}
-              <Badge variant="secondary" className="capitalize">{invitation.role}</Badge>
+            <CardDescription className="text-center">
+              Invitation pour <strong>{team.nom}</strong> en tant que{" "}
+              <Badge variant="secondary" className="capitalize">
+                {invitation.role}
+              </Badge>
             </CardDescription>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-center text-sm text-muted-foreground">
               Jeu: <span className="capitalize">{team.jeu.replace('_', ' ')}</span>
             </div>
-            
-            {/* Message personnalisé selon le rôle */}
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <p className="text-sm">
-                {invitation.role === 'joueur' && 
-                  "En tant que joueur, vous aurez accès aux stratégies d'équipe, calendrier des matchs et statistiques personnelles."
-                }
-                {invitation.role === 'remplacant' && 
-                  "En tant que remplaçant, vous serez prêt à intervenir et aurez accès aux mêmes ressources que les joueurs titulaires."
-                }
-                {invitation.role === 'coach' && 
-                  "En tant que coach, vous pourrez créer des stratégies, analyser les performances et programmer des sessions d'entraînement."
-                }
-                {invitation.role === 'manager' && 
-                  "En tant que manager, vous gérerez l'équipe, les plannings et aurez accès aux outils d'administration."
-                }
-                {invitation.role === 'capitaine' && 
-                  "En tant que capitaine, vous dirigerez l'équipe et aurez des privilèges étendus sur la gestion de l'équipe."
-                }
-              </p>
-            </div>
           </CardHeader>
+
           <CardContent>
-            <form onSubmit={handleJoinTeam} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Pseudo */}
               <div className="space-y-2">
-                <Label htmlFor="pseudo">Pseudo</Label>
+                <Label htmlFor="pseudo">Pseudo *</Label>
                 <Input
                   id="pseudo"
                   type="text"
                   placeholder="Votre pseudo de jeu"
-                  value={pseudo}
-                  onChange={(e) => setPseudo(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.pseudo}
+                  onChange={(e) => updateFormData('pseudo', e.target.value)}
                   required
                 />
               </div>
 
-              {/* Champs spécifiques aux joueurs */}
-              {(invitation.role === 'joueur' || invitation.role === 'remplacant') && gameCharacters.length > 0 && (
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={formData.email}
+                  onChange={(e) => updateFormData('email', e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Mot de passe */}
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={(e) => updateFormData('password', e.target.value)}
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {/* Personnages (pour les joueurs) */}
+              {isPlayerRole && gameCharacters.length > 0 && (
                 <div className="space-y-2">
                   <Label>Personnages favoris (optionnel)</Label>
                   <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
@@ -347,7 +335,7 @@ const JoinTeam = () => {
                       <Button
                         key={character}
                         type="button"
-                        variant={selectedCharacters.includes(character) ? "default" : "outline"}
+                        variant={formData.selectedCharacters.includes(character) ? "default" : "outline"}
                         size="sm"
                         onClick={() => toggleCharacter(character)}
                       >
@@ -358,20 +346,20 @@ const JoinTeam = () => {
                 </div>
               )}
 
-              {/* Champs spécifiques aux coach/manager */}
-              {(invitation.role === 'coach' || invitation.role === 'manager') && (
-                <div className="space-y-2">
-                  <Label htmlFor="experience">Expérience (optionnel)</Label>
-                  <Input
-                    id="experience"
-                    type="text"
-                    placeholder="Ex: 3 ans d'expérience en coaching"
-                  />
-                </div>
-              )}
-              
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? "Création..." : "Rejoindre l'équipe"}
+              {/* Bouton de soumission */}
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Création en cours...
+                  </>
+                ) : (
+                  `Rejoindre ${team.nom}`
+                )}
               </Button>
             </form>
           </CardContent>
