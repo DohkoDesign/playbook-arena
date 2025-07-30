@@ -238,50 +238,6 @@ export const CalendarView = ({ teamId }: CalendarViewProps) => {
         </CardContent>
       </Card>
 
-      {/* Upcoming Events */}
-      <Card className="card-apple">
-        <CardHeader>
-          <CardTitle className="text-lg font-medium">Événements à venir</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {events.length === 0 ? (
-            <div className="text-center py-8">
-              <CalendarIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-              <p className="text-muted-foreground">Aucun événement planifié</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Créez votre premier événement pour commencer
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {events.slice(0, 5).map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50"
-                >
-                  <div className="flex items-center space-x-3">
-                    <Badge className={getEventTypeColor(event.type)}>
-                      {event.type.replace('_', ' ')}
-                    </Badge>
-                    <div>
-                      <p className="font-medium">{event.titre}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(event.date_debut).toLocaleDateString("fr-FR", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
       {showEventModal && (
         <EventModal
