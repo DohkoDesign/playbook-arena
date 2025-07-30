@@ -64,41 +64,52 @@ const JoinTeam = () => {
     try {
       console.log("🔍 Vérification de l'invitation avec token:", invitationToken);
       
-      // 1. Chercher l'invitation
+      // 1. Chercher l'invitation (requête publique sans authentification)
       const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
-        .select("*")
+        .select(`
+          *,
+          teams (
+            id,
+            nom,
+            jeu
+          )
+        `)
         .eq("token", invitationToken)
         .is("used_at", null)
-        .single();
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
 
-      if (invitationError || !invitationData) {
-        console.error("❌ Invitation non trouvée:", invitationError);
-        showErrorAndRedirect("Invitation non trouvée ou déjà utilisée");
+      console.log("📋 Résultat requête invitation:", { invitationData, invitationError });
+
+      if (invitationError) {
+        console.error("❌ Erreur requête invitation:", invitationError);
+        showErrorAndRedirect("Erreur lors de la vérification de l'invitation");
         return;
       }
 
-      // 2. Vérifier l'expiration
+      if (!invitationData) {
+        console.error("❌ Invitation non trouvée pour token:", invitationToken);
+        showErrorAndRedirect("Invitation non trouvée, expirée ou déjà utilisée");
+        return;
+      }
+
+      // 2. Vérifier l'expiration (double vérification)
       const now = new Date();
       const expiresAt = new Date(invitationData.expires_at);
       
       if (now > expiresAt) {
-        console.error("❌ Invitation expirée");
+        console.error("❌ Invitation expirée:", { now, expiresAt });
         showErrorAndRedirect("Cette invitation a expiré");
         return;
       }
 
       console.log("✅ Invitation valide:", invitationData);
 
-      // 3. Récupérer les infos de l'équipe
-      const { data: teamData, error: teamError } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("id", invitationData.team_id)
-        .single();
-
-      if (teamError || !teamData) {
-        console.error("❌ Équipe non trouvée:", teamError);
+      // Les données de l'équipe sont incluses dans la requête
+      const teamData = invitationData.teams;
+      if (!teamData) {
+        console.error("❌ Équipe non trouvée dans l'invitation");
         showErrorAndRedirect("Équipe non trouvée");
         return;
       }
