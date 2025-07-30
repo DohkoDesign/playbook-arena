@@ -9,10 +9,9 @@ import { CalendarView } from "@/components/dashboard/CalendarView";
 import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
-import { ProfileSettings } from "@/components/dashboard/ProfileSettings";
 import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "profile" | "settings";
+type DashboardView = "calendar" | "strategies" | "players" | "coaching";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -108,34 +107,19 @@ const Dashboard = () => {
   }
 
   const renderCurrentView = () => {
+    if (!selectedTeam) return null;
+
     switch (currentView) {
       case "calendar":
-        return selectedTeam ? <CalendarView teamId={selectedTeam} /> : null;
+        return <CalendarView teamId={selectedTeam} />;
       case "strategies":
-        return selectedTeam ? <StrategiesView teamId={selectedTeam} /> : null;
+        return <StrategiesView teamId={selectedTeam} />;
       case "players":
-        return selectedTeam ? <PlayersView teamId={selectedTeam} /> : null;
+        return <PlayersView teamId={selectedTeam} />;
       case "coaching":
-        return selectedTeam ? <CoachingView teamId={selectedTeam} /> : null;
-      case "profile":
-        return (
-          <div className="max-w-4xl">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-2">Profil</h2>
-              <p className="text-muted-foreground">Gérez vos informations personnelles</p>
-            </div>
-            <ProfileSettings user={user} onProfileUpdate={() => checkUserTeams(user?.id || "")} />
-          </div>
-        );
-      case "settings":
-        return (
-          <div className="max-w-4xl">
-            <h2 className="text-2xl font-bold mb-4">Paramètres</h2>
-            <p className="text-muted-foreground">Section paramètres à développer</p>
-          </div>
-        );
+        return <CoachingView teamId={selectedTeam} />;
       default:
-        return selectedTeam ? <CalendarView teamId={selectedTeam} /> : null;
+        return <CalendarView teamId={selectedTeam} />;
     }
   };
 
