@@ -116,7 +116,7 @@ const Dashboard = () => {
 
     switch (currentView) {
       case "calendar":
-        return <CalendarView teamId={selectedTeam} />;
+        return <CalendarView teamId={selectedTeam} gameType={gameType} />;
       case "strategies":
         return <StrategiesView teamId={selectedTeam} gameType={gameType} />;
       case "players":
@@ -128,7 +128,7 @@ const Dashboard = () => {
       case "recruitment":
         return <RecruitmentView teamId={selectedTeam} gameType={gameType} />;
       default:
-        return <CalendarView teamId={selectedTeam} />;
+        return <CalendarView teamId={selectedTeam} gameType={gameType} />;
     }
   };
 

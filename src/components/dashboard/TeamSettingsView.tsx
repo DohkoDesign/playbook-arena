@@ -262,10 +262,11 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
       </div>
 
       <Tabs defaultValue="teams" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
           <TabsTrigger value="appearance">Apparence</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
+          <TabsTrigger value="danger">Zone de danger</TabsTrigger>
         </TabsList>
 
         <TabsContent value="teams" className="space-y-6 mt-6">
@@ -533,18 +534,89 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
           </Card>
         </TabsContent>
 
+
         <TabsContent value="advanced" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Paramètres avancés</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <Settings className="w-5 h-5" />
+                <span>Paramètres avancés</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+                    Sauvegarde et Exportation
+                  </h4>
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Exporter les données d'équipe
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Save className="w-4 h-4 mr-2" />
+                      Sauvegarder les configurations
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">
+                    Intégrations
+                  </h4>
+                  <div className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start" disabled>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Connecter Discord (Bientôt)
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" disabled>
+                      <Settings className="w-4 h-4 mr-2" />
+                      API Webhooks (Bientôt)
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border-t pt-6">
+                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider mb-4">
+                  Paramètres de développement
+                </h4>
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Ces fonctionnalités sont en cours de développement et seront disponibles prochainement.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="danger" className="space-y-6 mt-6">
+          <Card className="border-destructive/20">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-destructive">
+                <Trash2 className="w-5 h-5" />
+                <span>Zone de danger</span>
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center py-8">
-                <Settings className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Paramètres avancés</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Fonctionnalités avancées à venir...
+              <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+                <h4 className="font-medium text-destructive mb-2">Actions irréversibles</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Ces actions sont définitives et ne peuvent pas être annulées. Assurez-vous de bien comprendre les conséquences.
                 </p>
+                
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full justify-start border-destructive/50 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Supprimer toutes les données d'équipe
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start border-destructive/50 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Réinitialiser toutes les statistiques
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -66,6 +66,7 @@ export type Database = {
           date_fin: string
           description: string | null
           id: string
+          map_name: string | null
           team_id: string
           titre: string
           type: Database["public"]["Enums"]["event_type"]
@@ -78,6 +79,7 @@ export type Database = {
           date_fin: string
           description?: string | null
           id?: string
+          map_name?: string | null
           team_id: string
           titre: string
           type: Database["public"]["Enums"]["event_type"]
@@ -90,6 +92,7 @@ export type Database = {
           date_fin?: string
           description?: string | null
           id?: string
+          map_name?: string | null
           team_id?: string
           titre?: string
           type?: Database["public"]["Enums"]["event_type"]

@@ -9,6 +9,7 @@ import { EventModal } from "./EventModal";
 
 interface CalendarViewProps {
   teamId: string;
+  gameType?: string;
 }
 
 interface Event {
@@ -18,6 +19,13 @@ interface Event {
   date_debut: string;
   date_fin: string;
   description?: string;
+  map_name?: string;
+}
+
+interface EventDetailsModalProps {
+  event: Event | null;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const MONTHS = [
@@ -27,10 +35,68 @@ const MONTHS = [
 
 const WEEKDAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
-export const CalendarView = ({ teamId }: CalendarViewProps) => {
+const getEventTypeColor = (type: string) => {
+  switch (type) {
+    case "scrim":
+      return "bg-blue-500/10 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300";
+    case "match":
+      return "bg-red-500/10 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300";
+    case "tournoi":
+      return "bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-300";
+    case "coaching":
+      return "bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-300";
+    case "session_individuelle":
+      return "bg-orange-500/10 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-300";
+    default:
+      return "bg-gray-500/10 text-gray-700 border-gray-200 dark:bg-gray-500/20 dark:text-gray-300";
+  }
+};
+
+const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) => {
+  if (!event) return null;
+
+  return (
+    <div className={`fixed inset-0 z-50 ${isOpen ? 'block' : 'hidden'}`}>
+      <div className="fixed inset-0 bg-black/50" onClick={onClose}></div>
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-w-md mx-4 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">{event.titre}</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Badge className={getEventTypeColor(event.type)}>
+              {event.type}
+            </Badge>
+            {event.map_name && (
+              <Badge variant="outline">
+                📍 {event.map_name}
+              </Badge>
+            )}
+          </div>
+          
+          <div className="text-sm space-y-2">
+            <p><span className="font-medium">Début:</span> {new Date(event.date_debut).toLocaleString("fr-FR")}</p>
+            <p><span className="font-medium">Fin:</span> {new Date(event.date_fin).toLocaleString("fr-FR")}</p>
+            {event.description && (
+              <p><span className="font-medium">Description:</span> {event.description}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventDetails, setShowEventDetails] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const { toast } = useToast();
@@ -62,21 +128,9 @@ export const CalendarView = ({ teamId }: CalendarViewProps) => {
     }
   };
 
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case "scrim":
-        return "bg-blue-500/10 text-blue-700 border-blue-200 dark:bg-blue-500/20 dark:text-blue-300";
-      case "match":
-        return "bg-red-500/10 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300";
-      case "tournoi":
-        return "bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-300";
-      case "coaching":
-        return "bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-300";
-      case "session_individuelle":
-        return "bg-orange-500/10 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-300";
-      default:
-        return "bg-gray-500/10 text-gray-700 border-gray-200 dark:bg-gray-500/20 dark:text-gray-300";
-    }
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetails(true);
   };
 
   const generateCalendarDays = () => {
@@ -216,12 +270,24 @@ export const CalendarView = ({ teamId }: CalendarViewProps) => {
                       <div
                         key={event.id}
                         className={`
-                          text-xs px-2 py-1 rounded-md border truncate
+                          text-xs px-2 py-1 rounded-md border truncate cursor-pointer hover:opacity-80 transition-opacity
                           ${getEventTypeColor(event.type)}
                         `}
-                        title={`${event.titre} - ${event.type}`}
+                        title={`${event.titre} - ${event.type}${event.map_name ? ` - ${event.map_name}` : ''}`}
+                        onClick={() => handleEventClick(event)}
                       >
-                        {event.titre}
+                        <div className="flex items-center space-x-1">
+                          <span className="text-xs">
+                            {new Date(event.date_debut).toLocaleTimeString("fr-FR", {
+                              hour: "2-digit",
+                              minute: "2-digit"
+                            })}
+                          </span>
+                          <span className="truncate">{event.titre}</span>
+                          {event.map_name && (
+                            <span className="text-xs opacity-70">📍</span>
+                          )}
+                        </div>
                       </div>
                     ))}
                     
@@ -238,12 +304,18 @@ export const CalendarView = ({ teamId }: CalendarViewProps) => {
         </CardContent>
       </Card>
 
+      <EventDetailsModal
+        event={selectedEvent}
+        isOpen={showEventDetails}
+        onClose={() => setShowEventDetails(false)}
+      />
 
       {showEventModal && (
         <EventModal
           isOpen={showEventModal}
           onClose={() => setShowEventModal(false)}
           teamId={teamId}
+          gameType={gameType}
           onEventCreated={() => {
             fetchEvents();
             setShowEventModal(false);

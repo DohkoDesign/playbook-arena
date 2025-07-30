@@ -7,22 +7,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   teamId: string;
+  gameType?: string;
   onEventCreated: () => void;
 }
 
-export const EventModal = ({ isOpen, onClose, teamId, onEventCreated }: EventModalProps) => {
+export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }: EventModalProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
+  const [mapName, setMapName] = useState("");
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const gameConfig = gameType ? getGameConfig(gameType) : null;
 
   const eventTypes = [
     { value: "scrim", label: "Scrim" },
@@ -58,6 +63,7 @@ export const EventModal = ({ isOpen, onClose, teamId, onEventCreated }: EventMod
           type: type as any,
           date_debut: dateDebut,
           date_fin: dateFin,
+          map_name: (type === "scrim" && mapName) ? mapName : null,
           created_by: user.id,
         });
 
@@ -134,7 +140,24 @@ export const EventModal = ({ isOpen, onClose, teamId, onEventCreated }: EventMod
               />
             </div>
           </div>
-
+          
+          {type === "scrim" && gameConfig?.maps && gameConfig.maps.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="mapName">Map (optionnel)</Label>
+              <Select value={mapName} onValueChange={setMapName}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une map" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gameConfig.maps.map((map) => (
+                    <SelectItem key={map} value={map}>
+                      {map}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
