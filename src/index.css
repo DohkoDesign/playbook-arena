@@ -1,4 +1,4 @@
-/* Design System - Style Apple */
+/* Design System - Noir et Blanc */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -7,98 +7,98 @@
 
 @layer base {
   :root {
-    /* Apple-inspired color palette */
-    --background: 249 250 251; /* Very light gray */
-    --foreground: 17 24 39; /* Dark gray */
+    /* Noir et blanc classique */
+    --background: 0 0% 100%; /* Blanc pur */
+    --foreground: 0 0% 0%; /* Noir pur */
     
-    --card: 255 255 255; /* Pure white */
-    --card-foreground: 17 24 39;
+    --card: 0 0% 100%; /* Blanc pur */
+    --card-foreground: 0 0% 0%;
     
-    --popover: 255 255 255;
-    --popover-foreground: 17 24 39;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
     
-    --primary: 59 130 246; /* Apple blue */
-    --primary-foreground: 255 255 255;
+    --primary: 0 0% 0%; /* Noir pur */
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 243 244 246; /* Light gray */
-    --secondary-foreground: 17 24 39;
+    --secondary: 0 0% 96%; /* Gris très clair */
+    --secondary-foreground: 0 0% 0%;
     
-    --muted: 249 250 251;
-    --muted-foreground: 107 114 128;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
     
-    --accent: 239 246 255; /* Very light blue */
-    --accent-foreground: 59 130 246;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 0%;
     
-    --destructive: 239 68 68; /* Apple red */
-    --destructive-foreground: 255 255 255;
+    --destructive: 0 84% 60%; /* Rouge pour erreurs */
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 229 231 235; /* Light border */
-    --input: 229 231 235;
-    --ring: 59 130 246;
+    --border: 0 0% 90%; /* Gris clair */
+    --input: 0 0% 90%;
+    --ring: 0 0% 0%;
     
-    --radius: 12px; /* Apple-like rounded corners */
+    --radius: 12px;
     
-    /* Subtle gradients */
-    --gradient-brand: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)/0.8));
-    --gradient-subtle: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
+    /* Gradients simples */
+    --gradient-brand: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 20%));
+    --gradient-subtle: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 96%));
     
-    /* Apple shadows */
+    /* Ombres douces */
     --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
     --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
     --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
     /* Sidebar variables */
-    --sidebar-background: 255 255 255;
-    --sidebar-foreground: 17 24 39;
-    --sidebar-primary: 59 130 246;
-    --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 239 246 255;
-    --sidebar-accent-foreground: 59 130 246;
-    --sidebar-border: 229 231 235;
-    --sidebar-ring: 59 130 246;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 0%;
   }
 
   .dark {
-    --background: 17 24 39; /* Dark background */
-    --foreground: 249 250 251;
+    --background: 0 0% 0%; /* Noir pur */
+    --foreground: 0 0% 100%;
     
-    --card: 31 41 55; /* Dark card */
-    --card-foreground: 249 250 251;
+    --card: 0 0% 4%; /* Gris très foncé */
+    --card-foreground: 0 0% 100%;
     
-    --popover: 31 41 55;
-    --popover-foreground: 249 250 251;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
     
-    --primary: 96 165 250; /* Lighter blue for dark mode */
-    --primary-foreground: 17 24 39;
+    --primary: 0 0% 100%; /* Blanc pour le mode sombre */
+    --primary-foreground: 0 0% 0%;
     
-    --secondary: 55 65 81;
-    --secondary-foreground: 249 250 251;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 55 65 81;
-    --muted-foreground: 156 163 175;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
     
-    --accent: 55 65 81;
-    --accent-foreground: 96 165 250;
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
     
-    --destructive: 248 113 113;
-    --destructive-foreground: 17 24 39;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 55 65 81;
-    --input: 55 65 81;
-    --ring: 96 165 250;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 100%;
     
     --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
     --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
     --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 
-    --sidebar-background: 31 41 55;
-    --sidebar-foreground: 249 250 251;
-    --sidebar-primary: 96 165 250;
-    --sidebar-primary-foreground: 17 24 39;
-    --sidebar-accent: 55 65 81;
-    --sidebar-accent-foreground: 96 165 250;
-    --sidebar-border: 55 65 81;
-    --sidebar-ring: 96 165 250;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 0 0% 100%;
   }
 }
 
@@ -112,12 +112,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Apple-like smooth scrolling */
+  /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
   }
   
-  /* Custom scrollbar Apple-style */
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
   }
@@ -137,22 +137,22 @@
 }
 
 @layer utilities {
-  /* Apple-style glass morphism */
+  /* Glass morphism */
   .glass {
-    @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border border-white/20;
+    @apply bg-background/70 backdrop-blur-xl border border-border/20;
   }
   
-  /* Apple-style cards */
+  /* Cards */
   .card-apple {
     @apply bg-card rounded-2xl shadow-card border border-border/50 backdrop-blur-sm;
   }
   
-  /* Apple-style buttons */
+  /* Buttons */
   .btn-apple {
     @apply rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md;
   }
   
-  /* Apple-style sidebar */
+  /* Sidebar */
   .sidebar-apple {
     @apply glass border-r border-border/50;
   }
