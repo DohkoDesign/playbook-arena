@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, Image, FileText, Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface StrategyModalProps {
   isOpen: boolean;
@@ -17,25 +18,18 @@ interface StrategyModalProps {
   teamId: string;
   strategy?: any;
   onStrategyUpdated: () => void;
+  teamGame: string; // Ajout du type de jeu de l'équipe
 }
-
-const VALORANT_MAPS = [
-  "Bind", "Haven", "Split", "Ascent", "Icebox", "Breeze", "Fracture", 
-  "Pearl", "Lotus", "Sunset", "Abyss"
-];
-
-const STRATEGY_TYPES = [
-  { value: "attaque", label: "Attaque" },
-  { value: "defense", label: "Défense" },
-];
 
 export const StrategyModal = ({ 
   isOpen, 
   onClose, 
   teamId, 
   strategy, 
-  onStrategyUpdated 
+  onStrategyUpdated,
+  teamGame 
 }: StrategyModalProps) => {
+  const gameConfig = getGameConfig(teamGame);
   const [nom, setNom] = useState("");
   const [type, setType] = useState("");
   const [mapName, setMapName] = useState("");
@@ -177,7 +171,7 @@ export const StrategyModal = ({
                       <SelectValue placeholder="Sélectionner le type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {STRATEGY_TYPES.map((strategyType) => (
+                      {(gameConfig?.strategyTypes || []).map((strategyType) => (
                         <SelectItem key={strategyType.value} value={strategyType.value}>
                           {strategyType.label}
                         </SelectItem>
@@ -187,21 +181,23 @@ export const StrategyModal = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="map">Map (optionnel)</Label>
-                <Select value={mapName} onValueChange={setMapName}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner une map" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VALORANT_MAPS.map((map) => (
-                      <SelectItem key={map} value={map}>
-                        {map}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {gameConfig?.maps && gameConfig.maps.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="map">Map (optionnel)</Label>
+                  <Select value={mapName} onValueChange={setMapName}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une map" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gameConfig.maps.map((map) => (
+                        <SelectItem key={map} value={map}>
+                          {map}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </CardContent>
           </Card>
 

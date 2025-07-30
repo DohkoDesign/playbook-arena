@@ -20,6 +20,7 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
   const [loading, setLoading] = useState(true);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [teamGame, setTeamGame] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,6 +31,18 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
 
   const fetchEventsAndSessions = async () => {
     try {
+      // Récupérer les informations de l'équipe
+      const { data: teamData, error: teamError } = await supabase
+        .from("teams")
+        .select("jeu")
+        .eq("id", teamId)
+        .single();
+
+      if (teamError) throw teamError;
+      if (teamData) {
+        setTeamGame(teamData.jeu);
+      }
+
       // Récupérer les événements de type scrim/match
       const { data: eventsData, error: eventsError } = await supabase
         .from("events")
@@ -274,6 +287,7 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
             setSelectedEvent(null);
           }}
           event={selectedEvent}
+          teamGame={teamGame}
           onSessionUpdated={() => {
             fetchEventsAndSessions();
             setShowSessionModal(false);

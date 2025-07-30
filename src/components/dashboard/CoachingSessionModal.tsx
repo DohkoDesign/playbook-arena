@@ -10,26 +10,25 @@ import { Badge } from "@/components/ui/badge";
 import { Save, Video, Users, Trophy, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface CoachingSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: any;
   onSessionUpdated: () => void;
+  teamGame: string; // Ajout du type de jeu de l'équipe
 }
-
-const VALORANT_AGENTS = [
-  "Brimstone", "Viper", "Omen", "Killjoy", "Cypher", "Sova", "Sage", "Phoenix",
-  "Jett", "Reyna", "Raze", "Breach", "Skye", "Yoru", "Astra", "KAY/O",
-  "Chamber", "Neon", "Fade", "Harbor", "Gekko", "Deadlock", "Iso", "Clove"
-];
 
 export const CoachingSessionModal = ({ 
   isOpen, 
   onClose, 
   event, 
-  onSessionUpdated 
+  onSessionUpdated,
+  teamGame 
 }: CoachingSessionModalProps) => {
+  const gameConfig = getGameConfig(teamGame);
+  const maxPlayers = gameConfig?.players || 5;
   const [session, setSession] = useState<any>(null);
   const [resultat, setResultat] = useState("");
   const [notes, setNotes] = useState("");
@@ -96,18 +95,18 @@ export const CoachingSessionModal = ({
     setVods(newVods);
   };
 
-  const toggleAgentInComposition = (agent: string, isEquipe: boolean) => {
+  const toggleAgentInComposition = (character: string, isEquipe: boolean) => {
     if (isEquipe) {
-      if (compositionEquipe.includes(agent)) {
-        setCompositionEquipe(compositionEquipe.filter(a => a !== agent));
-      } else if (compositionEquipe.length < 5) {
-        setCompositionEquipe([...compositionEquipe, agent]);
+      if (compositionEquipe.includes(character)) {
+        setCompositionEquipe(compositionEquipe.filter(a => a !== character));
+      } else if (compositionEquipe.length < maxPlayers) {
+        setCompositionEquipe([...compositionEquipe, character]);
       }
     } else {
-      if (compositionAdversaire.includes(agent)) {
-        setCompositionAdversaire(compositionAdversaire.filter(a => a !== agent));
-      } else if (compositionAdversaire.length < 5) {
-        setCompositionAdversaire([...compositionAdversaire, agent]);
+      if (compositionAdversaire.includes(character)) {
+        setCompositionAdversaire(compositionAdversaire.filter(a => a !== character));
+      } else if (compositionAdversaire.length < maxPlayers) {
+        setCompositionAdversaire([...compositionAdversaire, character]);
       }
     }
   };
@@ -207,99 +206,110 @@ export const CoachingSessionModal = ({
           </TabsContent>
           
           <TabsContent value="compositions" className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Composition équipe */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <Users className="w-5 h-5" />
-                    <span>Notre équipe</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      {compositionEquipe.map((agent, index) => (
-                        <Badge
-                          key={index}
-                          variant="default"
-                          className="cursor-pointer"
-                          onClick={() => toggleAgentInComposition(agent, true)}
-                        >
-                          {agent}
-                          <X className="w-3 h-3 ml-1" />
-                        </Badge>
-                      ))}
+            {gameConfig?.characters || gameConfig?.positions ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Composition équipe */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center space-x-2">
+                      <Users className="w-5 h-5" />
+                      <span>Notre équipe</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {compositionEquipe.map((item, index) => (
+                          <Badge
+                            key={index}
+                            variant="default"
+                            className="cursor-pointer"
+                            onClick={() => toggleAgentInComposition(item, true)}
+                          >
+                            {item}
+                            <X className="w-3 h-3 ml-1" />
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <div className="text-xs text-muted-foreground mb-2">
+                        {gameConfig?.characters ? 'Personnages' : 'Positions'} disponibles ({compositionEquipe.length}/{maxPlayers}):
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-1 max-h-32 overflow-y-auto">
+                        {(gameConfig?.characters || gameConfig?.positions || []).filter(item => !compositionEquipe.includes(item)).map((item) => (
+                          <Button
+                            key={item}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            disabled={compositionEquipe.length >= maxPlayers}
+                            onClick={() => toggleAgentInComposition(item, true)}
+                          >
+                            {item}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
-                    
-                    <div className="text-xs text-muted-foreground mb-2">
-                      Agents disponibles ({compositionEquipe.length}/5):
-                    </div>
-                    
-                    <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {VALORANT_AGENTS.filter(agent => !compositionEquipe.includes(agent)).map((agent) => (
-                        <Button
-                          key={agent}
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          disabled={compositionEquipe.length >= 5}
-                          onClick={() => toggleAgentInComposition(agent, true)}
-                        >
-                          {agent}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
 
-              {/* Composition adversaire */}
+                {/* Composition adversaire */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center space-x-2">
+                      <Trophy className="w-5 h-5" />
+                      <span>Équipe adverse</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {compositionAdversaire.map((item, index) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="cursor-pointer"
+                            onClick={() => toggleAgentInComposition(item, false)}
+                          >
+                            {item}
+                            <X className="w-3 h-3 ml-1" />
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <div className="text-xs text-muted-foreground mb-2">
+                        {gameConfig?.characters ? 'Personnages' : 'Positions'} disponibles ({compositionAdversaire.length}/{maxPlayers}):
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-1 max-h-32 overflow-y-auto">
+                        {(gameConfig?.characters || gameConfig?.positions || []).filter(item => !compositionAdversaire.includes(item)).map((item) => (
+                          <Button
+                            key={item}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                            disabled={compositionAdversaire.length >= maxPlayers}
+                            onClick={() => toggleAgentInComposition(item, false)}
+                          >
+                            {item}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center space-x-2">
-                    <Trophy className="w-5 h-5" />
-                    <span>Équipe adverse</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex flex-wrap gap-2">
-                      {compositionAdversaire.map((agent, index) => (
-                        <Badge
-                          key={index}
-                          variant="secondary"
-                          className="cursor-pointer"
-                          onClick={() => toggleAgentInComposition(agent, false)}
-                        >
-                          {agent}
-                          <X className="w-3 h-3 ml-1" />
-                        </Badge>
-                      ))}
-                    </div>
-                    
-                    <div className="text-xs text-muted-foreground mb-2">
-                      Agents disponibles ({compositionAdversaire.length}/5):
-                    </div>
-                    
-                    <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {VALORANT_AGENTS.filter(agent => !compositionAdversaire.includes(agent)).map((agent) => (
-                        <Button
-                          key={agent}
-                          size="sm"
-                          variant="outline"
-                          className="text-xs"
-                          disabled={compositionAdversaire.length >= 5}
-                          onClick={() => toggleAgentInComposition(agent, false)}
-                        >
-                          {agent}
-                        </Button>
-                      ))}
-                    </div>
+                <CardContent className="pt-6">
+                  <div className="text-center text-muted-foreground">
+                    <p>Les compositions d'équipe ne sont pas applicables pour {gameConfig?.name || 'ce jeu'}.</p>
+                    <p className="text-sm mt-2">Utilisez l'onglet "Analyse" pour vos notes stratégiques.</p>
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            )}
           </TabsContent>
           
           <TabsContent value="vods" className="space-y-4 mt-4">
