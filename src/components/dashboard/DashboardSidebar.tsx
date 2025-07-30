@@ -21,18 +21,7 @@ export const DashboardSidebar = ({
   onViewChange,
   onNewTeam,
 }: DashboardSidebarProps) => {
-  const [orgSettings, setOrgSettings] = useState({
-    name: "Shadow Hub",
-    logo: "",
-    subtitle: "Esport Manager"
-  });
-
-  useEffect(() => {
-    const saved = localStorage.getItem("org_settings");
-    if (saved) {
-      setOrgSettings(JSON.parse(saved));
-    }
-  }, []);
+  const currentTeam = teams.find(team => team.id === selectedTeam);
 
   // Navigation organisée par catégories
   const navigationSections = [
@@ -57,18 +46,31 @@ export const DashboardSidebar = ({
         { id: "settings", label: "Paramètres", icon: Settings },
       ]
     }
-  ];
+  const currentTeamData = teams.find(team => team.id === selectedTeam);
 
-  const currentTeam = teams.find(team => team.id === selectedTeam);
+  // Obtenir le nom du jeu pour l'équipe
+
+  const getGameDisplayName = (gameType: string) => {
+    const gameNames: {[key: string]: string} = {
+      'valorant': 'Valorant',
+      'rocket_league': 'Rocket League',
+      'league_of_legends': 'League of Legends',
+      'counter_strike': 'CS2',
+      'overwatch': 'Overwatch 2',
+      'apex_legends': 'Apex Legends',
+      'call_of_duty': 'Call of Duty'
+    };
+    return gameNames[gameType] || gameType;
+  };
 
   return (
     <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-8">
-      {/* Logo personnalisable */}
+      {/* Informations de l'équipe sélectionnée */}
       <div className="flex items-center space-x-3">
-        {orgSettings.logo ? (
+        {currentTeamData?.logo ? (
           <img 
-            src={orgSettings.logo} 
-            alt="Logo" 
+            src={currentTeamData.logo} 
+            alt="Logo de l'équipe" 
             className="w-10 h-10 rounded-2xl object-cover shadow-md"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
@@ -77,13 +79,17 @@ export const DashboardSidebar = ({
         ) : (
           <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
             <span className="text-white font-bold text-lg">
-              {orgSettings.name.charAt(0)}
+              {currentTeamData?.nom?.charAt(0)?.toUpperCase() || 'T'}
             </span>
           </div>
         )}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{orgSettings.name}</h1>
-          <p className="text-xs text-muted-foreground">{orgSettings.subtitle}</p>
+          <h1 className="text-xl font-semibold tracking-tight">
+            {currentTeamData?.nom || 'Aucune équipe'}
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            {currentTeamData ? getGameDisplayName(currentTeamData.jeu) : 'Sélectionnez une équipe'}
+          </p>
         </div>
       </div>
 
@@ -96,12 +102,12 @@ export const DashboardSidebar = ({
           <Select value={selectedTeam || ""} onValueChange={onTeamSelect}>
             <SelectTrigger className="nav-item">
               <SelectValue placeholder="Sélectionner une équipe">
-                {currentTeam ? (
+                {currentTeamData ? (
                   <div className="flex items-center space-x-2">
                     <div className="w-6 h-6 bg-gradient-brand rounded-lg flex items-center justify-center text-white text-xs font-medium">
-                      {currentTeam.nom.charAt(0).toUpperCase()}
+                      {currentTeamData.nom.charAt(0).toUpperCase()}
                     </div>
-                    <span className="truncate">{currentTeam.nom}</span>
+                    <span className="truncate">{currentTeamData.nom}</span>
                   </div>
                 ) : (
                   "Sélectionner une équipe"

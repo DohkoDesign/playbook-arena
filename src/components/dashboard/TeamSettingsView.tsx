@@ -23,15 +23,11 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   const [currentTeam, setCurrentTeam] = useState<any>(null);
   const [editingTeam, setEditingTeam] = useState<string | null>(null);
   const [teamNames, setTeamNames] = useState<{[key: string]: string}>({});
-  const [orgSettings, setOrgSettings] = useState({
-    name: "Shadow Hub",
-    logo: "",
-    subtitle: "Esport Manager"
-  });
+  const [teamLogos, setTeamLogos] = useState<{[key: string]: string}>({});
   const [colors, setColors] = useState({
-    primary: "#3B82F6",
-    secondary: "#10B981", 
-    accent: "#8B5CF6"
+    primary: "220 38% 57%", // Bleu par défaut en HSL
+    secondary: "142 76% 36%", // Vert par défaut en HSL  
+    accent: "262 83% 58%" // Violet par défaut en HSL
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -41,18 +37,20 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   useEffect(() => {
     if (teamId) {
       fetchTeamData();
-      loadOrgSettings();
       loadColors();
     }
   }, [teamId]);
 
   useEffect(() => {
-    // Initialiser les noms des équipes
+    // Initialiser les noms et logos des équipes
     const names: {[key: string]: string} = {};
+    const logos: {[key: string]: string} = {};
     teams.forEach(team => {
       names[team.id] = team.nom;
+      logos[team.id] = team.logo || "";
     });
     setTeamNames(names);
+    setTeamLogos(logos);
   }, [teams]);
 
   const fetchTeamData = async () => {
@@ -69,40 +67,31 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     }
   };
 
-  const loadOrgSettings = () => {
-    const saved = localStorage.getItem("org_settings");
-    if (saved) {
-      setOrgSettings(JSON.parse(saved));
-    }
-  };
-
   const loadColors = () => {
     const saved = localStorage.getItem("site_colors");
     if (saved) {
       setColors(JSON.parse(saved));
+    } else {
+      // Appliquer les couleurs par défaut
+      applyColorsToCSS(colors);
     }
   };
 
-  const saveOrgSettings = () => {
-    localStorage.setItem("org_settings", JSON.stringify(orgSettings));
+  const applyColorsToCSS = (colorValues: typeof colors) => {
+    const root = document.documentElement;
+    root.style.setProperty('--primary', colorValues.primary);
+    root.style.setProperty('--secondary', colorValues.secondary);
+    root.style.setProperty('--accent', colorValues.accent);
     
-    // Mettre à jour le titre de la page
-    document.title = orgSettings.name;
-    
-    toast({
-      title: "Paramètres sauvegardés",
-      description: "Les paramètres de l'organisation ont été mis à jour",
-    });
+    // Variantes pour les dégradés
+    root.style.setProperty('--primary-glow', colorValues.primary);
+    root.style.setProperty('--gradient-brand', `linear-gradient(135deg, hsl(${colorValues.primary}), hsl(${colorValues.accent}))`);
+    root.style.setProperty('--gradient-subtle', `linear-gradient(180deg, hsl(${colorValues.primary} / 0.05), transparent)`);
   };
 
   const saveColors = () => {
     localStorage.setItem("site_colors", JSON.stringify(colors));
-    
-    // Appliquer les couleurs CSS
-    const root = document.documentElement;
-    root.style.setProperty('--primary', colors.primary);
-    root.style.setProperty('--secondary', colors.secondary);
-    root.style.setProperty('--accent', colors.accent);
+    applyColorsToCSS(colors);
     
     toast({
       title: "Couleurs appliquées",
@@ -110,21 +99,24 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     });
   };
 
-  const updateTeamName = async (teamId: string) => {
-    if (!teamNames[teamId]?.trim()) return;
+  const updateTeam = async (teamId: string, field: 'nom' | 'logo') => {
+    const value = field === 'nom' ? teamNames[teamId] : teamLogos[teamId];
+    if (!value?.trim() && field === 'nom') return;
 
     try {
       setLoading(true);
+      const updateData = field === 'nom' ? { nom: value } : { logo: value };
+      
       const { error } = await supabase
         .from("teams")
-        .update({ nom: teamNames[teamId] })
+        .update(updateData)
         .eq("id", teamId);
 
       if (error) throw error;
 
       toast({
         title: "Équipe mise à jour",
-        description: "Le nom de l'équipe a été modifié",
+        description: `${field === 'nom' ? 'Le nom' : 'Le logo'} de l'équipe a été modifié`,
       });
 
       setEditingTeam(null);
@@ -188,78 +180,54 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
         </div>
       </div>
 
-      <Tabs defaultValue="organization" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="organization">Organisation</TabsTrigger>
-          <TabsTrigger value="teams">Équipes</TabsTrigger>
-          <TabsTrigger value="appearance">Apparence</TabsTrigger>
-          <TabsTrigger value="advanced">Avancé</TabsTrigger>
-        </TabsList>
+  // Conversion hex vers HSL pour les couleurs
+  const hexToHsl = (hex: string): string => {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
 
-        <TabsContent value="organization" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Building className="w-5 h-5" />
-                <span>Informations de l'organisation</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="org-name">Nom de l'organisation</Label>
-                  <Input
-                    id="org-name"
-                    value={orgSettings.name}
-                    onChange={(e) => setOrgSettings({...orgSettings, name: e.target.value})}
-                    placeholder="Shadow Hub"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="org-subtitle">Sous-titre</Label>
-                  <Input
-                    id="org-subtitle"
-                    value={orgSettings.subtitle}
-                    onChange={(e) => setOrgSettings({...orgSettings, subtitle: e.target.value})}
-                    placeholder="Esport Manager"
-                  />
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="org-logo">URL du logo</Label>
-                <Input
-                  id="org-logo"
-                  value={orgSettings.logo}
-                  onChange={(e) => setOrgSettings({...orgSettings, logo: e.target.value})}
-                  placeholder="https://exemple.com/logo.png"
-                />
-              </div>
-              
-              {orgSettings.logo && (
-                <div className="mt-4">
-                  <Label>Aperçu du logo:</Label>
-                  <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-900">
-                    <img 
-                      src={orgSettings.logo} 
-                      alt="Logo de l'organisation" 
-                      className="h-12 w-auto"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-              
-              <Button onClick={saveOrgSettings} className="w-full">
-                <Save className="w-4 h-4 mr-2" />
-                Sauvegarder les paramètres de l'organisation
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  const hslToHex = (hsl: string): string => {
+    const [h, s, l] = hsl.split(' ').map((v, i) => 
+      i === 0 ? parseInt(v) : parseInt(v.replace('%', ''))
+    );
+    
+    const hDecimal = h / 360;
+    const sDecimal = s / 100;
+    const lDecimal = l / 100;
+
+    const c = (1 - Math.abs(2 * lDecimal - 1)) * sDecimal;
+    const x = c * (1 - Math.abs((hDecimal * 6) % 2 - 1));
+    const m = lDecimal - c / 2;
+
+    let r = 0, g = 0, b = 0;
+    if (hDecimal >= 0 && hDecimal < 1/6) { r = c; g = x; b = 0; }
+    else if (hDecimal >= 1/6 && hDecimal < 2/6) { r = x; g = c; b = 0; }
+    else if (hDecimal >= 2/6 && hDecimal < 3/6) { r = 0; g = c; b = x; }
+    else if (hDecimal >= 3/6 && hDecimal < 4/6) { r = 0; g = x; b = c; }
+    else if (hDecimal >= 4/6 && hDecimal < 5/6) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+
+    const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
 
         <TabsContent value="teams" className="space-y-6 mt-6">
           <Card>
@@ -284,12 +252,50 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                     <Card key={team.id} className="border-l-4 border-l-primary">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div className="space-y-2">
+                          <div className="space-y-2 flex-1">
                             <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
-                                {team.nom.charAt(0).toUpperCase()}
+                              {/* Logo de l'équipe */}
+                              <div className="flex flex-col items-center space-y-2">
+                                {teamLogos[team.id] ? (
+                                  <img 
+                                    src={teamLogos[team.id]} 
+                                    alt="Logo de l'équipe" 
+                                    className="w-10 h-10 rounded-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
+                                    {team.nom.charAt(0).toUpperCase()}
+                                  </div>
+                                )}
+                                
+                                {/* Upload logo */}
+                                <div className="space-y-1">
+                                  <Input
+                                    type="url"
+                                    placeholder="URL du logo"
+                                    value={teamLogos[team.id] || ""}
+                                    onChange={(e) => setTeamLogos({
+                                      ...teamLogos,
+                                      [team.id]: e.target.value
+                                    })}
+                                    className="w-32 text-xs"
+                                  />
+                                  <Button 
+                                    size="sm" 
+                                    onClick={() => updateTeam(team.id, 'logo')}
+                                    disabled={loading}
+                                    className="w-full text-xs"
+                                  >
+                                    <Upload className="w-3 h-3 mr-1" />
+                                    Mettre à jour
+                                  </Button>
+                                </div>
                               </div>
-                              <div>
+                              
+                              <div className="flex-1">
                                 {editingTeam === team.id ? (
                                   <div className="flex items-center space-x-2">
                                     <Input
@@ -302,7 +308,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                                     />
                                     <Button 
                                       size="sm" 
-                                      onClick={() => updateTeamName(team.id)}
+                                      onClick={() => updateTeam(team.id, 'nom')}
                                       disabled={loading}
                                     >
                                       <Save className="w-4 h-4" />
@@ -382,14 +388,14 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                     <input
                       type="color"
                       id="primary-color"
-                      value={colors.primary}
-                      onChange={(e) => setColors({...colors, primary: e.target.value})}
+                      value={hslToHex(colors.primary)}
+                      onChange={(e) => setColors({...colors, primary: hexToHsl(e.target.value)})}
                       className="w-12 h-10 rounded border"
                     />
                     <Input
                       value={colors.primary}
                       onChange={(e) => setColors({...colors, primary: e.target.value})}
-                      placeholder="#3B82F6"
+                      placeholder="220 38% 57%"
                     />
                   </div>
                 </div>
@@ -400,14 +406,14 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                     <input
                       type="color"
                       id="secondary-color"
-                      value={colors.secondary}
-                      onChange={(e) => setColors({...colors, secondary: e.target.value})}
+                      value={hslToHex(colors.secondary)}
+                      onChange={(e) => setColors({...colors, secondary: hexToHsl(e.target.value)})}
                       className="w-12 h-10 rounded border"
                     />
                     <Input
                       value={colors.secondary}
                       onChange={(e) => setColors({...colors, secondary: e.target.value})}
-                      placeholder="#10B981"
+                      placeholder="142 76% 36%"
                     />
                   </div>
                 </div>
@@ -418,14 +424,14 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                     <input
                       type="color"
                       id="accent-color"
-                      value={colors.accent}
-                      onChange={(e) => setColors({...colors, accent: e.target.value})}
+                      value={hslToHex(colors.accent)}
+                      onChange={(e) => setColors({...colors, accent: hexToHsl(e.target.value)})}
                       className="w-12 h-10 rounded border"
                     />
                     <Input
                       value={colors.accent}
                       onChange={(e) => setColors({...colors, accent: e.target.value})}
-                      placeholder="#8B5CF6"
+                      placeholder="262 83% 58%"
                     />
                   </div>
                 </div>
@@ -435,18 +441,18 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                 <h4 className="font-medium mb-2">Aperçu des couleurs:</h4>
                 <div className="flex space-x-4">
                   <div 
-                    className="w-12 h-12 rounded"
-                    style={{ backgroundColor: colors.primary }}
+                    className="w-12 h-12 rounded border-2 border-border"
+                    style={{ backgroundColor: `hsl(${colors.primary})` }}
                     title="Couleur principale"
                   ></div>
                   <div 
-                    className="w-12 h-12 rounded"
-                    style={{ backgroundColor: colors.secondary }}
+                    className="w-12 h-12 rounded border-2 border-border"
+                    style={{ backgroundColor: `hsl(${colors.secondary})` }}
                     title="Couleur secondaire"
                   ></div>
                   <div 
-                    className="w-12 h-12 rounded"
-                    style={{ backgroundColor: colors.accent }}
+                    className="w-12 h-12 rounded border-2 border-border"
+                    style={{ backgroundColor: `hsl(${colors.accent})` }}
                     title="Couleur d'accent"
                   ></div>
                 </div>
