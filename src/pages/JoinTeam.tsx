@@ -29,7 +29,7 @@ const GAME_CHARACTERS = {
 };
 
 const JoinTeam = () => {
-  const { token } = useParams();
+  const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [invitation, setInvitation] = useState<any>(null);
   const [team, setTeam] = useState<any>(null);
@@ -42,24 +42,33 @@ const JoinTeam = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log("useEffect called, token:", token);
+    console.log("=== JoinTeam Component Loaded ===");
+    console.log("Token from useParams:", token);
+    console.log("Current URL:", window.location.href);
+    
     if (token) {
       checkInvitation();
     } else {
-      console.log("No token found in URL");
-      setLoading(false);
+      console.error("NO TOKEN FOUND!");
+      toast({
+        title: "Erreur",
+        description: "Lien d'invitation invalide - aucun token",
+        variant: "destructive",
+      });
+      navigate("/");
     }
-  }, [token]);
+  }, [token, navigate]);
 
   const checkInvitation = async () => {
+    if (!token) {
+      console.error("checkInvitation called without token");
+      return;
+    }
+
     try {
-      console.log("Token from URL:", token);
+      console.log("=== Checking invitation with token:", token);
       
-      if (!token) {
-        throw new Error("Aucun token fourni");
-      }
-      
-      // Récupérer l'invitation
+      // Récupérer l'invitation avec le token exact
       const { data: invitationData, error: invitationError } = await supabase
         .from("invitations")
         .select("*")
@@ -68,11 +77,15 @@ const JoinTeam = () => {
         .gt("expires_at", new Date().toISOString())
         .maybeSingle();
 
-      console.log("Invitation query result:", { invitationData, invitationError });
+      console.log("=== Invitation query result:", { invitationData, invitationError });
 
-      if (invitationError) throw invitationError;
+      if (invitationError) {
+        console.error("Invitation query error:", invitationError);
+        throw invitationError;
+      }
 
       if (!invitationData) {
+        console.error("No invitation found for token:", token);
         toast({
           title: "Lien invalide",
           description: "Ce lien d'invitation est expiré ou invalide",
@@ -82,6 +95,8 @@ const JoinTeam = () => {
         return;
       }
 
+      console.log("=== Invitation found, fetching team...");
+
       // Récupérer l'équipe
       const { data: teamData, error: teamError } = await supabase
         .from("teams")
@@ -89,14 +104,21 @@ const JoinTeam = () => {
         .eq("id", invitationData.team_id)
         .single();
 
-      if (teamError) throw teamError;
+      console.log("=== Team query result:", { teamData, teamError });
 
+      if (teamError) {
+        console.error("Team query error:", teamError);
+        throw teamError;
+      }
+
+      console.log("=== Setting state with invitation and team data");
       setInvitation(invitationData);
       setTeam(teamData);
     } catch (error: any) {
+      console.error("=== Error in checkInvitation:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de vérifier l'invitation",
+        description: "Impossible de vérifier l'invitation: " + error.message,
         variant: "destructive",
       });
       navigate("/");
