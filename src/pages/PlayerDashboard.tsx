@@ -172,7 +172,7 @@ const PlayerDashboard = () => {
       <div className="flex-1 flex flex-col">
         <PlayerHeader
           playerName={playerProfile?.pseudo || "Joueur"}
-          teamName={teamData.teams.nom}
+          teamName={teamData?.teams?.nom || "Équipe"}
           onLogout={handleLogout}
         />
 
