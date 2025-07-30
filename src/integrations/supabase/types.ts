@@ -369,7 +369,13 @@ export type Database = {
         | "chess"
         | "trackmania"
         | "rocket_league_sideswipe"
-      player_role: "joueur" | "remplacant" | "coach" | "manager" | "capitaine"
+      player_role:
+        | "joueur"
+        | "remplacant"
+        | "coach"
+        | "manager"
+        | "capitaine"
+        | "test"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -531,7 +537,14 @@ export const Constants = {
         "trackmania",
         "rocket_league_sideswipe",
       ],
-      player_role: ["joueur", "remplacant", "coach", "manager", "capitaine"],
+      player_role: [
+        "joueur",
+        "remplacant",
+        "coach",
+        "manager",
+        "capitaine",
+        "test",
+      ],
     },
   },
 } as const
