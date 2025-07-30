@@ -24,6 +24,69 @@ const JoinTeam = () => {
   const [invitation, setInvitation] = useState<any>(null);
   const [team, setTeam] = useState<any>(null);
 
+  // Vérification de l'invitation au chargement
+  useEffect(() => {
+    if (!token) {
+      toast({
+        title: "Erreur",
+        description: "Lien d'invitation invalide",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    verifyInvitation(token);
+  }, [token]);
+
+  const verifyInvitation = async (invitationToken: string) => {
+    try {
+      console.log("🔍 Vérification invitation pour token:", invitationToken);
+      
+      const { data: invitationData, error } = await supabase
+        .from("invitations")
+        .select(`
+          *,
+          teams (
+            id,
+            nom,
+            jeu
+          )
+        `)
+        .eq("token", invitationToken)
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      console.log("📋 Résultat:", { invitationData, error });
+
+      if (error) throw error;
+
+      if (!invitationData) {
+        toast({
+          title: "Invitation invalide",
+          description: "Cette invitation est expirée ou n'existe pas",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setInvitation(invitationData);
+      setTeam(invitationData.teams);
+      setIsLoading(false);
+
+    } catch (error: any) {
+      console.error("❌ Erreur:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de vérifier l'invitation",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  };
+
   // Test simple - on affiche juste une page basique
   if (isLoading) {
     return (
