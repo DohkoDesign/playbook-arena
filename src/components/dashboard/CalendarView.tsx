@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { SmartScheduleModal } from "./SmartScheduleModal";
 
 interface CalendarViewProps {
-  teamId: string;
+  teamId: string | null;
   gameType?: string;
 }
 
@@ -172,6 +172,21 @@ export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
     return date.getMonth() === currentDate.getMonth();
   };
 
+  if (!teamId) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">
+            Aucune équipe sélectionnée
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Veuillez sélectionner une équipe pour voir le calendrier.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -221,6 +236,7 @@ export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
         <Button 
           onClick={() => setShowEventModal(true)}
           className="btn-apple bg-primary text-primary-foreground hover:bg-primary/90"
+          disabled={!teamId}
         >
           <Plus className="w-4 h-4 mr-2" />
           Nouvel événement
@@ -310,7 +326,7 @@ export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
         onClose={() => setShowEventDetails(false)}
       />
 
-      {showEventModal && (
+      {showEventModal && teamId && (
         <SmartScheduleModal
           isOpen={showEventModal}
           onClose={() => setShowEventModal(false)}
