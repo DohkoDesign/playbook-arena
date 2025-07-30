@@ -173,7 +173,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-10",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
@@ -185,7 +185,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background border shadow-lg" align="start">
+                <PopoverContent className="w-auto p-0 bg-background border shadow-lg z-50" align="start">
                   <Calendar
                     mode="single"
                     selected={selectedDate}
@@ -198,18 +198,13 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
             </div>
 
             <div className="space-y-2">
-              <Label>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Heure *
-                </div>
-              </Label>
+              <Label>Heure *</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal h-10",
                       !startTime && "text-muted-foreground"
                     )}
                   >
@@ -221,39 +216,43 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 p-4 bg-background border shadow-lg" align="start">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Créneaux populaires</Label>
-                      <div className="grid grid-cols-4 gap-2">
-                        {getPopularTimes().map((time) => (
-                          <Button
-                            key={time}
-                            variant={startTime === time ? "default" : "outline"}
-                            size="sm"
-                            className="text-xs"
-                            onClick={() => setStartTime(time)}
-                          >
-                            {time}
-                          </Button>
-                        ))}
+                <PopoverContent className="w-80 p-0 bg-background border shadow-lg z-50" align="start">
+                  <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
+                    <div className="space-y-3">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Créneaux populaires</Label>
+                        <div className="grid grid-cols-4 gap-2">
+                          {getPopularTimes().map((time) => (
+                            <Button
+                              key={time}
+                              variant={startTime === time ? "default" : "outline"}
+                              size="sm"
+                              className="text-xs h-8"
+                              onClick={() => setStartTime(time)}
+                            >
+                              {time}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Tous les créneaux</Label>
-                      <div className="max-h-40 overflow-y-auto grid grid-cols-4 gap-1">
-                        {getTimeSuggestions().map((time) => (
-                          <Button
-                            key={time}
-                            variant={startTime === time ? "default" : "ghost"}
-                            size="sm"
-                            className="text-xs h-8"
-                            onClick={() => setStartTime(time)}
-                          >
-                            {time}
-                          </Button>
-                        ))}
+                      
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Tous les créneaux</Label>
+                        <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/20">
+                          <div className="grid grid-cols-4 gap-1">
+                            {getTimeSuggestions().map((time) => (
+                              <Button
+                                key={time}
+                                variant={startTime === time ? "default" : "ghost"}
+                                size="sm"
+                                className="text-xs h-8"
+                                onClick={() => setStartTime(time)}
+                              >
+                                {time}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -268,10 +267,10 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
               value={duration.toString()} 
               onValueChange={(value) => setDuration(parseInt(value))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-lg z-50">
                 <SelectItem value="30">30 min</SelectItem>
                 <SelectItem value="60">1h</SelectItem>
                 <SelectItem value="90">1h30</SelectItem>
