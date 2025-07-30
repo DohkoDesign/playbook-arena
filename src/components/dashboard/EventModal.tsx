@@ -45,8 +45,19 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
   ];
 
   const getTimeSuggestions = () => {
-    const suggestions = ["18:00", "19:00", "20:00", "21:00"];
+    const suggestions = [];
+    for (let h = 8; h <= 23; h++) {
+      for (let m = 0; m < 60; m += 30) {
+        const hour = h.toString().padStart(2, '0');
+        const minute = m.toString().padStart(2, '0');
+        suggestions.push(`${hour}:${minute}`);
+      }
+    }
     return suggestions;
+  };
+
+  const getPopularTimes = () => {
+    return ["18:00", "19:00", "20:00", "21:00"];
   };
 
   const calculateEndTime = () => {
@@ -154,7 +165,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Date *</Label>
               <Popover>
@@ -190,7 +201,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
               <Label>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
-                  Heure de début *
+                  Heure *
                 </div>
               </Label>
               <Popover>
@@ -210,27 +221,34 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-4 bg-background border shadow-lg" align="start">
-                  <div className="space-y-3">
+                <PopoverContent className="w-80 p-4 bg-background border shadow-lg" align="start">
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Heure personnalisée</Label>
-                      <Input
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full"
-                      />
+                      <Label className="text-sm font-medium">Créneaux populaires</Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {getPopularTimes().map((time) => (
+                          <Button
+                            key={time}
+                            variant={startTime === time ? "default" : "outline"}
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setStartTime(time)}
+                          >
+                            {time}
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Suggestions populaires</Label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <Label className="text-sm font-medium">Tous les créneaux</Label>
+                      <div className="max-h-40 overflow-y-auto grid grid-cols-4 gap-1">
                         {getTimeSuggestions().map((time) => (
                           <Button
                             key={time}
-                            variant="outline"
+                            variant={startTime === time ? "default" : "ghost"}
                             size="sm"
-                            className="text-xs"
+                            className="text-xs h-8"
                             onClick={() => setStartTime(time)}
                           >
                             {time}
@@ -245,7 +263,7 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration">Durée (minutes)</Label>
+            <Label htmlFor="duration">Durée</Label>
             <Select 
               value={duration.toString()} 
               onValueChange={(value) => setDuration(parseInt(value))}
@@ -265,8 +283,11 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
           </div>
 
           {startTime && (
-            <div className="text-sm text-muted-foreground p-2 bg-muted/50 rounded">
-              <strong>Fin prévue :</strong> {calculateEndTime()}
+            <div className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-md border">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span><strong>Fin prévue :</strong> {calculateEndTime()}</span>
+              </div>
             </div>
           )}
           
