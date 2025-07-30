@@ -566,17 +566,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                 </div>
                 
               </div>
-              
-              <div className="border-t pt-6">
-                <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wider mb-4">
-                  Paramètres de développement
-                </h4>
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Ces fonctionnalités sont en cours de développement et seront disponibles prochainement.
-                  </p>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
