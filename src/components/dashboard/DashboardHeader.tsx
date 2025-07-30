@@ -1,10 +1,12 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "@supabase/supabase-js";
 import { LogOut, Settings, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProfileSettings } from "./ProfileSettings";
-import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -14,6 +16,34 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeaderProps) => {
   const [showProfileSettings, setShowProfileSettings] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      loadUserAvatar();
+    }
+  }, [user]);
+
+  const loadUserAvatar = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("photo_profil")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Error loading avatar:", error);
+      } else if (data?.photo_profil) {
+        setAvatarUrl(data.photo_profil);
+      }
+    } catch (error) {
+      console.error("Error loading avatar:", error);
+    }
+  };
+
   return (
     <header className="glass h-16 border-b border-border/50 flex items-center justify-between px-8 sticky top-0 z-40">
       <div className="flex items-center space-x-6">
@@ -51,9 +81,12 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
             <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
           
-          <div className="w-8 h-8 bg-gradient-brand rounded-full flex items-center justify-center text-white font-medium text-sm">
-            {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
-          </div>
+          <Avatar className="w-8 h-8">
+            <AvatarImage src={avatarUrl} />
+            <AvatarFallback className="bg-gradient-brand text-white font-medium text-sm">
+              {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </div>
 
         <Button 
@@ -72,7 +105,12 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
           <DialogHeader>
             <DialogTitle>Paramètres du profil</DialogTitle>
           </DialogHeader>
-          <ProfileSettings user={user} onProfileUpdate={() => {}} />
+          <ProfileSettings 
+            user={user} 
+            onProfileUpdate={() => {
+              loadUserAvatar(); // Recharger l'avatar après mise à jour
+            }} 
+          />
         </DialogContent>
       </Dialog>
     </header>
