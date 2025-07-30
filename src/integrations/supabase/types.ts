@@ -375,6 +375,9 @@ export type Database = {
         | "chess"
         | "trackmania"
         | "rocket_league_sideswipe"
+        | "csgo"
+        | "cod_warzone"
+        | "cod_multiplayer"
       player_role:
         | "joueur"
         | "remplacant"
@@ -542,6 +545,9 @@ export const Constants = {
         "chess",
         "trackmania",
         "rocket_league_sideswipe",
+        "csgo",
+        "cod_warzone",
+        "cod_multiplayer",
       ],
       player_role: [
         "joueur",
