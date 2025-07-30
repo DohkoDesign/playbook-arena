@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { User } from "@supabase/supabase-js";
 import { LogOut, Settings, Bell } from "lucide-react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProfileSettings } from "./ProfileSettings";
 import { useState } from "react";
 
@@ -69,6 +69,9 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
 
       <Dialog open={showProfileSettings} onOpenChange={setShowProfileSettings}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Paramètres du profil</DialogTitle>
+          </DialogHeader>
           <ProfileSettings user={user} onProfileUpdate={() => {}} />
         </DialogContent>
       </Dialog>

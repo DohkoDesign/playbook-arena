@@ -113,6 +113,8 @@ const Setup = () => {
           user_id: user.id,
           pseudo: user.user_metadata?.pseudo || user.email?.split('@')[0] || 'Utilisateur',
           photo_profil: publicUrl
+        }, {
+          onConflict: 'user_id'
         });
 
       if (updateError) {
