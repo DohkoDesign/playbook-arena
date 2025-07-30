@@ -90,7 +90,7 @@ export const gameConfigs: Record<string, GameConfig> = {
       "Cobblestone", "Vertigo", "Ancient", "Anubis"
     ],
     roles: ["Entry Fragger", "AWPer", "Support", "IGL", "Lurker"],
-    strategyTypes: ["Eco", "Force Buy", "Full Buy", "Anti-eco", "Retake", "Execute"],
+    strategyTypes: ["Attaque", "Défense", "Eco", "Force Buy", "Full Buy", "Anti-eco", "Retake", "Execute"],
     analyticsFields: {
       composition: ["Armes", "Position", "Rôle", "Économie"],
       performance: ["K/D", "ADR", "Rating", "KAST", "Entry frags"],

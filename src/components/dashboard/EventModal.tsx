@@ -238,14 +238,14 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
                       
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Tous les créneaux</Label>
-                        <div className="max-h-32 overflow-y-auto border rounded-md p-2 bg-muted/20">
+                        <div className="h-40 overflow-y-auto border rounded-md p-2 bg-muted/20">
                           <div className="grid grid-cols-4 gap-1">
                             {getTimeSuggestions().map((time) => (
                               <Button
                                 key={time}
                                 variant={startTime === time ? "default" : "ghost"}
                                 size="sm"
-                                className="text-xs h-8"
+                                className="text-xs h-8 flex-shrink-0"
                                 onClick={() => setStartTime(time)}
                               >
                                 {time}
