@@ -168,7 +168,13 @@ const JoinTeam = () => {
         description: `Vous avez rejoint ${team.nom} en tant que ${invitation.role}`,
       });
 
-      setTimeout(() => navigate("/dashboard"), 1500);
+      // Redirection selon le rôle
+      const redirectPath = (invitation.role === "joueur" || invitation.role === "remplacant") 
+        ? "/player" 
+        : "/dashboard";
+      
+      console.log("🔄 Redirection vers:", redirectPath);
+      setTimeout(() => navigate(redirectPath), 1500);
 
     } catch (error: any) {
       console.error("❌ Erreur lors de l'inscription:", error);
