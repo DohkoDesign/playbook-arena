@@ -6,17 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { StrategyModal } from "./StrategyModal";
 import { Badge } from "@/components/ui/badge";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface StrategiesViewProps {
   teamId: string;
+  gameType?: string;
 }
 
-export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
+export const StrategiesView = ({ teamId, gameType }: StrategiesViewProps) => {
   const [strategies, setStrategies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showStrategyModal, setShowStrategyModal] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
   const { toast } = useToast();
+  
+  const gameConfig = gameType ? getGameConfig(gameType) : null;
 
   useEffect(() => {
     if (teamId) {
@@ -109,7 +113,9 @@ export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <BookOpen className="w-5 h-5" />
-          <h2 className="text-2xl font-bold">Playbook & Stratégies</h2>
+          <h2 className="text-2xl font-bold">
+            Playbook & Stratégies {gameConfig && `- ${gameConfig.name}`}
+          </h2>
         </div>
         <Button onClick={() => {
           setSelectedStrategy(null);
@@ -210,6 +216,7 @@ export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
             setSelectedStrategy(null);
           }}
           teamId={teamId}
+          gameConfig={gameConfig}
           strategy={selectedStrategy}
           onStrategyUpdated={() => {
             fetchStrategies();

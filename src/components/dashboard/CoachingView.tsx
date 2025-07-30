@@ -9,24 +9,45 @@ import { Video, Plus, FileText, Upload, Users, Trophy, Clock } from "lucide-reac
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CoachingSessionModal } from "./CoachingSessionModal";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface CoachingViewProps {
   teamId: string;
+  gameType?: string;
 }
 
-export const CoachingView = ({ teamId }: CoachingViewProps) => {
+export const CoachingView = ({ teamId, gameType }: CoachingViewProps) => {
   const [events, setEvents] = useState<any[]>([]);
   const [coachingSessions, setCoachingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [teamData, setTeamData] = useState<any>(null);
   const { toast } = useToast();
+  
+  const gameConfig = gameType ? getGameConfig(gameType) : null;
 
   useEffect(() => {
     if (teamId) {
       fetchEventsAndSessions();
+      fetchTeamData();
     }
   }, [teamId]);
+
+  const fetchTeamData = async () => {
+    try {
+      const { data: team, error } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("id", teamId)
+        .single();
+
+      if (error) throw error;
+      setTeamData(team);
+    } catch (error: any) {
+      console.error("Error fetching team:", error);
+    }
+  };
 
   const fetchEventsAndSessions = async () => {
     try {
@@ -40,18 +61,20 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
 
       if (eventsError) throw eventsError;
 
-      // Récupérer les sessions de coaching existantes
+      // Récupérer les sessions de coaching existantes (filtrées par équipe)
       const { data: sessionsData, error: sessionsError } = await supabase
         .from("coaching_sessions")
         .select(`
           *,
-          events (
+          events!inner (
             id,
             titre,
             date_debut,
-            type
+            type,
+            team_id
           )
         `)
+        .eq("events.team_id", teamId)
         .order("created_at", { ascending: false });
 
       if (sessionsError) throw sessionsError;
@@ -117,7 +140,9 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Video className="w-5 h-5" />
-          <h2 className="text-2xl font-bold">Coaching & Review</h2>
+          <h2 className="text-2xl font-bold">
+            Coaching & Review {gameConfig && `- ${gameConfig.name}`}
+          </h2>
         </div>
       </div>
 
@@ -274,6 +299,7 @@ export const CoachingView = ({ teamId }: CoachingViewProps) => {
             setSelectedEvent(null);
           }}
           event={selectedEvent}
+          gameConfig={gameConfig}
           onSessionUpdated={() => {
             fetchEventsAndSessions();
             setShowSessionModal(false);

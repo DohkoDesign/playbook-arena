@@ -10,11 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, Image, FileText, Map } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { GameConfig } from "@/data/gameConfigs";
 
 interface StrategyModalProps {
   isOpen: boolean;
   onClose: () => void;
   teamId: string;
+  gameConfig?: GameConfig | null;
   strategy?: any;
   onStrategyUpdated: () => void;
 }
@@ -32,7 +34,8 @@ const STRATEGY_TYPES = [
 export const StrategyModal = ({ 
   isOpen, 
   onClose, 
-  teamId, 
+  teamId,
+  gameConfig,
   strategy, 
   onStrategyUpdated 
 }: StrategyModalProps) => {
@@ -177,11 +180,18 @@ export const StrategyModal = ({
                       <SelectValue placeholder="Sélectionner le type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {STRATEGY_TYPES.map((strategyType) => (
-                        <SelectItem key={strategyType.value} value={strategyType.value}>
-                          {strategyType.label}
-                        </SelectItem>
-                      ))}
+                      {gameConfig?.strategyTypes ? 
+                        gameConfig.strategyTypes.map((strategyType) => (
+                          <SelectItem key={strategyType} value={strategyType}>
+                            {strategyType}
+                          </SelectItem>
+                        )) :
+                        STRATEGY_TYPES.map((strategyType) => (
+                          <SelectItem key={strategyType.value} value={strategyType.value}>
+                            {strategyType.label}
+                          </SelectItem>
+                        ))
+                      }
                     </SelectContent>
                   </Select>
                 </div>
@@ -194,7 +204,7 @@ export const StrategyModal = ({
                     <SelectValue placeholder="Sélectionner une map" />
                   </SelectTrigger>
                   <SelectContent>
-                    {VALORANT_MAPS.map((map) => (
+                    {(gameConfig?.maps || VALORANT_MAPS).map((map) => (
                       <SelectItem key={map} value={map}>
                         {map}
                       </SelectItem>

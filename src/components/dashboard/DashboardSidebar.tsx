@@ -25,6 +25,7 @@ export const DashboardSidebar = ({
     { id: "strategies", label: "Stratégies", icon: BookOpen },
     { id: "players", label: "Équipe", icon: Users },
     { id: "coaching", label: "Coaching", icon: Video },
+    { id: "staff", label: "Gestion Staff", icon: Settings },
   ];
 
   const currentTeam = teams.find(team => team.id === selectedTeam);

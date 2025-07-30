@@ -9,9 +9,10 @@ import { CalendarView } from "@/components/dashboard/CalendarView";
 import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
+import { StaffManagementView } from "@/components/dashboard/StaffManagementView";
 import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "calendar" | "strategies" | "players" | "coaching";
+type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "staff";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -108,16 +109,21 @@ const Dashboard = () => {
 
   const renderCurrentView = () => {
     if (!selectedTeam) return null;
+    
+    const team = teams.find(t => t.id === selectedTeam);
+    const gameType = team?.jeu;
 
     switch (currentView) {
       case "calendar":
         return <CalendarView teamId={selectedTeam} />;
       case "strategies":
-        return <StrategiesView teamId={selectedTeam} />;
+        return <StrategiesView teamId={selectedTeam} gameType={gameType} />;
       case "players":
         return <PlayersView teamId={selectedTeam} />;
       case "coaching":
-        return <CoachingView teamId={selectedTeam} />;
+        return <CoachingView teamId={selectedTeam} gameType={gameType} />;
+      case "staff":
+        return <StaffManagementView teamId={selectedTeam} gameType={gameType} />;
       default:
         return <CalendarView teamId={selectedTeam} />;
     }

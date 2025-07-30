@@ -10,11 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Save, Video, Users, Trophy, Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { GameConfig } from "@/data/gameConfigs";
 
 interface CoachingSessionModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: any;
+  gameConfig?: GameConfig | null;
   onSessionUpdated: () => void;
 }
 
@@ -27,7 +29,8 @@ const VALORANT_AGENTS = [
 export const CoachingSessionModal = ({ 
   isOpen, 
   onClose, 
-  event, 
+  event,
+  gameConfig,
   onSessionUpdated 
 }: CoachingSessionModalProps) => {
   const [session, setSession] = useState<any>(null);
@@ -96,18 +99,21 @@ export const CoachingSessionModal = ({
     setVods(newVods);
   };
 
-  const toggleAgentInComposition = (agent: string, isEquipe: boolean) => {
+  const toggleCharacterInComposition = (character: string, isEquipe: boolean) => {
+    const maxTeamSize = gameConfig?.id === 'rocket_league' ? 3 : 
+                       gameConfig?.id === 'apex_legends' ? 3 : 5;
+    
     if (isEquipe) {
-      if (compositionEquipe.includes(agent)) {
-        setCompositionEquipe(compositionEquipe.filter(a => a !== agent));
-      } else if (compositionEquipe.length < 5) {
-        setCompositionEquipe([...compositionEquipe, agent]);
+      if (compositionEquipe.includes(character)) {
+        setCompositionEquipe(compositionEquipe.filter(a => a !== character));
+      } else if (compositionEquipe.length < maxTeamSize) {
+        setCompositionEquipe([...compositionEquipe, character]);
       }
     } else {
-      if (compositionAdversaire.includes(agent)) {
-        setCompositionAdversaire(compositionAdversaire.filter(a => a !== agent));
-      } else if (compositionAdversaire.length < 5) {
-        setCompositionAdversaire([...compositionAdversaire, agent]);
+      if (compositionAdversaire.includes(character)) {
+        setCompositionAdversaire(compositionAdversaire.filter(a => a !== character));
+      } else if (compositionAdversaire.length < maxTeamSize) {
+        setCompositionAdversaire([...compositionAdversaire, character]);
       }
     }
   };
@@ -219,34 +225,37 @@ export const CoachingSessionModal = ({
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      {compositionEquipe.map((agent, index) => (
+                      {compositionEquipe.map((character, index) => (
                         <Badge
                           key={index}
                           variant="default"
                           className="cursor-pointer"
-                          onClick={() => toggleAgentInComposition(agent, true)}
+                          onClick={() => toggleCharacterInComposition(character, true)}
                         >
-                          {agent}
+                          {character}
                           <X className="w-3 h-3 ml-1" />
                         </Badge>
                       ))}
                     </div>
                     
                     <div className="text-xs text-muted-foreground mb-2">
-                      Agents disponibles ({compositionEquipe.length}/5):
+                      {gameConfig?.characters ? 
+                        `${gameConfig.characters.length > 20 ? 'Personnages' : 'Personnages'} disponibles (${compositionEquipe.length}/${gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):` :
+                        `Agents disponibles (${compositionEquipe.length}/5):`
+                      }
                     </div>
                     
                     <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {VALORANT_AGENTS.filter(agent => !compositionEquipe.includes(agent)).map((agent) => (
+                      {(gameConfig?.characters || VALORANT_AGENTS).filter(character => !compositionEquipe.includes(character)).map((character) => (
                         <Button
-                          key={agent}
+                          key={character}
                           size="sm"
                           variant="outline"
                           className="text-xs"
-                          disabled={compositionEquipe.length >= 5}
-                          onClick={() => toggleAgentInComposition(agent, true)}
+                          disabled={compositionEquipe.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
+                          onClick={() => toggleCharacterInComposition(character, true)}
                         >
-                          {agent}
+                          {character}
                         </Button>
                       ))}
                     </div>
@@ -265,34 +274,37 @@ export const CoachingSessionModal = ({
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      {compositionAdversaire.map((agent, index) => (
+                      {compositionAdversaire.map((character, index) => (
                         <Badge
                           key={index}
                           variant="secondary"
                           className="cursor-pointer"
-                          onClick={() => toggleAgentInComposition(agent, false)}
+                          onClick={() => toggleCharacterInComposition(character, false)}
                         >
-                          {agent}
+                          {character}
                           <X className="w-3 h-3 ml-1" />
                         </Badge>
                       ))}
                     </div>
                     
                     <div className="text-xs text-muted-foreground mb-2">
-                      Agents disponibles ({compositionAdversaire.length}/5):
+                      {gameConfig?.characters ? 
+                        `${gameConfig.characters.length > 20 ? 'Personnages' : 'Personnages'} disponibles (${compositionAdversaire.length}/${gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):` :
+                        `Agents disponibles (${compositionAdversaire.length}/5):`
+                      }
                     </div>
                     
                     <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                      {VALORANT_AGENTS.filter(agent => !compositionAdversaire.includes(agent)).map((agent) => (
+                      {(gameConfig?.characters || VALORANT_AGENTS).filter(character => !compositionAdversaire.includes(character)).map((character) => (
                         <Button
-                          key={agent}
+                          key={character}
                           size="sm"
                           variant="outline"
                           className="text-xs"
-                          disabled={compositionAdversaire.length >= 5}
-                          onClick={() => toggleAgentInComposition(agent, false)}
+                          disabled={compositionAdversaire.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
+                          onClick={() => toggleCharacterInComposition(character, false)}
                         >
-                          {agent}
+                          {character}
                         </Button>
                       ))}
                     </div>
