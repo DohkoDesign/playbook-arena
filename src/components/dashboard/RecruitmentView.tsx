@@ -21,14 +21,22 @@ interface RecruitmentViewProps {
 }
 
 export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
-  const [recruitmentPosts, setRecruitmentPosts] = useState<any[]>([]);
-  const [applications, setApplications] = useState<any[]>([]);
-  const [newPost, setNewPost] = useState({
-    title: "",
-    description: "",
-    positions: [] as string[],
-    requirements: "",
-    contact: ""
+  const [prospects, setProspects] = useState<any[]>([]);
+  const [testPlayers, setTestPlayers] = useState<any[]>([]);
+  const [newProspect, setNewProspect] = useState({
+    pseudo: "",
+    rank: "",
+    mainRole: "",
+    secondaryRole: "",
+    experience: "",
+    availability: "",
+    contact: "",
+    notes: "",
+    stats: {
+      kd: "",
+      winrate: "",
+      hours: ""
+    }
   });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -43,9 +51,22 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
 
   const fetchRecruitmentData = async () => {
     try {
-      // Simulation de données de recrutement
-      setRecruitmentPosts([]);
-      setApplications([]);
+      // Récupérer les joueurs en test
+      const { data: testMembers } = await supabase
+        .from("team_members")
+        .select(`
+          *,
+          profiles (
+            pseudo,
+            photo_profil
+          )
+        `)
+        .eq("team_id", teamId)
+        .eq("role", "test");
+
+      setTestPlayers(testMembers || []);
+      // Les prospects seront stockés localement ou dans une table dédiée
+      setProspects([]);
     } catch (error: any) {
       toast({
         title: "Erreur",
@@ -57,29 +78,69 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
     }
   };
 
-  const createRecruitmentPost = async () => {
-    if (!newPost.title || !newPost.description) {
+  const addProspect = () => {
+    if (!newProspect.pseudo || !newProspect.rank || !newProspect.mainRole) {
       toast({
         title: "Erreur",
-        description: "Veuillez remplir les champs obligatoires",
+        description: "Veuillez remplir les champs obligatoires (pseudo, rank, rôle principal)",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      // Simulation de création d'annonce
-      toast({
-        title: "Annonce créée",
-        description: "Votre annonce de recrutement a été publiée",
-      });
+    const prospect = {
+      id: Date.now(),
+      ...newProspect,
+      dateAdded: new Date().toISOString(),
+      status: "nouveau"
+    };
 
-      setNewPost({
-        title: "",
-        description: "",
-        positions: [],
-        requirements: "",
-        contact: ""
+    setProspects([...prospects, prospect]);
+    
+    // Reset du formulaire
+    setNewProspect({
+      pseudo: "",
+      rank: "",
+      mainRole: "",
+      secondaryRole: "",
+      experience: "",
+      availability: "",
+      contact: "",
+      notes: "",
+      stats: { kd: "", winrate: "", hours: "" }
+    });
+
+    toast({
+      title: "Prospect ajouté",
+      description: `${prospect.pseudo} a été ajouté à votre liste de prospects`,
+    });
+  };
+
+  const inviteForTest = async (prospect: any) => {
+    try {
+      const token = Math.random().toString(36).substr(2, 15);
+      
+      const { error } = await supabase
+        .from("invitations")
+        .insert({
+          team_id: teamId,
+          token,
+          role: "test",
+          created_by: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+
+      // Mettre à jour le statut du prospect
+      setProspects(prospects.map(p => 
+        p.id === prospect.id 
+          ? { ...p, status: "invité", inviteDate: new Date().toISOString() }
+          : p
+      ));
+
+      toast({
+        title: "Invitation envoyée",
+        description: `Invitation de test envoyée à ${prospect.pseudo}`,
       });
     } catch (error: any) {
       toast({
@@ -88,6 +149,14 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
         variant: "destructive",
       });
     }
+  };
+
+  const removeProspect = (prospectId: number) => {
+    setProspects(prospects.filter(p => p.id !== prospectId));
+    toast({
+      title: "Prospect supprimé",
+      description: "Le prospect a été retiré de votre liste",
+    });
   };
 
   const mockPlayers = [
@@ -139,46 +208,39 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
         </div>
       </div>
 
-      <Tabs defaultValue="search" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="search">Recherche</TabsTrigger>
-          <TabsTrigger value="posts">Annonces</TabsTrigger>
-          <TabsTrigger value="applications">Candidatures</TabsTrigger>
-          <TabsTrigger value="scouts">Scouting</TabsTrigger>
+      <Tabs defaultValue="prospects" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="prospects">Prospects</TabsTrigger>
+          <TabsTrigger value="tests">Joueurs Test</TabsTrigger>
+          <TabsTrigger value="stats">Statistiques</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="search" className="space-y-6 mt-6">
-          {/* Filtres de recherche */}
+        <TabsContent value="prospects" className="space-y-6 mt-6">
+          {/* Ajouter un prospect */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Filter className="w-5 h-5" />
-                <span>Filtres de recherche</span>
+                <Plus className="w-5 h-5" />
+                <span>Ajouter un prospect</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Rôle recherché</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un rôle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {gameConfig?.roles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="pseudo">Pseudo *</Label>
+                  <Input
+                    id="pseudo"
+                    placeholder="Pseudo du joueur"
+                    value={newProspect.pseudo}
+                    onChange={(e) => setNewProspect({...newProspect, pseudo: e.target.value})}
+                  />
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Niveau minimum</Label>
-                  <Select>
+                  <Label htmlFor="rank">Rank *</Label>
+                  <Select value={newProspect.rank} onValueChange={(value) => setNewProspect({...newProspect, rank: value})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Niveau" />
+                      <SelectValue placeholder="Sélectionner le rank" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="bronze">Bronze</SelectItem>
@@ -193,223 +255,326 @@ export const RecruitmentView = ({ teamId, gameType }: RecruitmentViewProps) => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Disponibilité</Label>
-                  <Select>
+                  <Label htmlFor="mainRole">Rôle principal *</Label>
+                  <Select value={newProspect.mainRole} onValueChange={(value) => setNewProspect({...newProspect, mainRole: value})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Disponibilité" />
+                      <SelectValue placeholder="Rôle principal" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="morning">Matin</SelectItem>
-                      <SelectItem value="afternoon">Après-midi</SelectItem>
-                      <SelectItem value="evening">Soir</SelectItem>
-                      <SelectItem value="weekend">Week-end</SelectItem>
-                      <SelectItem value="flexible">Flexible</SelectItem>
+                      {gameConfig?.roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               
-              <Button className="w-full">
-                <UserSearch className="w-4 h-4 mr-2" />
-                Rechercher des joueurs
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Résultats de recherche */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Joueurs disponibles ({mockPlayers.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockPlayers.map((player) => (
-                  <Card key={player.id} className="border-l-4 border-l-blue-500">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
-                              {player.pseudo.charAt(0)}
-                            </div>
-                            <div>
-                              <h4 className="font-semibold">{player.pseudo}</h4>
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="outline">{player.rank}</Badge>
-                                <Badge>{player.mainRole}</Badge>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div className="flex items-center space-x-1">
-                              <Clock className="w-4 h-4 text-muted-foreground" />
-                              <span>{player.experience}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="w-4 h-4 text-muted-foreground" />
-                              <span>{player.availability}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Target className="w-4 h-4 text-muted-foreground" />
-                              <span>K/D: {player.stats.kd}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Trophy className="w-4 h-4 text-muted-foreground" />
-                              <span>{player.stats.winrate}% WR</span>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            Voir profil
-                          </Button>
-                          <Button size="sm">
-                            <Mail className="w-4 h-4 mr-2" />
-                            Contacter
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="secondaryRole">Rôle secondaire</Label>
+                  <Select value={newProspect.secondaryRole} onValueChange={(value) => setNewProspect({...newProspect, secondaryRole: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Rôle secondaire" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gameConfig?.roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="experience">Expérience</Label>
+                  <Input
+                    id="experience"
+                    placeholder="Ex: 2 ans"
+                    value={newProspect.experience}
+                    onChange={(e) => setNewProspect({...newProspect, experience: e.target.value})}
+                  />
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="posts" className="space-y-6 mt-6">
-          {/* Créer une annonce */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Plus className="w-5 h-5" />
-                <span>Créer une annonce de recrutement</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Titre de l'annonce *</Label>
-                <Input
-                  id="title"
-                  placeholder="Ex: Recherche Duelist Immortal+"
-                  value={newPost.title}
-                  onChange={(e) => setNewPost({...newPost, title: e.target.value})}
-                />
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="kd">K/D Ratio</Label>
+                  <Input
+                    id="kd"
+                    placeholder="1.5"
+                    value={newProspect.stats.kd}
+                    onChange={(e) => setNewProspect({
+                      ...newProspect, 
+                      stats: {...newProspect.stats, kd: e.target.value}
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="winrate">Winrate (%)</Label>
+                  <Input
+                    id="winrate"
+                    placeholder="65"
+                    value={newProspect.stats.winrate}
+                    onChange={(e) => setNewProspect({
+                      ...newProspect, 
+                      stats: {...newProspect.stats, winrate: e.target.value}
+                    })}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="hours">Heures de jeu</Label>
+                  <Input
+                    id="hours"
+                    placeholder="1500"
+                    value={newProspect.stats.hours}
+                    onChange={(e) => setNewProspect({
+                      ...newProspect, 
+                      stats: {...newProspect.stats, hours: e.target.value}
+                    })}
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="availability">Disponibilité</Label>
+                  <Input
+                    id="availability"
+                    placeholder="Soir/Week-end"
+                    value={newProspect.availability}
+                    onChange={(e) => setNewProspect({...newProspect, availability: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="contact">Contact</Label>
+                  <Input
+                    id="contact"
+                    placeholder="Discord, email..."
+                    value={newProspect.contact}
+                    onChange={(e) => setNewProspect({...newProspect, contact: e.target.value})}
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="positions">Postes recherchés</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner les rôles" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {gameConfig?.roles.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">Description *</Label>
+                <Label htmlFor="notes">Notes</Label>
                 <Textarea
-                  id="description"
-                  placeholder="Décrivez votre équipe, vos objectifs, l'ambiance..."
-                  value={newPost.description}
-                  onChange={(e) => setNewPost({...newPost, description: e.target.value})}
-                  rows={4}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="requirements">Exigences</Label>
-                <Textarea
-                  id="requirements"
-                  placeholder="Niveau requis, disponibilités, matériel..."
-                  value={newPost.requirements}
-                  onChange={(e) => setNewPost({...newPost, requirements: e.target.value})}
+                  id="notes"
+                  placeholder="Observations, points forts, axes d'amélioration..."
+                  value={newProspect.notes}
+                  onChange={(e) => setNewProspect({...newProspect, notes: e.target.value})}
                   rows={3}
                 />
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="contact">Contact</Label>
-                <Input
-                  id="contact"
-                  placeholder="Discord, email..."
-                  value={newPost.contact}
-                  onChange={(e) => setNewPost({...newPost, contact: e.target.value})}
-                />
-              </div>
-              
-              <Button onClick={createRecruitmentPost} className="w-full">
-                <Send className="w-4 h-4 mr-2" />
-                Publier l'annonce
+              <Button onClick={addProspect} className="w-full">
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter le prospect
               </Button>
             </CardContent>
           </Card>
 
-          {/* Annonces existantes */}
+          {/* Liste des prospects */}
           <Card>
             <CardHeader>
-              <CardTitle>Vos annonces actives</CardTitle>
+              <CardTitle>Liste des prospects ({prospects.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Aucune annonce active</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Créez votre première annonce pour commencer à recruter
-                </p>
-              </div>
+              {prospects.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Aucun prospect ajouté</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Commencez par ajouter des joueurs que vous souhaitez recruter
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {prospects.map((prospect) => (
+                    <Card key={prospect.id} className="border-l-4 border-l-blue-500">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-glow rounded-full flex items-center justify-center text-primary-foreground font-medium">
+                                {prospect.pseudo.charAt(0)}
+                              </div>
+                              <div>
+                                <h4 className="font-semibold">{prospect.pseudo}</h4>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="outline">{prospect.rank}</Badge>
+                                  <Badge>{prospect.mainRole}</Badge>
+                                  {prospect.status === "invité" && (
+                                    <Badge className="bg-yellow-100 text-yellow-800">Invité</Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              {prospect.experience && (
+                                <div className="flex items-center space-x-1">
+                                  <Clock className="w-4 h-4 text-muted-foreground" />
+                                  <span>{prospect.experience}</span>
+                                </div>
+                              )}
+                              {prospect.availability && (
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                                  <span>{prospect.availability}</span>
+                                </div>
+                              )}
+                              {prospect.stats.kd && (
+                                <div className="flex items-center space-x-1">
+                                  <Target className="w-4 h-4 text-muted-foreground" />
+                                  <span>K/D: {prospect.stats.kd}</span>
+                                </div>
+                              )}
+                              {prospect.stats.winrate && (
+                                <div className="flex items-center space-x-1">
+                                  <Trophy className="w-4 h-4 text-muted-foreground" />
+                                  <span>{prospect.stats.winrate}% WR</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {prospect.notes && (
+                              <p className="text-sm text-muted-foreground">{prospect.notes}</p>
+                            )}
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => removeProspect(prospect.id)}
+                            >
+                              Supprimer
+                            </Button>
+                            <Button 
+                              size="sm"
+                              onClick={() => inviteForTest(prospect)}
+                              disabled={prospect.status === "invité"}
+                            >
+                              <Send className="w-4 h-4 mr-2" />
+                              {prospect.status === "invité" ? "Invité" : "Inviter en test"}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="applications" className="space-y-6 mt-6">
+        <TabsContent value="tests" className="space-y-6 mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>Candidatures reçues</CardTitle>
+              <CardTitle>Joueurs en test ({testPlayers.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <Mail className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Aucune candidature</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Les candidatures apparaîtront ici quand vous publierez des annonces
-                </p>
-              </div>
+              {testPlayers.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">Aucun joueur en test</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Les joueurs invités en test apparaîtront ici
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {testPlayers.map((player) => (
+                    <Card key={player.id} className="border-l-4 border-l-orange-500">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center text-white font-medium">
+                              {player.profiles?.pseudo?.charAt(0) || 'T'}
+                            </div>
+                            <div>
+                              <h4 className="font-semibold">{player.profiles?.pseudo || 'Joueur Test'}</h4>
+                              <div className="flex items-center space-x-2">
+                                <Badge className="bg-orange-100 text-orange-800">En test</Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  Depuis le {new Date(player.created_at).toLocaleDateString("fr-FR")}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            <Button variant="outline" size="sm">
+                              Valider
+                            </Button>
+                            <Button variant="outline" size="sm">
+                              Refuser
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="scouts" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Star className="w-5 h-5" />
-                <span>Scouting et recommandations</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center py-8">
-                <Target className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Fonctionnalité de scouting</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Analysez les performances des joueurs et obtenez des recommandations
-                </p>
-                <Button className="mt-4" variant="outline">
-                  <GamepadIcon className="w-4 h-4 mr-2" />
-                  Analyser les matchs récents
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="stats" className="space-y-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Prospects
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-blue-500" />
+                  <span className="text-2xl font-bold">{prospects.length}</span>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Joueurs en test
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-orange-500" />
+                  <span className="text-2xl font-bold">{testPlayers.length}</span>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Invitations envoyées
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-5 h-5 text-green-500" />
+                  <span className="text-2xl font-bold">
+                    {prospects.filter(p => p.status === "invité").length}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
