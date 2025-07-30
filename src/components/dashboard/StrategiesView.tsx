@@ -16,7 +16,6 @@ export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
   const [loading, setLoading] = useState(true);
   const [showStrategyModal, setShowStrategyModal] = useState(false);
   const [selectedStrategy, setSelectedStrategy] = useState<any>(null);
-  const [teamGame, setTeamGame] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -27,18 +26,6 @@ export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
 
   const fetchStrategies = async () => {
     try {
-      // Récupérer les informations de l'équipe
-      const { data: teamData, error: teamError } = await supabase
-        .from("teams")
-        .select("jeu")
-        .eq("id", teamId)
-        .single();
-
-      if (teamError) throw teamError;
-      if (teamData) {
-        setTeamGame(teamData.jeu);
-      }
-
       const { data, error } = await supabase
         .from("strategies")
         .select("*")
@@ -223,7 +210,6 @@ export const StrategiesView = ({ teamId }: StrategiesViewProps) => {
             setSelectedStrategy(null);
           }}
           teamId={teamId}
-          teamGame={teamGame}
           strategy={selectedStrategy}
           onStrategyUpdated={() => {
             fetchStrategies();

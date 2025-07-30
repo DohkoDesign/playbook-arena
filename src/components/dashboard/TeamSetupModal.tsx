@@ -13,15 +13,19 @@ interface TeamSetupModalProps {
   onTeamCreated: (team: any) => void;
 }
 
-import { getAvailableGames } from "@/data/gameConfigs";
+const GAMES = [
+  { value: "valorant", label: "Valorant", players: 5 },
+  { value: "rocket_league", label: "Rocket League", players: 3 },
+  { value: "league_of_legends", label: "League of Legends", players: 5 },
+  { value: "counter_strike", label: "Counter-Strike", players: 5 },
+  { value: "overwatch", label: "Overwatch", players: 6 },
+];
 
 export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModalProps) => {
   const [teamName, setTeamName] = useState("");
   const [selectedGame, setSelectedGame] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
-  const availableGames = getAvailableGames();
 
   const handleCreateTeam = async () => {
     console.log("🚀 Starting team creation:", { teamName, selectedGame });
@@ -129,11 +133,11 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
                 <SelectValue placeholder="Sélectionner un jeu" />
               </SelectTrigger>
               <SelectContent>
-                    {availableGames.map((game) => (
-                      <SelectItem key={game.value} value={game.value}>
-                        {game.label} ({game.players} joueurs)
-                      </SelectItem>
-                    ))}
+                {GAMES.map((game) => (
+                  <SelectItem key={game.value} value={game.value}>
+                    {game.label} ({game.players} joueurs)
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
