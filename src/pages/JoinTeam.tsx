@@ -46,21 +46,21 @@ const JoinTeam = () => {
 
   useEffect(() => {
     console.log("=== JoinTeam Component Loaded ===");
-    console.log("Token from useParams:", token);
+    console.log("Token extracted:", token);
     console.log("Current URL:", window.location.href);
     
-    if (token) {
+    if (token && token !== 'join-team') {
       checkInvitation();
     } else {
-      console.error("NO TOKEN FOUND!");
+      console.error("Invalid token:", token);
       toast({
         title: "Erreur",
-        description: "Lien d'invitation invalide - aucun token",
+        description: "Lien d'invitation invalide",
         variant: "destructive",
       });
       navigate("/");
     }
-  }, [token, navigate]);
+  }, []);
 
   const checkInvitation = async () => {
     if (!token) {
