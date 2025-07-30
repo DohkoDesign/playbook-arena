@@ -6,7 +6,6 @@ import { User } from "@supabase/supabase-js";
 import { LogOut, Settings, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProfileSettings } from "./ProfileSettings";
-import { ModernClock } from "./ModernClock";
 import { supabase } from "@/integrations/supabase/client";
 import { getGameConfig } from "@/data/gameConfigs";
 
@@ -67,11 +66,6 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
       </div>
 
       <div className="flex items-center space-x-4">
-        {/* Modern Clock Widget */}
-        <div className="hidden lg:block">
-          <ModernClock teamId={currentTeam?.id} gameType={currentTeam?.jeu} />
-        </div>
-        
         <ThemeToggle />
         
         <Button
