@@ -209,7 +209,7 @@ export const SmartScheduleModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto z-50 bg-background/95 backdrop-blur-md border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary" />
@@ -352,33 +352,60 @@ export const SmartScheduleModal = ({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">
+                  <Label>
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
                       Heure de début *
                     </div>
                   </Label>
-                  <Input
-                    id="startTime"
-                    type="time"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                  />
-                  
-                  {/* Suggestions d'horaires */}
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {getTimeSuggestions().map((time) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
                       <Button
-                        key={time}
                         variant="outline"
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => setStartTime(time)}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !startTime && "text-muted-foreground"
+                        )}
                       >
-                        {time}
+                        <Clock className="mr-2 h-4 w-4" />
+                        {startTime ? (
+                          startTime
+                        ) : (
+                          <span>Choisir une heure</span>
+                        )}
                       </Button>
-                    ))}
-                  </div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-4 z-[60]" align="start">
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Heure personnalisée</Label>
+                          <Input
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Suggestions populaires</Label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {getTimeSuggestions().map((time) => (
+                              <Button
+                                key={time}
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => setStartTime(time)}
+                              >
+                                {time}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="space-y-2">
