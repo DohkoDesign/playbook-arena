@@ -7,6 +7,7 @@ import { LogOut, Settings, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProfileSettings } from "./ProfileSettings";
 import { supabase } from "@/integrations/supabase/client";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -17,6 +18,8 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeaderProps) => {
   const [showProfileSettings, setShowProfileSettings] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
+  
+  const gameConfig = currentTeam?.jeu ? getGameConfig(currentTeam.jeu) : null;
 
   useEffect(() => {
     if (user) {
@@ -49,9 +52,16 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-3">
           <div className="w-1 h-6 bg-primary rounded-full"></div>
-          <h1 className="text-lg font-semibold">
-            {currentTeam?.nom || "Dashboard"}
-          </h1>
+          <div>
+            <h1 className="text-lg font-semibold">
+              {currentTeam?.nom || "Dashboard"}
+            </h1>
+            {gameConfig && (
+              <p className="text-xs text-muted-foreground">
+                {gameConfig.name}
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

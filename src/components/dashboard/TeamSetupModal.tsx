@@ -17,8 +17,11 @@ const GAMES = [
   { value: "valorant", label: "Valorant", players: 5 },
   { value: "rocket_league", label: "Rocket League", players: 3 },
   { value: "league_of_legends", label: "League of Legends", players: 5 },
-  { value: "counter_strike", label: "Counter-Strike", players: 5 },
-  { value: "overwatch", label: "Overwatch", players: 6 },
+  { value: "csgo", label: "CS:GO / CS2", players: 5 },
+  { value: "overwatch", label: "Overwatch 2", players: 5 },
+  { value: "cod_warzone", label: "Call of Duty Warzone", players: 4 },
+  { value: "cod_multiplayer", label: "Call of Duty Multiplayer", players: 6 },
+  { value: "apex_legends", label: "Apex Legends", players: 3 },
 ];
 
 export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModalProps) => {
