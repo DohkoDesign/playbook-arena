@@ -308,6 +308,7 @@ export type Database = {
           created_by: string
           id: string
           jeu: Database["public"]["Enums"]["game_type"]
+          logo: string | null
           nom: string
           updated_at: string
         }
@@ -316,6 +317,7 @@ export type Database = {
           created_by: string
           id?: string
           jeu: Database["public"]["Enums"]["game_type"]
+          logo?: string | null
           nom: string
           updated_at?: string
         }
@@ -324,6 +326,7 @@ export type Database = {
           created_by?: string
           id?: string
           jeu?: Database["public"]["Enums"]["game_type"]
+          logo?: string | null
           nom?: string
           updated_at?: string
         }

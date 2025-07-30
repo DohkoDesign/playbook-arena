@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
 
 interface DashboardSidebarProps {
   teams: any[];
@@ -21,8 +20,6 @@ export const DashboardSidebar = ({
   onViewChange,
   onNewTeam,
 }: DashboardSidebarProps) => {
-  const currentTeam = teams.find(team => team.id === selectedTeam);
-
   // Navigation organisée par catégories
   const navigationSections = [
     {
@@ -46,10 +43,11 @@ export const DashboardSidebar = ({
         { id: "settings", label: "Paramètres", icon: Settings },
       ]
     }
+  ];
+  
   const currentTeamData = teams.find(team => team.id === selectedTeam);
 
   // Obtenir le nom du jeu pour l'équipe
-
   const getGameDisplayName = (gameType: string) => {
     const gameNames: {[key: string]: string} = {
       'valorant': 'Valorant',

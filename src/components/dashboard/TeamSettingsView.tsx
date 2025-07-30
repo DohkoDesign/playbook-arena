@@ -171,15 +171,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     }
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Settings className="w-5 h-5" />
-          <h2 className="text-2xl font-bold">Paramètres Équipe</h2>
-        </div>
-      </div>
-
   // Conversion hex vers HSL pour les couleurs
   const hexToHsl = (hex: string): string => {
     const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -228,6 +219,22 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Settings className="w-5 h-5" />
+          <h2 className="text-2xl font-bold">Paramètres Équipe</h2>
+        </div>
+      </div>
+
+      <Tabs defaultValue="teams" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="teams">Équipes</TabsTrigger>
+          <TabsTrigger value="appearance">Apparence</TabsTrigger>
+          <TabsTrigger value="advanced">Avancé</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="teams" className="space-y-6 mt-6">
           <Card>
