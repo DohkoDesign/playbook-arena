@@ -10,7 +10,6 @@ import Setup from "./pages/Setup";
 import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
 
-import PlayerSignup from "./pages/PlayerSignup";
 import JoinTeam from "./pages/JoinTeam";
 import NotFound from "./pages/NotFound";
 
@@ -30,7 +29,6 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />
             
-            <Route path="/join/:token" element={<PlayerSignup />} />
             <Route path="/join-team/:token" element={<JoinTeam />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
