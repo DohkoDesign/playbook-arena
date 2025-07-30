@@ -23,7 +23,7 @@ import {
   AlertCircle
 } from "lucide-react";
 
-export const PlayerSignup = () => {
+export default function PlayerSignup() {
   const { token } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -490,4 +490,4 @@ export const PlayerSignup = () => {
       </div>
     </div>
   );
-};
+}
