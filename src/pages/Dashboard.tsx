@@ -125,20 +125,22 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardSidebar
-        teams={teams}
-        selectedTeam={selectedTeam}
-        onTeamSelect={setSelectedTeam}
-        currentView={currentView}
-        onViewChange={(view) => setCurrentView(view as DashboardView)}
-      />
-      
-      <div className="pl-64">
-        <DashboardHeader user={user} onLogout={handleLogout} />
+      <div className="flex">
+        <DashboardSidebar
+          teams={teams}
+          selectedTeam={selectedTeam}
+          onTeamSelect={setSelectedTeam}
+          currentView={currentView}
+          onViewChange={(view) => setCurrentView(view as DashboardView)}
+        />
         
-        <main className="p-6">
-          {renderCurrentView()}
-        </main>
+        <div className="flex-1 ml-72">
+          <DashboardHeader user={user} onLogout={handleLogout} />
+          
+          <main className="p-8">
+            {renderCurrentView()}
+          </main>
+        </div>
       </div>
 
       {showTeamSetup && (
