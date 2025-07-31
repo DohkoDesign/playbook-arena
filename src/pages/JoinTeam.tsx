@@ -145,6 +145,33 @@ const JoinTeam = () => {
 
       console.log("✅ Compte créé:", authData.user.id);
 
+      // Attendre que le trigger handle_new_user créé le profil
+      console.log("⏳ Attente de la création du profil...");
+      let profileExists = false;
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (!profileExists && attempts < maxAttempts) {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("user_id", authData.user.id)
+          .single();
+
+        if (existingProfile) {
+          profileExists = true;
+          console.log("✅ Profil trouvé, mise à jour...");
+        } else {
+          attempts++;
+          console.log(`⏳ Tentative ${attempts}/${maxAttempts} - profil non trouvé, attente...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      if (!profileExists) {
+        throw new Error("Le profil utilisateur n'a pas pu être créé");
+      }
+
       // Mettre à jour le profil avec le bon rôle
       const userRole = (invitation.role === "joueur" || invitation.role === "remplacant") ? "player" : "staff";
       
@@ -158,12 +185,13 @@ const JoinTeam = () => {
 
       if (profileError) {
         console.error("❌ Erreur mise à jour profil:", profileError);
-        // On continue même si le profil n'est pas mis à jour
+        throw profileError;
       }
 
       console.log("✅ Profil mis à jour avec rôle:", userRole);
 
       // Ajouter à l'équipe
+      console.log("👥 Ajout à l'équipe...");
       const { error: memberError } = await supabase
         .from("team_members")
         .insert({
@@ -172,7 +200,12 @@ const JoinTeam = () => {
           role: invitation.role
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("❌ Erreur ajout équipe:", memberError);
+        throw memberError;
+      }
+
+      console.log("✅ Ajouté à l'équipe avec succès");
 
       // Marquer l'invitation comme utilisée
       await supabase
