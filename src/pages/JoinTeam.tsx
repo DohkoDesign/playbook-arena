@@ -145,6 +145,23 @@ const JoinTeam = () => {
 
       console.log("✅ Compte créé:", authData.user.id);
 
+      // Attendre que l'authentification soit établie
+      console.log("⏳ Attente de l'authentification...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Se connecter avec le nouveau compte pour établir la session
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        console.error("❌ Erreur connexion:", signInError);
+        throw signInError;
+      }
+
+      console.log("✅ Session authentifiée");
+
       // Créer ou mettre à jour le profil directement
       const userRole = (invitation.role === "joueur" || invitation.role === "remplacant") ? "player" : "staff";
       
