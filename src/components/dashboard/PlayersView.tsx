@@ -11,9 +11,10 @@ import { PlayerProfileModal } from "./PlayerProfileModal";
 
 interface PlayersViewProps {
   teamId: string;
+  isPlayerView?: boolean;
 }
 
-export const PlayersView = ({ teamId }: PlayersViewProps) => {
+export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) => {
   const [members, setMembers] = useState<any[]>([]);
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -113,10 +114,12 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
           <Users className="w-5 h-5" />
           <h2 className="text-2xl font-bold">Gestion de l'équipe</h2>
         </div>
-        <Button onClick={() => setShowInviteModal(true)}>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Inviter un joueur
-        </Button>
+        {!isPlayerView && (
+          <Button onClick={() => setShowInviteModal(true)}>
+            <UserPlus className="w-4 h-4 mr-2" />
+            Inviter un joueur
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -146,7 +149,7 @@ export const PlayersView = ({ teamId }: PlayersViewProps) => {
                       </Badge>
                     </div>
                   </div>
-                  {(member.role === "joueur" || member.role === "remplacant") && (
+                  {!isPlayerView && (member.role === "joueur" || member.role === "remplacant") && (
                     <Button
                       size="sm"
                       variant="outline"

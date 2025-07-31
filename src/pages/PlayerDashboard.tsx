@@ -172,22 +172,22 @@ const PlayerDashboard = () => {
 
     switch (currentView) {
       case "calendar":
-        // Calendrier (même composant que le staff)
-        return <CalendarView teamId={teamData.id} gameType={teamData.jeu} />;
+        // Calendrier (même composant que le staff mais en lecture seule)
+        return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       case "strategies":
-        // Stratégies (même composant que le staff)
-        return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} />;
+        // Stratégies (même composant que le staff mais en lecture seule)
+        return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       case "players":
-        // Vue des membres d'équipe
-        return <PlayersView teamId={teamData.id} />;
+        // Vue des membres d'équipe (limitée pour les joueurs)
+        return <PlayersView teamId={teamData.id} isPlayerView={true} />;
       case "coaching":
-        // Sessions de coaching 
-        return <CoachingView teamId={teamData.id} gameType={teamData.jeu} />;
+        // Sessions de coaching (lecture seule pour les joueurs)
+        return <CoachingView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       case "profile":
         // Profil du joueur
         return <PlayerProfileView teamId={teamData.id} playerId={user?.id || ""} />;
       default:
-        return <CalendarView teamId={teamData.id} gameType={teamData.jeu} />;
+        return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
     }
   };
 

@@ -12,9 +12,10 @@ import { getGameConfig } from "@/data/gameConfigs";
 interface StrategiesViewProps {
   teamId: string;
   gameType?: string;
+  isPlayerView?: boolean;
 }
 
-export const StrategiesView = ({ teamId, gameType }: StrategiesViewProps) => {
+export const StrategiesView = ({ teamId, gameType, isPlayerView = false }: StrategiesViewProps) => {
   const [strategies, setStrategies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showStrategyModal, setShowStrategyModal] = useState(false);
@@ -162,13 +163,15 @@ export const StrategiesView = ({ teamId, gameType }: StrategiesViewProps) => {
             Playbook & Stratégies {gameConfig && `- ${gameConfig.name}`}
           </h2>
         </div>
-        <Button onClick={() => {
-          setSelectedStrategy(null);
-          setShowStrategyModal(true);
-        }}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle stratégie
-        </Button>
+        {!isPlayerView && (
+          <Button onClick={() => {
+            setSelectedStrategy(null);
+            setShowStrategyModal(true);
+          }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nouvelle stratégie
+          </Button>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -229,29 +232,31 @@ export const StrategiesView = ({ teamId, gameType }: StrategiesViewProps) => {
                             <CardHeader className="pb-3">
                               <div className="flex items-center justify-between">
                                 <CardTitle className="text-base truncate">{strategy.nom}</CardTitle>
-                                <div className="flex items-center space-x-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleEditStrategy(strategy)}
-                                  >
-                                    <Edit className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => exportToPDF(strategy)}
-                                  >
-                                    <Download className="w-3 h-3" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDeleteStrategy(strategy.id)}
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </Button>
-                                </div>
+                                {!isPlayerView && (
+                                  <div className="flex items-center space-x-1">
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleEditStrategy(strategy)}
+                                    >
+                                      <Edit className="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => exportToPDF(strategy)}
+                                    >
+                                      <Download className="w-3 h-3" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleDeleteStrategy(strategy.id)}
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
                               </div>
                               
                               <Badge className={getStrategyTypeBadge(strategy.type)}>
@@ -304,29 +309,31 @@ export const StrategiesView = ({ teamId, gameType }: StrategiesViewProps) => {
                         <CardHeader className="pb-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base truncate">{strategy.nom}</CardTitle>
-                            <div className="flex items-center space-x-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleEditStrategy(strategy)}
-                              >
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => exportToPDF(strategy)}
-                              >
-                                <Download className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDeleteStrategy(strategy.id)}
-                              >
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
-                            </div>
+                            {!isPlayerView && (
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleEditStrategy(strategy)}
+                                >
+                                  <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => exportToPDF(strategy)}
+                                >
+                                  <Download className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeleteStrategy(strategy.id)}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                           
                           <Badge className={getStrategyTypeBadge(strategy.type)}>

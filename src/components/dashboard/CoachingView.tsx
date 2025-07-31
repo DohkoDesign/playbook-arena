@@ -14,9 +14,10 @@ import { getGameConfig } from "@/data/gameConfigs";
 interface CoachingViewProps {
   teamId: string;
   gameType?: string;
+  isPlayerView?: boolean;
 }
 
-export const CoachingView = ({ teamId, gameType }: CoachingViewProps) => {
+export const CoachingView = ({ teamId, gameType, isPlayerView = false }: CoachingViewProps) => {
   const [events, setEvents] = useState<any[]>([]);
   const [coachingSessions, setCoachingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -185,13 +186,15 @@ export const CoachingView = ({ teamId, gameType }: CoachingViewProps) => {
                           </div>
                         </div>
 
-                        <Button
-                          size="sm"
-                          variant={hasSession ? "secondary" : "default"}
-                          onClick={() => openCoachingSession(event)}
-                        >
-                          {hasSession ? "Modifier" : "Analyser"}
-                        </Button>
+                        {!isPlayerView && (
+                          <Button
+                            size="sm"
+                            variant={hasSession ? "secondary" : "default"}
+                            onClick={() => openCoachingSession(event)}
+                          >
+                            {hasSession ? "Modifier" : "Analyser"}
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

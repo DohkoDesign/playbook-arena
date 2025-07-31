@@ -10,6 +10,7 @@ import { EventModal } from "./EventModal";
 interface CalendarViewProps {
   teamId: string | null;
   gameType?: string;
+  isPlayerView?: boolean;
 }
 
 interface Event {
@@ -91,7 +92,7 @@ const EventDetailsModal = ({ event, isOpen, onClose }: EventDetailsModalProps) =
   );
 };
 
-export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
+export const CalendarView = ({ teamId, gameType, isPlayerView = false }: CalendarViewProps) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showEventModal, setShowEventModal] = useState(false);
@@ -233,14 +234,16 @@ export const CalendarView = ({ teamId, gameType }: CalendarViewProps) => {
           </div>
         </div>
 
-        <Button 
-          onClick={() => setShowEventModal(true)}
-          className="btn-apple bg-primary text-primary-foreground hover:bg-primary/90"
-          disabled={!teamId}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvel événement
-        </Button>
+        {!isPlayerView && (
+          <Button 
+            onClick={() => setShowEventModal(true)}
+            className="btn-apple bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={!teamId}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Nouvel événement
+          </Button>
+        )}
       </div>
 
       {/* Calendar */}
