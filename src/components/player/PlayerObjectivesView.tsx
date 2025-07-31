@@ -162,12 +162,8 @@ export const PlayerObjectivesView = ({ teamId, playerId }: PlayerObjectivesViewP
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Mes Objectifs</h1>
-          <p className="text-muted-foreground">Suivez vos objectifs personnels et votre progression</p>
+          <p className="text-muted-foreground">Objectifs définis par le staff - Suivez votre progression</p>
         </div>
-        <Button onClick={() => setShowAddForm(!showAddForm)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvel objectif
-        </Button>
       </div>
 
       {/* Formulaire d'ajout */}

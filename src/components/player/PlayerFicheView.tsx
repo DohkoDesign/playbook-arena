@@ -210,25 +210,8 @@ export const PlayerFicheView = ({ teamId, playerId }: PlayerFicheViewProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Ma Fiche Joueur</h1>
-          <p className="text-muted-foreground">Votre profil et vos statistiques personnelles</p>
+          <p className="text-muted-foreground">Votre profil et vos statistiques (géré par le staff)</p>
         </div>
-        {!isEditing ? (
-          <Button onClick={startEdit}>
-            <Edit className="w-4 h-4 mr-2" />
-            Modifier
-          </Button>
-        ) : (
-          <div className="flex space-x-2">
-            <Button onClick={saveChanges}>
-              <Save className="w-4 h-4 mr-2" />
-              Sauvegarder
-            </Button>
-            <Button variant="outline" onClick={() => setIsEditing(false)}>
-              <X className="w-4 h-4 mr-2" />
-              Annuler
-            </Button>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -257,75 +240,23 @@ export const PlayerFicheView = ({ teamId, playerId }: PlayerFicheViewProps) => {
             <div className="space-y-3">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Jeux joués</label>
-                {isEditing ? (
-                  <div className="space-y-2">
-                    {(editForm.jeux_joues || []).map((jeu, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <Badge variant="outline">{jeu}</Badge>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeArrayItem('jeux_joues', index)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Input
-                      placeholder="Ajouter un jeu"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addArrayItem('jeux_joues', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {profile.jeux_joues.map((jeu, index) => (
-                      <Badge key={index} variant="outline">
-                        <Gamepad2 className="w-3 h-3 mr-1" />
-                        {jeu}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {profile.jeux_joues.map((jeu, index) => (
+                    <Badge key={index} variant="outline">
+                      <Gamepad2 className="w-3 h-3 mr-1" />
+                      {jeu}
+                    </Badge>
+                  ))}
+                </div>
               </div>
 
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Personnages favoris</label>
-                {isEditing ? (
-                  <div className="space-y-2">
-                    {(editForm.personnages_favoris || []).map((perso, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <Badge variant="outline">{perso}</Badge>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => removeArrayItem('personnages_favoris', index)}
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                    <Input
-                      placeholder="Ajouter un personnage"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          addArrayItem('personnages_favoris', e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {profile.personnages_favoris.map((perso, index) => (
-                      <Badge key={index} variant="outline">{perso}</Badge>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {profile.personnages_favoris.map((perso, index) => (
+                    <Badge key={index} variant="outline">{perso}</Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </CardContent>
