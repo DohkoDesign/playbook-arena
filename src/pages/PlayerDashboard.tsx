@@ -143,18 +143,11 @@ const PlayerDashboard = () => {
 
       setPlayerProfile(profile);
 
-      // 2. Charger les données de l'équipe
+      // 2. Charger les données de l'équipe (requête simplifiée)
+      console.log("🔍 Recherche des équipes...");
       const { data: teamMembers, error: teamError } = await supabase
         .from("team_members")
-        .select(`
-          role,
-          team_id,
-          teams!inner (
-            id,
-            nom,
-            jeu
-          )
-        `)
+        .select("role, team_id")
         .eq("user_id", user.id);
 
       if (teamError) {
@@ -162,30 +155,34 @@ const PlayerDashboard = () => {
         throw new Error("Impossible de charger vos équipes");
       }
 
-      console.log("🏆 Raw teams data:", JSON.stringify(teamMembers, null, 2));
+      console.log("🏆 Team members data:", JSON.stringify(teamMembers, null, 2));
 
       if (!teamMembers || teamMembers.length === 0) {
         throw new Error("Vous n'êtes membre d'aucune équipe");
       }
 
-      // Prendre la première équipe
-      const firstTeam = teamMembers[0];
-      console.log("🎯 First team structure:", JSON.stringify(firstTeam, null, 2));
+      // 3. Charger les infos de la première équipe
+      const firstTeamMember = teamMembers[0];
+      console.log("🎯 First team member:", JSON.stringify(firstTeamMember, null, 2));
       
-      const teamInfo = firstTeam.teams;
-      console.log("📋 Team info:", JSON.stringify(teamInfo, null, 2));
+      const { data: teamInfo, error: teamInfoError } = await supabase
+        .from("teams")
+        .select("id, nom, jeu")
+        .eq("id", firstTeamMember.team_id)
+        .single();
 
-      if (!teamInfo) {
-        console.error("❌ Team info is null/undefined");
-        console.error("Full team member object:", firstTeam);
-        throw new Error("Données d'équipe invalides - relation manquante");
+      if (teamInfoError || !teamInfo) {
+        console.error("❌ Team info error:", teamInfoError);
+        throw new Error("Impossible de charger les informations de l'équipe");
       }
+
+      console.log("📋 Team info:", JSON.stringify(teamInfo, null, 2));
 
       setTeamData({
         id: teamInfo.id,
         nom: teamInfo.nom,
         jeu: teamInfo.jeu,
-        role: firstTeam.role
+        role: firstTeamMember.role
       });
 
       console.log("✅ Player data loaded successfully");
