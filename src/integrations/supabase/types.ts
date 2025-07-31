@@ -353,6 +353,10 @@ export type Database = {
         Args: { check_user_id?: string }
         Returns: boolean
       }
+      is_team_member: {
+        Args: { team_uuid: string; user_uuid?: string }
+        Returns: boolean
+      }
     }
     Enums: {
       event_type:
