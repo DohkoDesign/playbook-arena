@@ -128,9 +128,94 @@ const JoinTeam = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("🔐 Création du compte utilisateur...");
+      console.log("🔐 Vérification si l'utilisateur existe déjà...");
       
-      // Créer le compte utilisateur
+      // D'abord vérifier si l'utilisateur existe déjà
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (existingUser.user) {
+        console.log("✅ Utilisateur existant trouvé:", existingUser.user.id);
+        
+        // Vérifier s'il a déjà un profil
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("id, role")
+          .eq("user_id", existingUser.user.id)
+          .single();
+
+        if (!existingProfile) {
+          throw new Error("Ce compte existe mais n'a pas de profil. Contactez l'administrateur.");
+        }
+
+        // Utiliser l'utilisateur existant
+        const authData = { user: existingUser.user };
+        console.log("✅ Compte existant utilisé:", authData.user.id);
+
+        // Mettre à jour le profil avec le bon rôle
+        const userRole = (invitation.role === "joueur" || invitation.role === "remplacant") ? "player" : "staff";
+        
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ 
+            role: userRole,
+            pseudo: formData.pseudo 
+          })
+          .eq("user_id", authData.user.id);
+
+        if (profileError) {
+          console.error("❌ Erreur mise à jour profil:", profileError);
+          throw profileError;
+        }
+
+        console.log("✅ Profil mis à jour avec rôle:", userRole);
+
+        // Ajouter à l'équipe
+        console.log("👥 Ajout à l'équipe...");
+        const { error: memberError } = await supabase
+          .from("team_members")
+          .insert({
+            team_id: team.id,
+            user_id: authData.user.id,
+            role: invitation.role
+          });
+
+        if (memberError) {
+          console.error("❌ Erreur ajout équipe:", memberError);
+          throw memberError;
+        }
+
+        console.log("✅ Ajouté à l'équipe avec succès");
+        
+        // Marquer l'invitation comme utilisée
+        await supabase
+          .from("invitations")
+          .update({
+            used_at: new Date().toISOString(),
+            used_by: authData.user.id
+          })
+          .eq("id", invitation.id);
+
+        toast({
+          title: "Bienvenue !",
+          description: `Vous avez rejoint ${team.nom} en tant que ${invitation.role}`,
+        });
+
+        // Redirection selon le rôle
+        const redirectPath = (invitation.role === "joueur" || invitation.role === "remplacant") 
+          ? "/player" 
+          : "/dashboard";
+        
+        console.log("🔄 Redirection vers:", redirectPath);
+        setTimeout(() => navigate(redirectPath), 1500);
+        return; // Sortir ici pour éviter le code de création
+      }
+
+      console.log("🔐 Création d'un nouveau compte utilisateur...");
+      
+      // Créer le compte utilisateur (nouveau)
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -143,7 +228,7 @@ const JoinTeam = () => {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Utilisateur non créé");
 
-      console.log("✅ Compte créé:", authData.user.id);
+      console.log("✅ Nouveau compte créé:", authData.user.id);
 
       // Attendre que le trigger handle_new_user créé le profil
       console.log("⏳ Attente de la création du profil...");
