@@ -15,7 +15,7 @@ import { PlayerPlanningView } from "@/components/player/PlayerPlanningView";
 import { PlayerPerformanceView } from "@/components/player/PlayerPerformanceView";
 import { useToast } from "@/hooks/use-toast";
 
-type PlayerView = "calendar" | "fiche" | "objectives" | "planning" | "performance" | "team-strategies" | "team-members" | "team-coaching" | "settings";
+type PlayerView = "calendar" | "fiche" | "objectives" | "planning" | "performance" | "team-strategies" | "team-coaching";
 
 const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -192,14 +192,8 @@ const PlayerDashboard = () => {
       // Équipe (lecture seule)
       case "team-strategies":
         return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
-      case "team-members":
-        return <PlayersView teamId={teamData.id} isPlayerView={true} />;
       case "team-coaching":
         return <CoachingView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
-      
-      // Paramètres
-      case "settings":
-        return <PlayerProfileView teamId={teamData.id} playerId={user?.id || ""} />;
       
       default:
         return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;

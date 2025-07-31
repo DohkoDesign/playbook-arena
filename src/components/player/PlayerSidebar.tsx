@@ -34,14 +34,7 @@ export const PlayerSidebar = ({
       title: "Équipe",
       items: [
         { id: "team-strategies", label: "Stratégies", icon: BookOpen },
-        { id: "team-members", label: "Membres", icon: Users },
         { id: "team-coaching", label: "Coaching", icon: Video },
-      ]
-    },
-    {
-      title: "Profil",
-      items: [
-        { id: "settings", label: "Paramètres", icon: Settings },
       ]
     }
   ];
