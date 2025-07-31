@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Users, BookOpen, Video, Settings } from "lucide-react";
+import { Calendar, Users, BookOpen, Video, Settings, Target, TrendingUp, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlayerSidebarProps {
@@ -13,7 +13,7 @@ export const PlayerSidebar = ({
   currentView,
   onViewChange,
 }: PlayerSidebarProps) => {
-  // Navigation pour les joueurs (sans recrutement et sans créer nouvelle équipe)
+  // Navigation pour les joueurs avec sections personnelles
   const navigationSections = [
     {
       title: "Navigation",
@@ -22,17 +22,26 @@ export const PlayerSidebar = ({
       ]
     },
     {
+      title: "Mon Espace",
+      items: [
+        { id: "fiche", label: "Ma Fiche", icon: User },
+        { id: "objectives", label: "Mes Objectifs", icon: Target },
+        { id: "planning", label: "Planning Personnel", icon: Calendar },
+        { id: "performance", label: "Performances", icon: TrendingUp },
+      ]
+    },
+    {
       title: "Équipe",
       items: [
-        { id: "players", label: "Membres", icon: Users },
-        { id: "strategies", label: "Stratégies", icon: BookOpen },
-        { id: "coaching", label: "Coaching", icon: Video },
+        { id: "team-strategies", label: "Stratégies", icon: BookOpen },
+        { id: "team-members", label: "Membres", icon: Users },
+        { id: "team-coaching", label: "Coaching", icon: Video },
       ]
     },
     {
       title: "Profil",
       items: [
-        { id: "profile", label: "Mon Profil", icon: Settings },
+        { id: "settings", label: "Paramètres", icon: Settings },
       ]
     }
   ];

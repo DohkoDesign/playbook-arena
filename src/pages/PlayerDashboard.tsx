@@ -9,9 +9,13 @@ import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { PlayerProfileView } from "@/components/player/PlayerProfileView";
+import { PlayerFicheView } from "@/components/player/PlayerFicheView";
+import { PlayerObjectivesView } from "@/components/player/PlayerObjectivesView";
+import { PlayerPlanningView } from "@/components/player/PlayerPlanningView";
+import { PlayerPerformanceView } from "@/components/player/PlayerPerformanceView";
 import { useToast } from "@/hooks/use-toast";
 
-type PlayerView = "calendar" | "strategies" | "players" | "coaching" | "profile";
+type PlayerView = "calendar" | "fiche" | "objectives" | "planning" | "performance" | "team-strategies" | "team-members" | "team-coaching" | "settings";
 
 const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -172,20 +176,31 @@ const PlayerDashboard = () => {
 
     switch (currentView) {
       case "calendar":
-        // Calendrier (même composant que le staff mais en lecture seule)
+        // Calendrier d'équipe (lecture seule)
         return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
-      case "strategies":
-        // Stratégies (même composant que le staff mais en lecture seule)
+      
+      // Mon Espace personnel
+      case "fiche":
+        return <PlayerFicheView teamId={teamData.id} playerId={user?.id || ""} />;
+      case "objectives":
+        return <PlayerObjectivesView teamId={teamData.id} playerId={user?.id || ""} />;
+      case "planning":
+        return <PlayerPlanningView teamId={teamData.id} playerId={user?.id || ""} />;
+      case "performance":
+        return <PlayerPerformanceView teamId={teamData.id} playerId={user?.id || ""} />;
+      
+      // Équipe (lecture seule)
+      case "team-strategies":
         return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
-      case "players":
-        // Vue des membres d'équipe (limitée pour les joueurs)
+      case "team-members":
         return <PlayersView teamId={teamData.id} isPlayerView={true} />;
-      case "coaching":
-        // Sessions de coaching (lecture seule pour les joueurs)
+      case "team-coaching":
         return <CoachingView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
-      case "profile":
-        // Profil du joueur
+      
+      // Paramètres
+      case "settings":
         return <PlayerProfileView teamId={teamData.id} playerId={user?.id || ""} />;
+      
       default:
         return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
     }
