@@ -267,21 +267,11 @@ export const PlayerObjectivesView = ({ teamId, playerId }: PlayerObjectivesViewP
                   </div>
                   <Progress value={progress} className="w-full" />
                   
-                  {!isCompleted && (
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="number"
-                        min="0"
-                        max={objective.target_value}
-                        value={objective.current_value}
-                        onChange={(e) => updateProgress(objective.id, parseInt(e.target.value) || 0)}
-                        className="w-24"
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {Math.round(progress)}% complété
-                      </span>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-end">
+                    <span className="text-sm text-muted-foreground">
+                      {Math.round(progress)}% complété
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
