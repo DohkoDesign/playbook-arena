@@ -9,7 +9,7 @@ export const Header = () => {
           <div className="w-8 h-8 flex items-center justify-center">
             <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Shadow Hub Logo" className="w-8 h-8 object-contain" />
           </div>
-          <span className="text-xl font-montserrat font-black tracking-tight uppercase">Shadow Hub</span>
+          <span className="text-xl font-montserrat font-bold tracking-tight uppercase">Shadow Hub</span>
         </div>
         
         <nav className="hidden md:flex items-center space-x-8">
