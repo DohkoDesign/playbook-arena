@@ -5,13 +5,13 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-brand rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">E</span>
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Shadow Hub Logo" className="w-8 h-8 object-contain" />
               </div>
-              <span className="text-lg font-semibold">eSport Manager</span>
+              <span className="text-lg font-montserrat font-bold tracking-tight uppercase">Shadow Hub</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              La plateforme professionnelle pour gérer vos équipes eSport sur 25 jeux compétitifs.
+              La plateforme professionnelle pour gérer vos équipes eSport sur 8 jeux compétitifs.
             </p>
           </div>
 
@@ -48,7 +48,7 @@ export const Footer = () => {
 
         <div className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 eSport Manager. Tous droits réservés.
+            © 2024 Shadow Hub. Tous droits réservés.
           </p>
         </div>
       </div>
