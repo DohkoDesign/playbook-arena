@@ -77,8 +77,7 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
       const { error } = await supabase
         .from("notifications")
         .update({ is_read: true })
-        .eq("id", notificationId)
-        .eq("user_id", userId);
+        .eq("id", notificationId);
 
       if (error) throw error;
 
@@ -121,13 +120,16 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
     }
   };
 
-  const handleAction = (notification: Notification) => {
+  const handleAction = async (notification: Notification) => {
+    // Marquer comme lu d'abord
+    if (!notification.is_read) {
+      await markAsRead(notification.id);
+    }
+    
+    // Puis naviguer si une URL d'action est définie
     if (notification.action_url) {
       navigate(notification.action_url);
       setIsOpen(false);
-    }
-    if (!notification.is_read) {
-      markAsRead(notification.id);
     }
   };
 

@@ -72,8 +72,11 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
             )}
           </div>
         </div>
-        
-        {/* Action buttons moved to left */}
+        </div>
+
+      {/* Right section - Actions and User avatar */}
+      <div className="flex items-center space-x-4">
+        {/* Action buttons */}
         <div className="flex items-center space-x-2">
           <ThemeToggle />
           
@@ -84,14 +87,12 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
             />
           )}
         </div>
-      </div>
-
-      {/* Right section - User avatar with dropdown */}
-      <div className="flex items-center">
+        
+        {/* User avatar with dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <Avatar className="h-10 w-10">
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
+              <Avatar className="h-10 w-10 ring-2 ring-white dark:ring-gray-800">
                 <AvatarImage src={avatarUrl} />
                 <AvatarFallback className="bg-gradient-brand text-white font-medium text-sm">
                   {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
