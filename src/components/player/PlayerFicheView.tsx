@@ -101,11 +101,17 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
       if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
         console.log('Using tracker stats:', userProfile.tracker_stats);
         const trackerStats = userProfile.tracker_stats;
+        
+        // Convertir les valeurs en nombres avant d'utiliser toFixed
+        const kdValue = parseFloat(trackerStats.stats?.kd) || parseFloat(trackerStats.stats?.kda) || 0;
+        const matchesValue = parseInt(trackerStats.stats?.matchesPlayed) || parseInt(trackerStats.stats?.gamesPlayed) || 0;
+        const winsValue = parseInt(trackerStats.stats?.wins) || 0;
+        
         const realStats: PlayerStats = {
-          matchs_joues: trackerStats.stats?.matchesPlayed || trackerStats.stats?.gamesPlayed || 0,
-          victoires: trackerStats.stats?.wins || (trackerStats.stats?.winRate ? Math.round((trackerStats.stats.winRate / 100) * (trackerStats.stats.matchesPlayed || trackerStats.stats.gamesPlayed || 0)) : 0),
-          defaites: (trackerStats.stats?.matchesPlayed || trackerStats.stats?.gamesPlayed || 0) - (trackerStats.stats?.wins || 0),
-          kda_moyen: trackerStats.stats?.kd?.toFixed(2) || trackerStats.stats?.kda?.toFixed(2) || "0.00",
+          matchs_joues: matchesValue,
+          victoires: winsValue,
+          defaites: matchesValue - winsValue,
+          kda_moyen: kdValue.toFixed(2),
           temps_jeu: "N/A", // Pas toujours disponible dans les trackers
           rank_actuel: trackerStats.player?.rank || "Non classé"
         };
