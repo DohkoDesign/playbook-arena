@@ -18,6 +18,7 @@ export const PlayerSidebar = ({
     {
       title: "Navigation",
       items: [
+        { id: "dashboard", label: "Dashboard", icon: TrendingUp },
         { id: "calendar", label: "Calendrier", icon: Calendar },
       ]
     },

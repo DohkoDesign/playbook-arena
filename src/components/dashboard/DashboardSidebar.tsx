@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch, MessageSquare, Clock } from "lucide-react";
+import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch, MessageSquare, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DashboardSidebarProps {
@@ -25,6 +25,7 @@ export const DashboardSidebar = ({
     {
       title: "Navigation",
       items: [
+        { id: "dashboard", label: "Dashboard", icon: TrendingUp },
         { id: "calendar", label: "Calendrier", icon: Calendar },
       ]
     },

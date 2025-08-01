@@ -12,7 +12,6 @@ const Index = () => {
       <Header />
       <main>
         <HeroSection />
-        <FeaturesList />
         <FeaturesShowcase />
         <GamesList />
         <TestimonialsSection />

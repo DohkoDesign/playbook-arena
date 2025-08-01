@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { TeamSetupModal } from "@/components/dashboard/TeamSetupModal";
+import { SmartDashboard } from "@/components/dashboard/SmartDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
@@ -15,14 +16,14 @@ import { StaffFeedbackView } from "@/components/dashboard/StaffFeedbackView";
 import { StaffAvailabilitiesView } from "@/components/dashboard/StaffAvailabilitiesView";
 import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "settings" | "recruitment" | "feedbacks" | "availabilities";
+type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "settings" | "recruitment" | "feedbacks" | "availabilities";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTeamSetup, setShowTeamSetup] = useState(false);
-  const [currentView, setCurrentView] = useState<DashboardView>("calendar");
+  const [currentView, setCurrentView] = useState<DashboardView>("dashboard");
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -117,6 +118,8 @@ const Dashboard = () => {
     const gameType = team?.jeu;
 
     switch (currentView) {
+      case "dashboard":
+        return <SmartDashboard teamId={selectedTeam} gameType={gameType} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
       case "calendar":
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
       case "strategies":
@@ -134,7 +137,7 @@ const Dashboard = () => {
       case "availabilities":
         return <StaffAvailabilitiesView teamId={selectedTeam} />;
       default:
-        return <CalendarView teamId={selectedTeam} gameType={gameType} />;
+        return <SmartDashboard teamId={selectedTeam} gameType={gameType} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
     }
   };
 

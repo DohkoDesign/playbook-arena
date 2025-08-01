@@ -4,6 +4,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
 import { PlayerSidebar } from "@/components/player/PlayerSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { SmartDashboard } from "@/components/dashboard/SmartDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
@@ -16,13 +17,13 @@ import { PlayerPerformanceView } from "@/components/player/PlayerPerformanceView
 import { PlayerFeedbackView } from "@/components/player/PlayerFeedbackView";
 import { useToast } from "@/hooks/use-toast";
 
-type PlayerView = "calendar" | "fiche" | "objectives" | "planning" | "performance" | "feedback" | "team-strategies" | "team-coaching";
+type PlayerView = "dashboard" | "calendar" | "fiche" | "objectives" | "planning" | "performance" | "feedback" | "team-strategies" | "team-coaching";
 
 const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<PlayerView>("calendar");
+  const [currentView, setCurrentView] = useState<PlayerView>("dashboard");
   const [teamData, setTeamData] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
@@ -176,6 +177,8 @@ const PlayerDashboard = () => {
     if (!teamData) return null;
 
     switch (currentView) {
+      case "dashboard":
+        return <SmartDashboard teamId={teamData.id} gameType={teamData.jeu} isStaff={false} onViewChange={(view) => setCurrentView(view as PlayerView)} />;
       case "calendar":
         // Calendrier d'équipe (lecture seule)
         return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
@@ -199,7 +202,7 @@ const PlayerDashboard = () => {
         return <CoachingView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       
       default:
-        return <CalendarView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
+        return <SmartDashboard teamId={teamData.id} gameType={teamData.jeu} isStaff={false} onViewChange={(view) => setCurrentView(view as PlayerView)} />;
     }
   };
 
