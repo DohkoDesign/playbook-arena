@@ -244,21 +244,21 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
             <span>Calendrier</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-5 min-h-[400px]">
-            {/* Calendrier - 3 colonnes sur large écran, pleine largeur */}
-            <div className="lg:col-span-3 p-6 border-r">
+        <CardContent className="p-6">
+          <div className="flex gap-4">
+            {/* Calendrier - aligné à gauche, plus grand */}
+            <div className="flex-shrink-0">
               <ShadcnCalendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                className="w-full h-full flex justify-center"
+                className="w-auto scale-110 origin-top-left"
                 locale={fr}
               />
             </div>
 
-            {/* Événements du jour - 2 colonnes */}
-            <div className="lg:col-span-2 p-6">
+            {/* Événements du jour - à droite, espace réduit */}
+            <div className="flex-1 ml-4">
               <h3 className="font-semibold text-lg mb-4">
                 {format(selectedDate, "EEEE d MMMM", { locale: fr })}
               </h3>
