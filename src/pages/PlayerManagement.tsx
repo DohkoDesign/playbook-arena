@@ -249,17 +249,20 @@ export const PlayerManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
+    <div className="min-h-screen bg-background">
+      {/* Fond d'écran coloré avec pattern */}
+      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 -z-10">
+        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
+      </div>
       {/* Header avec design moderne */}
-      <div className="relative bg-gradient-to-r from-primary/5 via-cyan/5 to-violet/5 backdrop-blur-xl border-b border-border/50">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <div className="relative bg-card/80 backdrop-blur-xl border-b">
         <div className="relative max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center justify-between mb-8">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/dashboard')}
-              className="text-muted-foreground hover:text-foreground hover:bg-background/80 backdrop-blur-sm"
+              className="hover:bg-muted"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Retour à l'équipe
@@ -267,51 +270,47 @@ export const PlayerManagement = () => {
             <Button 
               onClick={savePlayerProfile} 
               disabled={saving}
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-elegant"
+              className="bg-primary hover:bg-primary/90"
             >
               <Save className="w-4 h-4 mr-2" />
               {saving ? "Sauvegarde..." : "Sauvegarder les modifications"}
             </Button>
           </div>
           
-          {/* Card du joueur redessinée */}
-          <Card className="bg-card/80 backdrop-blur-xl border-border/50 shadow-elegant overflow-hidden">
-            <div className="relative">
-              {/* Background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-cyan/10 to-violet/10"></div>
-              
-              <CardContent className="relative p-8">
-                <div className="flex items-start space-x-6">
-                  {/* Avatar amélioré */}
-                  <div className="relative">
-                    <Avatar className="w-24 h-24 border-4 border-white/20 shadow-elegant">
-                      <AvatarImage 
-                        src={profile?.photo_profil} 
-                        alt={profile?.pseudo || "Joueur"} 
-                        className="object-cover"
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-2xl font-bold">
-                        {profile?.pseudo?.charAt(0).toUpperCase() || "?"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full border-4 border-background flex items-center justify-center shadow-lg">
-                      <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                    </div>
+          {/* Card du joueur simplifiée */}
+          <Card className="bg-card/90 backdrop-blur-xl border shadow-lg">
+            <CardContent className="p-8">
+              <div className="flex items-start space-x-6">
+                {/* Avatar */}
+                <div className="relative">
+                  <Avatar className="w-24 h-24 border-2 border-border">
+                    <AvatarImage 
+                      src={profile?.photo_profil} 
+                      alt={profile?.pseudo || "Joueur"} 
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                      {profile?.pseudo?.charAt(0).toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-background flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white rounded-full"></div>
                   </div>
+                </div>
                   
                   {/* Informations du joueur */}
                   <div className="flex-1 space-y-4">
                     <div>
-                      <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent mb-2">
+                      <h1 className="text-3xl font-bold text-foreground mb-2">
                         {profile?.pseudo || "Joueur"}
                       </h1>
                       <div className="flex items-center space-x-4 mb-4">
-                        <Badge className={`${getRoleColor(player?.role)} text-sm px-4 py-2 shadow-lg`}>
+                        <Badge className={`${getRoleColor(player?.role)} text-sm px-4 py-2`}>
                           {getRoleIcon(player?.role)}
                           <span className="ml-2 font-medium">{player?.role || "Joueur"}</span>
                         </Badge>
                         {profile?.tracker_last_updated && (
-                          <div className="flex items-center text-sm text-muted-foreground bg-background/50 rounded-full px-3 py-1">
+                          <div className="flex items-center text-sm text-muted-foreground bg-muted rounded-full px-3 py-1">
                             <Calendar className="w-4 h-4 mr-2" />
                             Mis à jour le {format(new Date(profile.tracker_last_updated), "dd/MM/yyyy", { locale: fr })}
                           </div>
@@ -321,29 +320,29 @@ export const PlayerManagement = () => {
                     
                     {/* Statistiques rapides */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-background/50 rounded-xl p-4 border border-border/50">
+                      <div className="bg-card rounded-xl p-4 border">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm text-muted-foreground">Points forts</p>
-                            <p className="text-2xl font-bold text-green-600">{pointsForts.length}</p>
+                            <p className="text-2xl font-bold text-foreground">{pointsForts.length}</p>
                           </div>
                           <TrendingUp className="w-8 h-8 text-green-500" />
                         </div>
                       </div>
-                      <div className="bg-background/50 rounded-xl p-4 border border-border/50">
+                      <div className="bg-card rounded-xl p-4 border">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm text-muted-foreground">Points d'amélioration</p>
-                            <p className="text-2xl font-bold text-orange-600">{pointsFaibles.length}</p>
+                            <p className="text-2xl font-bold text-foreground">{pointsFaibles.length}</p>
                           </div>
                           <TrendingDown className="w-8 h-8 text-orange-500" />
                         </div>
                       </div>
-                      <div className="bg-background/50 rounded-xl p-4 border border-border/50">
+                      <div className="bg-card rounded-xl p-4 border">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-sm text-muted-foreground">Objectifs</p>
-                            <p className="text-2xl font-bold text-primary">{objectifs.length}</p>
+                            <p className="text-2xl font-bold text-foreground">{objectifs.length}</p>
                           </div>
                           <Target className="w-8 h-8 text-primary" />
                         </div>
@@ -352,26 +351,25 @@ export const PlayerManagement = () => {
                   </div>
                 </div>
               </CardContent>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
-      </div>
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Tabs defaultValue="profile" className="space-y-8">
           <div className="flex justify-center">
-            <TabsList className="bg-card/80 backdrop-blur-sm border border-border/50 shadow-elegant rounded-2xl p-2">
+            <TabsList className="bg-card border">
               <TabsTrigger 
                 value="profile" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground rounded-xl px-6 py-3 transition-all duration-300 hover:bg-background/50"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <User className="w-4 h-4 mr-2" />
                 Profil & Analyse
               </TabsTrigger>
               <TabsTrigger 
                 value="notes"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-primary/80 data-[state=active]:text-primary-foreground rounded-xl px-6 py-3 transition-all duration-300 hover:bg-background/50"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
                 Notes Staff
@@ -388,7 +386,7 @@ export const PlayerManagement = () => {
                     <div className="w-12 h-12 bg-card border rounded-2xl flex items-center justify-center">
                       <TrendingUp className="w-6 h-6 text-green-600" />
                     </div>
-                    <span className="text-xl font-bold">Points forts</span>
+                    <span className="text-xl font-bold text-foreground">Points forts</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -410,21 +408,21 @@ export const PlayerManagement = () => {
                   </div>
                   <div className="space-y-3">
                     {pointsForts.map((point, index) => (
-                      <div key={index} className="group flex items-center justify-between p-4 bg-white/70 dark:bg-green-950/30 rounded-xl border border-green-200/50 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
-                        <span className="text-sm font-medium text-green-800 dark:text-green-200 flex-1">{point}</span>
+                      <div key={index} className="group flex items-center justify-between p-4 bg-card rounded-xl border hover:shadow-lg transition-all duration-200">
+                        <span className="text-sm font-medium text-foreground flex-1">{point}</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => removePointFort(index)}
-                          className="opacity-0 group-hover:opacity-100 text-green-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
                         >
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
                     ))}
                     {pointsForts.length === 0 && (
-                      <div className="text-center py-8 text-green-600 dark:text-green-400">
-                        <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50 text-green-600" />
                         <p className="text-sm">Aucun point fort identifié</p>
                       </div>
                     )}
@@ -433,13 +431,13 @@ export const PlayerManagement = () => {
               </Card>
 
               {/* Points faibles */}
-              <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200/50 dark:border-orange-800/50 shadow-elegant hover:shadow-card transition-all duration-300">
+              <Card className="border hover:shadow-lg transition-all duration-300">
                 <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center space-x-3 text-orange-800 dark:text-orange-200">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <TrendingDown className="w-6 h-6 text-white" />
+                  <CardTitle className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-card border rounded-2xl flex items-center justify-center">
+                      <TrendingDown className="w-6 h-6 text-orange-600" />
                     </div>
-                    <span className="text-xl font-bold">Points d'amélioration</span>
+                    <span className="text-xl font-bold text-foreground">Points d'amélioration</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -449,33 +447,33 @@ export const PlayerManagement = () => {
                       value={newPointFaible}
                       onChange={(e) => setNewPointFaible(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addPointFaible()}
-                      className="bg-white/70 border-orange-300 focus:border-orange-500 dark:bg-orange-950/50"
+                      className="bg-background border focus:border-primary"
                     />
                     <Button 
                       size="sm" 
                       onClick={addPointFaible}
-                      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white shadow-lg"
+                      className="bg-primary hover:bg-primary/90"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="space-y-3">
                     {pointsFaibles.map((point, index) => (
-                      <div key={index} className="group flex items-center justify-between p-4 bg-white/70 dark:bg-orange-950/30 rounded-xl border border-orange-200/50 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
-                        <span className="text-sm font-medium text-orange-800 dark:text-orange-200 flex-1">{point}</span>
+                      <div key={index} className="group flex items-center justify-between p-4 bg-card rounded-xl border hover:shadow-lg transition-all duration-200">
+                        <span className="text-sm font-medium text-foreground flex-1">{point}</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => removePointFaible(index)}
-                          className="opacity-0 group-hover:opacity-100 text-orange-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
                         >
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
                     ))}
                     {pointsFaibles.length === 0 && (
-                      <div className="text-center py-8 text-orange-600 dark:text-orange-400">
-                        <TrendingDown className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <TrendingDown className="w-8 h-8 mx-auto mb-2 opacity-50 text-orange-600" />
                         <p className="text-sm">Aucun point d'amélioration identifié</p>
                       </div>
                     )}
@@ -484,13 +482,13 @@ export const PlayerManagement = () => {
               </Card>
 
               {/* Objectifs individuels */}
-              <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/50 dark:border-blue-800/50 shadow-elegant hover:shadow-card transition-all duration-300 lg:col-span-2">
+              <Card className="border hover:shadow-lg transition-all duration-300 lg:col-span-2">
                 <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center space-x-3 text-blue-800 dark:text-blue-200">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <Target className="w-6 h-6 text-white" />
+                  <CardTitle className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-card border rounded-2xl flex items-center justify-center">
+                      <Target className="w-6 h-6 text-primary" />
                     </div>
-                    <span className="text-xl font-bold">Objectifs individuels</span>
+                    <span className="text-xl font-bold text-foreground">Objectifs individuels</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -500,33 +498,33 @@ export const PlayerManagement = () => {
                       value={newObjectif}
                       onChange={(e) => setNewObjectif(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addObjectif()}
-                      className="bg-white/70 border-blue-300 focus:border-blue-500 dark:bg-blue-950/50"
+                      className="bg-background border focus:border-primary"
                     />
                     <Button 
                       size="sm" 
                       onClick={addObjectif}
-                      className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
+                      className="bg-primary hover:bg-primary/90"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     {objectifs.map((objectif, index) => (
-                      <div key={index} className="group flex items-center justify-between p-4 bg-white/70 dark:bg-blue-950/30 rounded-xl border border-blue-200/50 backdrop-blur-sm hover:shadow-lg transition-all duration-200">
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200 flex-1">{objectif}</span>
+                      <div key={index} className="group flex items-center justify-between p-4 bg-card rounded-xl border hover:shadow-lg transition-all duration-200">
+                        <span className="text-sm font-medium text-foreground flex-1">{objectif}</span>
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => removeObjectif(index)}
-                          className="opacity-0 group-hover:opacity-100 text-blue-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
                         >
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
                     ))}
                     {objectifs.length === 0 && (
-                      <div className="col-span-2 text-center py-8 text-blue-600 dark:text-blue-400">
-                        <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <div className="col-span-2 text-center py-8 text-muted-foreground">
+                        <Target className="w-8 h-8 mx-auto mb-2 opacity-50 text-primary" />
                         <p className="text-sm">Aucun objectif défini</p>
                       </div>
                     )}
@@ -537,13 +535,13 @@ export const PlayerManagement = () => {
           </TabsContent>
 
           <TabsContent value="notes" className="animate-fade-in">
-            <Card className="shadow-elegant">
+            <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <MessageSquare className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-card border rounded-2xl flex items-center justify-center">
+                    <MessageSquare className="w-6 h-6 text-primary" />
                   </div>
-                  <span>Notes du staff</span>
+                  <span className="text-foreground">Notes du staff</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -551,7 +549,7 @@ export const PlayerManagement = () => {
                   placeholder="Notes privées sur le joueur (coaching, comportement, progression, etc.)"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[200px] bg-background/50 border-border focus:border-primary"
+                  className="min-h-[200px] bg-background border focus:border-primary"
                 />
                 <p className="text-xs text-muted-foreground mt-2">
                   Ces notes sont privées et ne sont visibles que par le staff de l'équipe.
