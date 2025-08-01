@@ -134,7 +134,7 @@ const Dashboard = () => {
       case "match-analysis":
         return <MatchAnalysisView teamId={selectedTeam} gameType={gameType} />;
       case "coaching-analysis":
-        return <VODAnalysisTools teamId={selectedTeam} gameType={gameType} />;
+        return <VODAnalysisTools teamId={selectedTeam} />;
       case "settings":
         return <TeamSettingsView teamId={selectedTeam} gameType={gameType} teams={teams} onTeamUpdated={() => checkUserTeams(user?.id || "")} />;
       case "recruitment":
