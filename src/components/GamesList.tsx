@@ -1,21 +1,12 @@
-import valorantImg from '../assets/valorant.png';
-import leagueOfLegendsImg from '../assets/league-of-legends.png';
-import csgoImg from '../assets/cs-go-cs2.png';
-import rocketLeagueImg from '../assets/rocket-league.png';
-import overwatchImg from '../assets/overwatch-2.png';
-import apexLegendsImg from '../assets/apex-legends.png';
-import codWarzoneImg from '../assets/call-of-duty-warzone.png';
-import codMultiplayerImg from '../assets/call-of-duty-multiplayer.png';
-
 const POPULAR_GAMES = [
-  { name: "Valorant", image: valorantImg },
-  { name: "League of Legends", image: leagueOfLegendsImg },
-  { name: "CS:GO / CS2", image: csgoImg },
-  { name: "Rocket League", image: rocketLeagueImg },
-  { name: "Overwatch 2", image: overwatchImg },
-  { name: "Apex Legends", image: apexLegendsImg },
-  { name: "Call of Duty Warzone", image: codWarzoneImg },
-  { name: "Call of Duty Multiplayer", image: codMultiplayerImg }
+  { name: "Valorant", image: "/lovable-uploads/234a8bcf-d9df-4c43-8d57-805ff096445b.png" },
+  { name: "League of Legends", image: "/lovable-uploads/69cb53dd-46ed-4ba5-89da-e3c6db01d5ac.png" },
+  { name: "CS:GO / CS2", image: "/lovable-uploads/86fc46d5-2e9c-441f-bd14-4c3a7493d535.png" },
+  { name: "Rocket League", image: "/lovable-uploads/57002cee-29ab-4fd0-a305-3e75b670a26a.png" },
+  { name: "Overwatch 2", image: "/lovable-uploads/4d4d44fd-dbbf-4695-9dca-b11e3816cbdc.png" },
+  { name: "Apex Legends", image: "/lovable-uploads/e63c3e0d-75c5-42eb-b7c7-616ddb5284cd.png" },
+  { name: "Call of Duty Warzone", image: "/lovable-uploads/2c9d630c-6669-4ece-b281-af8ea89a0fc4.png" },
+  { name: "Call of Duty Multiplayer", image: "/lovable-uploads/faeae144-09dc-4896-923f-0cafd5148939.png" }
 ];
 
 export const GamesList = () => {
@@ -36,17 +27,17 @@ export const GamesList = () => {
           {POPULAR_GAMES.map((game, index) => (
             <div 
               key={game.name}
-              className="bg-card border border-border rounded-lg p-4 text-center hover:bg-muted/50 transition-colors cursor-pointer group"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className="relative h-32 rounded-lg overflow-hidden cursor-pointer group transition-transform hover:scale-105"
+              style={{ 
+                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${game.image})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                animationDelay: `${index * 50}ms`
+              }}
             >
-              <div className="w-16 h-16 rounded-lg mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
-                <img 
-                  src={game.image} 
-                  alt={game.name} 
-                  className="w-full h-full object-cover rounded-lg"
-                />
+              <div className="absolute inset-0 flex items-end p-4">
+                <h3 className="font-semibold text-white text-sm leading-tight">{game.name}</h3>
               </div>
-              <h3 className="font-medium text-sm">{game.name}</h3>
             </div>
           ))}
         </div>
