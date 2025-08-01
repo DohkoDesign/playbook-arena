@@ -67,10 +67,6 @@ export const FeaturesShowcase = () => {
                     </div>
                   ))}
                 </div>
-
-                <Button size="lg" className="mt-6">
-                  Découvrir cette fonctionnalité
-                </Button>
               </div>
 
               <div className={`${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
