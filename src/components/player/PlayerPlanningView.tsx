@@ -420,9 +420,9 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendrier - Section principale à gauche */}
-        <Card className="lg:col-span-2">
+      <div className="space-y-6">
+        {/* Calendrier - Section principale */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <CalendarIcon className="w-5 h-5" />
@@ -478,7 +478,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           </CardContent>
         </Card>
 
-        {/* Dossiers d'événements - Section droite compacte */}
+        {/* Dossiers d'événements - Section en dessous */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -487,59 +487,57 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-3">
-                {eventFolders.map((folder) => {
-                  const Icon = getIconComponent(folder.icon);
-                  return (
-                    <div key={folder.id} className="border border-border rounded-lg overflow-hidden">
-                      <div 
-                        className={`p-3 cursor-pointer transition-all hover:opacity-80 ${folder.color}`}
-                        onClick={() => toggleFolderOpen(folder.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <Icon className="w-4 h-4" />
-                            <span className="font-medium text-sm">{folder.name}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {folder.events.length}
-                            </Badge>
-                            {folder.isOpen ? (
-                              <ChevronDown className="w-4 h-4" />
-                            ) : (
-                              <ChevronRight className="w-4 h-4" />
-                            )}
-                          </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {eventFolders.map((folder) => {
+                const Icon = getIconComponent(folder.icon);
+                return (
+                  <div key={folder.id} className="border border-border rounded-lg overflow-hidden">
+                    <div 
+                      className={`p-3 cursor-pointer transition-all hover:opacity-80 ${folder.color}`}
+                      onClick={() => toggleFolderOpen(folder.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="font-medium text-sm">{folder.name}</span>
                         </div>
-                      </div>
-                      
-                      {folder.isOpen && (
-                        <div className="p-3 bg-background border-t">
-                          {folder.events.length === 0 ? (
-                            <p className="text-xs text-muted-foreground text-center py-2">
-                              Aucun événement dans ce dossier
-                            </p>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {folder.events.length}
+                          </Badge>
+                          {folder.isOpen ? (
+                            <ChevronDown className="w-4 h-4" />
                           ) : (
-                            <div className="space-y-2">
-                              {folder.events.map((event) => (
-                                <div key={event.id} className="p-2 border border-border rounded text-xs">
-                                  <div className="font-medium">{event.title}</div>
-                                  <div className="text-muted-foreground">
-                                    {event.duration}min • {event.priority}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                            <ChevronRight className="w-4 h-4" />
                           )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+                    
+                    {folder.isOpen && (
+                      <div className="p-3 bg-background border-t">
+                        {folder.events.length === 0 ? (
+                          <p className="text-xs text-muted-foreground text-center py-2">
+                            Aucun événement dans ce dossier
+                          </p>
+                        ) : (
+                          <div className="space-y-2">
+                            {folder.events.map((event) => (
+                              <div key={event.id} className="p-2 border border-border rounded text-xs">
+                                <div className="font-medium">{event.title}</div>
+                                <div className="text-muted-foreground">
+                                  {event.duration}min • {event.priority}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>
