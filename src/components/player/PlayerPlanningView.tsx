@@ -62,7 +62,6 @@ interface TimeSlot {
   id: string;
   start: number; // Minutes depuis minuit (ex: 540 = 9h00)
   end: number;   // Minutes depuis minuit (ex: 720 = 12h00)
-  available: boolean;
 }
 
 interface DayAvailability {
@@ -263,14 +262,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           {
             id: '1',
             start: 540, // 9h00
-            end: 720,   // 12h00
-            available: true
-          },
-          {
-            id: '2',
-            start: 840, // 14h00
-            end: 1080,  // 18h00
-            available: true
+            end: 1080   // 18h00
           }
         ] : []
       }
@@ -281,8 +273,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     const newSlot: TimeSlot = {
       id: Date.now().toString(),
       start: 540, // 9h00 par défaut
-      end: 600,   // 10h00 par défaut
-      available: true
+      end: 720    // 12h00 par défaut
     };
 
     setWeeklyAvailability(prev => ({
@@ -316,17 +307,6 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     }));
   };
 
-  const toggleSlotAvailability = (dayKey: string, slotId: string) => {
-    setWeeklyAvailability(prev => ({
-      ...prev,
-      [dayKey]: {
-        ...prev[dayKey],
-        slots: prev[dayKey].slots.map(slot => 
-          slot.id === slotId ? { ...slot, available: !slot.available } : slot
-        )
-      }
-    }));
-  };
 
   const saveAvailabilities = async () => {
     try {
@@ -587,31 +567,13 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                   {dayData.enabled && (
                     <CardContent className="space-y-3">
                       {dayData.slots.map((slot) => (
-                        <div key={slot.id} className={`p-4 rounded-lg border-2 transition-all ${
-                          slot.available 
-                            ? 'border-green-200 bg-green-50' 
-                            : 'border-red-200 bg-red-50'
-                        }`}>
+                        <div key={slot.id} className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5 transition-all">
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center space-x-3">
-                              <Button
-                                variant={slot.available ? "default" : "secondary"}
-                                size="sm"
-                                onClick={() => toggleSlotAvailability(dayKey, slot.id)}
-                                className="h-7"
-                              >
-                                {slot.available ? (
-                                  <>
-                                    <Check className="w-3 h-3 mr-1" />
-                                    Disponible
-                                  </>
-                                ) : (
-                                  <>
-                                    <X className="w-3 h-3 mr-1" />
-                                    Indisponible
-                                  </>
-                                )}
-                              </Button>
+                              <div className="flex items-center space-x-2">
+                                <Check className="w-4 h-4 text-green-600" />
+                                <span className="text-sm font-medium text-green-700">Disponible</span>
+                              </div>
                               
                               <div className="text-sm text-muted-foreground">
                                 {minutesToTime(slot.start)} - {minutesToTime(slot.end)}
