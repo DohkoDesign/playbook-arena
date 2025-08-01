@@ -510,6 +510,22 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                     onTimeUpdate={(time) => {
                       // Callback pour mise à jour du timestamp
                     }}
+                    onAddTimestamp={(time) => {
+                      // Ajouter un marqueur automatiquement quand on clique sur "Marquer"
+                      if (currentReview) {
+                        const newTimestamp = {
+                          id: Date.now().toString(),
+                          time: time,
+                          comment: `Moment important à ${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`,
+                          type: "important" as const,
+                          created_at: new Date().toISOString()
+                        };
+                        const updatedTimestamps = [...(currentReview.timestamps || []), newTimestamp].sort((a, b) => a.time - b.time);
+                        const updated = { ...currentReview, timestamps: updatedTimestamps };
+                        setCurrentReview(updated);
+                        saveReviewSession({ timestamps: updatedTimestamps });
+                      }
+                    }}
                   />
                 </div>
               )}
@@ -526,7 +542,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="timestamps" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+                <TabsList className="grid w-full grid-cols-2 bg-muted/50">
                   <TabsTrigger value="timestamps" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <Clock className="w-4 h-4" />
                     <span>Marqueurs Temporels</span>
@@ -534,10 +550,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                   <TabsTrigger value="notes" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FileText className="w-4 h-4" />
                     <span>Notes Stratégiques</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="feedback" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                    <MessageSquare className="w-4 h-4" />
-                    <span>Feedback Collaboratif</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -580,23 +592,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                   />
                 </TabsContent>
 
-                <TabsContent value="feedback" className="mt-6">
-                  <div className="bg-gradient-to-r from-accent/5 to-primary/5 p-4 rounded-lg mb-4">
-                    <h4 className="font-semibold mb-2">Feedback Collaboratif</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Partagez et collectez les retours de l'équipe en temps réel
-                    </p>
-                  </div>
-                  <Card>
-                    <CardContent className="p-6 text-center">
-                      <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <h4 className="font-medium mb-2">Feedback Collaboratif</h4>
-                      <p className="text-muted-foreground">
-                        Système de feedback en temps réel avec notifications et suivi des améliorations à venir...
-                      </p>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>

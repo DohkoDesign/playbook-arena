@@ -17,9 +17,10 @@ interface YouTubePlayerProps {
   videoId: string;
   onTimeUpdate?: (time: number) => void;
   onReady?: () => void;
+  onAddTimestamp?: (time: number) => void;
 }
 
-export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerProps) => {
+export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp }: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -171,7 +172,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
       </div>
 
       {/* Contrôles personnalisés */}
-      <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+      <div className="space-y-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
         {/* Timeline */}
         <div className="space-y-2">
           <Slider
@@ -181,7 +182,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
             onValueChange={(value) => seekTo(value[0])}
             className="w-full"
           />
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-gray-300">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -191,25 +192,28 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={skipBackward}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               <SkipBack className="w-4 h-4" />
             </Button>
             
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={togglePlayPause}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
 
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={skipForward}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               <SkipForward className="w-4 h-4" />
             </Button>
@@ -221,6 +225,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
               variant="ghost"
               size="sm"
               onClick={toggleMute}
+              className="text-gray-300 hover:text-white hover:bg-gray-700"
             >
               {isMuted || volume === 0 ? 
                 <VolumeX className="w-4 h-4" /> : 
@@ -244,7 +249,11 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
                 variant={playbackRate === rate ? "default" : "ghost"}
                 size="sm"
                 onClick={() => changePlaybackRate(rate)}
-                className="text-xs px-2"
+                className={`text-xs px-2 ${
+                  playbackRate === rate 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-gray-300 hover:text-white hover:bg-gray-700"
+                }`}
               >
                 {rate}x
               </Button>
@@ -256,19 +265,21 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
             variant="ghost"
             size="sm"
             onClick={toggleFullscreen}
+            className="text-gray-300 hover:text-white hover:bg-gray-700"
           >
             <Maximize className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Actions rapides pour le coaching */}
-        <div className="border-t pt-4">
+        <div className="border-t border-gray-700 pt-4">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium">Actions rapides:</span>
+            <span className="text-sm font-medium text-gray-300">Actions rapides:</span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 5))}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               -5s
             </Button>
@@ -276,6 +287,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 15))}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               -15s
             </Button>
@@ -283,6 +295,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.min(duration, currentTime + 15))}
+              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
             >
               +15s
             </Button>
@@ -290,15 +303,10 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady }: YouTubePlayerP
               variant="outline"
               size="sm"
               onClick={() => {
-                // Ajouter un timestamp à la position actuelle
-                const timestamp = {
-                  time: currentTime,
-                  comment: `Moment important à ${formatTime(currentTime)}`,
-                  type: "important"
-                };
-                // Cette fonction sera connectée au parent
-                console.log("Timestamp ajouté:", timestamp);
+                // Utiliser la fonction callback pour ajouter un marqueur
+                onAddTimestamp?.(currentTime);
               }}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               📍 Marquer
             </Button>

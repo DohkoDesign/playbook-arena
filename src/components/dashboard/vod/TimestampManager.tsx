@@ -343,14 +343,14 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId }: Tim
 
       {/* Résumé rapide */}
       {timestamps.length > 0 && (
-        <Card className="bg-gray-50">
+        <Card className="bg-gray-900 border-gray-700">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-2">Résumé de l'analyse</h4>
+            <h4 className="font-medium mb-2 text-white">Résumé de l'analyse</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
               {Object.entries(timestampTypes).map(([type, config]) => {
                 const count = timestamps.filter(ts => ts.type === type).length;
                 return (
-                  <div key={type} className="flex items-center space-x-2">
+                  <div key={type} className="flex items-center space-x-2 text-gray-300">
                     <config.icon className="w-4 h-4" />
                     <span>{config.label}: {count}</span>
                   </div>
