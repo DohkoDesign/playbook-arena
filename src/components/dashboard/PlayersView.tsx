@@ -47,26 +47,53 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
 
   const fetchTeamMembers = async () => {
     try {
-      const { data, error } = await supabase
+      // D'abord récupérer les membres de l'équipe
+      const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
-        .select(`
-          *,
-          profiles (
-            pseudo,
-            photo_profil
-          ),
-          player_profiles (
-            points_forts,
-            points_faibles,
-            objectifs_individuels,
-            notes
-          )
-        `)
+        .select("*")
         .eq("team_id", teamId);
 
-      if (error) throw error;
-      setMembers(data || []);
+      if (membersError) throw membersError;
+
+      if (!teamMembers || teamMembers.length === 0) {
+        setMembers([]);
+        return;
+      }
+
+      // Récupérer les profils de chaque membre
+      const userIds = teamMembers.map(member => member.user_id);
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("user_id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Récupérer les profils joueurs
+      const { data: playerProfiles, error: playerProfilesError } = await supabase
+        .from("player_profiles")
+        .select("*")
+        .eq("team_id", teamId)
+        .in("user_id", userIds);
+
+      if (playerProfilesError) throw playerProfilesError;
+
+      // Joindre les données
+      const membersWithProfiles = teamMembers.map(member => {
+        const profile = profiles?.find(p => p.user_id === member.user_id);
+        const playerProfile = playerProfiles?.find(pp => pp.user_id === member.user_id);
+        
+        return {
+          ...member,
+          profiles: profile,
+          player_profiles: playerProfile ? [playerProfile] : []
+        };
+      });
+
+      setMembers(membersWithProfiles);
     } catch (error: any) {
+      console.error("Erreur lors du chargement des membres:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les membres de l'équipe",
