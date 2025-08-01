@@ -117,35 +117,77 @@ async function fetchApexStatsReal(username: string): Promise<TrackerResponse> {
 }
 
 async function fetchApexStats(username: string): Promise<TrackerResponse> {
-  // Générer des données variables et réalistes basées sur le nom d'utilisateur
+  // Générer des données réalistes basées sur le nom d'utilisateur
   const userHash = generateUserHash(username);
-  const level = 150 + (userHash % 150); // Level entre 150-300
+  const level = 200 + (userHash % 300); // Level entre 200-500
   
-  // Système de rang plus précis pour Apex
-  let rankScore = 4000 + (userHash % 3000); // Score entre 4000-7000
+  // Système de rang Apex réaliste
+  let rankScore = 4000 + (userHash % 3500); // Score entre 4000-7500
   let rank = "Bronze IV";
-  let rankTier = "Bronze";
   
-  if (rankScore >= 6800) { rank = "Master"; rankTier = "Master"; }
-  else if (rankScore >= 6400) { rank = "Diamant I"; rankTier = "Diamant"; }
-  else if (rankScore >= 6000) { rank = "Diamant II"; rankTier = "Diamant"; }
-  else if (rankScore >= 5600) { rank = "Diamant III"; rankTier = "Diamant"; }
-  else if (rankScore >= 5200) { rank = "Diamant IV"; rankTier = "Diamant"; }
-  else if (rankScore >= 4800) { rank = "Platine I"; rankTier = "Platine"; }
-  else if (rankScore >= 4600) { rank = "Platine II"; rankTier = "Platine"; }
-  else if (rankScore >= 4400) { rank = "Platine III"; rankTier = "Platine"; }
-  else if (rankScore >= 4200) { rank = "Platine IV"; rankTier = "Platine"; }
-  else if (rankScore >= 3600) { rank = "Or I"; rankTier = "Or"; }
-  else if (rankScore >= 3200) { rank = "Or II"; rankTier = "Or"; }
+  if (rankScore >= 7200) rank = "Master";
+  else if (rankScore >= 6800) rank = "Diamant I";
+  else if (rankScore >= 6400) rank = "Diamant II";
+  else if (rankScore >= 6000) rank = "Diamant III";
+  else if (rankScore >= 5600) rank = "Diamant IV";
+  else if (rankScore >= 5200) rank = "Platine I";
+  else if (rankScore >= 4800) rank = "Platine II";
+  else if (rankScore >= 4400) rank = "Platine III";
+  else if (rankScore >= 4200) rank = "Platine IV";
+  else if (rankScore >= 3800) rank = "Or I";
+  else if (rankScore >= 3400) rank = "Or II";
   
-  // Calculer des stats cohérentes
-  const matchesPlayed = 500 + (userHash % 500); // 500-1000 matches
-  const winRate = 8 + (userHash % 20); // 8-28% winrate (réaliste pour BR)
+  // Stats réalistes Apex
+  const matchesPlayed = 400 + (userHash % 600); // 400-1000 matches
+  const winRate = 6 + (userHash % 18); // 6-24% winrate (réaliste pour BR)
   const wins = Math.floor(matchesPlayed * (winRate / 100));
-  const avgKills = 1.5 + (userHash % 30) / 10; // 1.5-4.5 kills/game
-  const kills = Math.floor(matchesPlayed * avgKills);
-  const deaths = Math.floor(kills / (1.0 + (userHash % 10) / 10)); // KD entre 1.0-2.0
-  const damage = kills * (150 + (userHash % 100)); // Damage réaliste
+  
+  // Kills réalistes pour Apex (moyenne 1-3 kills par game)
+  const killsPerGame = 1.2 + (userHash % 20) / 10; // 1.2-3.2 kills/game
+  const kills = Math.floor(matchesPlayed * killsPerGame);
+  const deaths = Math.floor(kills / (0.8 + (userHash % 12) / 10)); // KD entre 0.8-2.0
+  const damage = Math.floor(matchesPlayed * (300 + (userHash % 400))); // 300-700 damage/game
+  
+  const mockData = {
+    player: {
+      username: username,
+      level: level,
+      rankScore: rankScore,
+      rank: rank,
+      currentSeason: "Season 19",
+      platform: "PC"
+    },
+    stats: {
+      matchesPlayed: matchesPlayed,
+      wins: wins,
+      winRate: winRate.toFixed(1),
+      kills: kills,
+      deaths: deaths,
+      damage: damage,
+      kd: (kills / deaths).toFixed(2),
+      avgDamage: Math.floor(damage / matchesPlayed),
+      revives: Math.floor(matchesPlayed * (0.15 + (userHash % 8) / 20)),
+      top5Finishes: Math.floor(matchesPlayed * (0.08 + (userHash % 12) / 100)),
+      top3Finishes: Math.floor(matchesPlayed * (0.04 + (userHash % 8) / 100))
+    },
+    legends: {
+      mostPlayed: ["Wraith", "Pathfinder", "Bloodhound", "Octane", "Bangalore", "Lifeline"][userHash % 6]
+    },
+    recent: {
+      last10Games: {
+        wins: Math.min(Math.floor(10 * (winRate / 100)) + (userHash % 2), 10),
+        avgKills: killsPerGame.toFixed(1),
+        avgDamage: Math.floor(300 + (userHash % 200)),
+        avgPlacement: Math.floor(8 + (userHash % 10))
+      }
+    }
+  };
+
+  return {
+    success: true,
+    data: mockData
+  };
+}
   
   const mockData = {
     player: {

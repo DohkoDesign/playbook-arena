@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { 
   TrendingUp, 
   Trophy, 
-  BarChart3,
   RefreshCw,
   Star,
-  AlertCircle
+  AlertCircle,
+  Target,
+  Award,
+  Zap
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,17 @@ interface PlayerPerformanceViewProps {
   userProfile?: any;
   teamData?: any;
 }
+
+const gameIcons = {
+  'apex_legends': '🎯',
+  'valorant': '⚡',
+  'league_of_legends': '⚔️',
+  'csgo': '🔫',
+  'overwatch': '🛡️',
+  'rocket_league': '⚽',
+  'cod_warzone': '💥',
+  'cod_multiplayer': '🎮'
+};
 
 export const PlayerPerformanceView = ({ 
   teamId, 
@@ -34,6 +46,7 @@ export const PlayerPerformanceView = ({
   const { toast } = useToast();
 
   const gameConfig = teamData?.jeu ? getGameConfig(teamData.jeu) : null;
+  const gameIcon = gameIcons[teamData?.jeu as keyof typeof gameIcons] || '🎮';
 
   const refreshTrackerStats = async () => {
     if (!teamData?.jeu || !userProfile?.tracker_usernames?.[teamData.jeu]) {
@@ -89,7 +102,6 @@ export const PlayerPerformanceView = ({
         setTrackerStats(userProfile.tracker_stats);
         setLoading(false);
       } else if (userProfile?.tracker_usernames?.[teamData?.jeu]) {
-        // Auto-fetch stats if tracker username is configured but no stats exist
         try {
           setRefreshing(true);
           const { data, error } = await supabase.functions.invoke('fetch-tracker-stats', {
@@ -137,239 +149,153 @@ export const PlayerPerformanceView = ({
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <BarChart3 className="w-8 h-8 mx-auto mb-4 text-muted-foreground animate-pulse" />
-        <p>Chargement de vos performances...</p>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Chargement de vos performances...</p>
+        </div>
       </div>
     );
   }
 
   if (!userProfile?.tracker_usernames?.[teamData?.jeu]) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Performance</h1>
-        <Card>
-          <CardContent className="text-center py-8">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">Configuration requise</h3>
-            <p className="text-muted-foreground mb-4">
-              Configurez votre pseudo de tracker dans les paramètres (icône en haut à droite) pour voir vos statistiques de {gameConfig?.name || 'jeu'}
+      <div className="max-w-2xl mx-auto text-center py-16">
+        <div className="space-y-6">
+          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto">
+            <AlertCircle className="w-8 h-8 text-muted-foreground" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Configuration requise</h2>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Configurez votre pseudo de tracker dans les paramètres pour voir vos statistiques de {gameConfig?.name}
             </p>
-            <Button variant="outline" onClick={() => window.location.href = '#'}>
-              <AlertCircle className="w-4 h-4 mr-2" />
-              Aller aux paramètres
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+          <Button className="bg-primary hover:bg-primary/90">
+            <Target className="w-4 h-4 mr-2" />
+            Aller aux paramètres
+          </Button>
+        </div>
       </div>
     );
   }
 
+  const mainStats = [
+    { label: "Matches", value: trackerStats?.stats?.matchesPlayed || trackerStats?.stats?.gamesPlayed, icon: Target },
+    { label: "Victoires", value: trackerStats?.stats?.wins, icon: Trophy },
+    { label: "K/D", value: trackerStats?.stats?.kd, icon: Zap },
+    { label: "Winrate", value: trackerStats?.stats?.winRate + "%", icon: Award }
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-7xl mx-auto">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {gameConfig?.name === 'Apex Legends' && <span className="text-2xl">🎯</span>}
-          {gameConfig?.name === 'Valorant' && <span className="text-2xl">⚡</span>}
-          {gameConfig?.name === 'League of Legends' && <span className="text-2xl">⚔️</span>}
-          {gameConfig?.name === 'CS:GO / CS2' && <span className="text-2xl">🔫</span>}
-          {gameConfig?.name === 'Overwatch 2' && <span className="text-2xl">🛡️</span>}
-          {gameConfig?.name === 'Rocket League' && <span className="text-2xl">⚽</span>}
-          {gameConfig?.name?.includes('Call of Duty') && <span className="text-2xl">💥</span>}
-          <h1 className="text-2xl font-bold">Performance {gameConfig?.name}</h1>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center text-2xl">
+            {gameIcon}
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Performance</h1>
+            <p className="text-muted-foreground">{gameConfig?.name}</p>
+          </div>
         </div>
-        <Button onClick={refreshTrackerStats} disabled={refreshing} variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700">
+        <Button 
+          onClick={refreshTrackerStats} 
+          disabled={refreshing}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+        >
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          Actualiser
+          {refreshing ? 'Actualisation...' : 'Actualiser'}
         </Button>
       </div>
 
+      {/* Profil joueur */}
       {trackerStats?.player && (
-        <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-purple-200 dark:border-purple-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              Profil Joueur
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Pseudo</p>
-                <p className="font-bold text-lg">{trackerStats.player.username}</p>
+        <Card className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {trackerStats.player.username.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">{trackerStats.player.username}</h3>
+                  <p className="text-muted-foreground">Level {trackerStats.player.level || 'N/A'}</p>
+                </div>
               </div>
-              {trackerStats.player.rank && (
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Rang</p>
-                  <Badge className="text-lg px-4 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white">{trackerStats.player.rank}</Badge>
-                </div>
-              )}
-              {trackerStats.player.level && (
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Level</p>
-                  <p className="font-bold text-xl text-blue-600">{trackerStats.player.level}</p>
-                </div>
-              )}
-              {trackerStats.player.rankScore && (
-                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">RP/Score</p>
-                  <p className="font-bold text-xl text-green-600">{trackerStats.player.rankScore}</p>
-                </div>
-              )}
+              <div className="text-right">
+                <Badge className="text-lg px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
+                  {trackerStats.player.rank}
+                </Badge>
+                {trackerStats.player.rankScore && (
+                  <p className="text-sm text-muted-foreground mt-1">{trackerStats.player.rankScore} RP</p>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {trackerStats?.stats && (
-        <div className="space-y-6">
-          {/* Statistiques générales */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Object.entries(trackerStats.stats).map(([key, value]) => (
-              <Card key={key}>
-                <CardContent className="pt-6">
-                  <div className="flex items-center">
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <div className="ml-2">
-                      <p className="text-sm font-medium capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/([a-z])([A-Z])/g, '$1 $2')}
-                      </p>
-                      <p className="text-2xl font-bold">
-                        {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(2)) : String(value)}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      {/* Statistiques principales */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {mainStats.map((stat, index) => (
+          <Card key={index} className="hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+            <CardContent className="p-6 text-center">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <stat.icon className="w-6 h-6 text-primary" />
+              </div>
+              <div className="text-2xl font-bold mb-1">{stat.value || '0'}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-          {/* Statistiques par légende/agent */}
-          {(trackerStats?.legends || trackerStats?.agents) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5" />
-                  {trackerStats?.legends ? 'Légendes' : 'Agents'} les plus joués
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {trackerStats.legends?.killsByLegend && (
-                    <div>
-                      <h4 className="font-medium mb-3">Éliminations par Légende</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Object.entries(trackerStats.legends.killsByLegend).map(([legend, kills]) => (
-                          <div key={legend} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                            <span className="font-medium">{legend}</span>
-                            <Badge variant="outline">{String(kills)} kills</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {trackerStats.legends?.winsByLegend && (
-                    <div>
-                      <h4 className="font-medium mb-3">Victoires par Légende</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Object.entries(trackerStats.legends.winsByLegend).map(([legend, wins]) => (
-                          <div key={legend} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                            <span className="font-medium">{legend}</span>
-                            <Badge variant="outline" className="bg-green-50">{String(wins)} wins</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {trackerStats.agents?.winRateByAgent && (
-                    <div>
-                      <h4 className="font-medium mb-3">Winrate par Agent</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {Object.entries(trackerStats.agents.winRateByAgent).map(([agent, winRate]) => (
-                          <div key={agent} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                            <span className="font-medium">{agent}</span>
-                            <Badge variant="outline">{String(winRate)}%</Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Statistiques récentes */}
-          {trackerStats?.recent && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  Performances Récentes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {Object.entries(trackerStats.recent.last10Games || trackerStats.recent.last5Games || {}).map(([key, value]) => (
-                    <div key={key} className="text-center">
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').replace(/avg/i, 'Moy.')}
-                      </p>
-                      <p className="text-xl font-bold">{String(value)}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Informations de saison */}
-          {trackerStats?.season && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Trophy className="w-5 h-5" />
-                  Saison Actuelle
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Rang Actuel</p>
-                    <Badge className="text-lg px-3 py-1">{trackerStats.season.currentRank}</Badge>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">Meilleur Rang</p>
-                    <Badge variant="outline" className="text-lg px-3 py-1">{trackerStats.season.highestRank}</Badge>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-muted-foreground">RP Actuels</p>
-                    <p className="text-xl font-bold">{trackerStats.season.rp}</p>
-                  </div>
-                  {trackerStats.season.rp_needed > 0 && (
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground">RP pour rank up</p>
-                      <p className="text-xl font-bold text-blue-600">{trackerStats.season.rp_needed}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      )}
-
-      {trackerStats?.agents?.mostPlayed && (
+      {/* Légendes/Agents */}
+      {(trackerStats?.legends?.mostPlayed || trackerStats?.agents?.mostPlayed) && (
         <Card>
           <CardHeader>
-            <CardTitle>Agent Principal</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" />
+              {trackerStats?.legends ? 'Légende' : 'Agent'} Principal
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="font-medium">{trackerStats.agents.mostPlayed}</span>
+            <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-lg">
+                  {trackerStats.legends?.mostPlayed || trackerStats.agents?.mostPlayed}
+                </h4>
+                <p className="text-muted-foreground">Votre personnage le plus joué</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Performances récentes */}
+      {trackerStats?.recent && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-500" />
+              Performances Récentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(trackerStats.recent.last10Games || trackerStats.recent.last5Games || {}).map(([key, value]) => (
+                <div key={key} className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-lg font-bold">{String(value)}</div>
+                  <div className="text-sm text-muted-foreground capitalize">
+                    {key.replace(/([A-Z])/g, ' $1').replace(/avg/i, 'Moy.')}
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
