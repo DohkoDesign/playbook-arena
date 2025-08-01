@@ -226,39 +226,54 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
 
       const availabilitiesToInsert = [];
 
+      console.log("🔍 Debugging weekly availability:", weeklyAvailability);
+      console.log("🔍 Debugging custom slots:", customSlots);
+
       // Ajouter les créneaux prédéfinis
       DAYS_CONFIG.forEach(day => {
+        console.log(`🔍 Processing day ${day.id}:`, weeklyAvailability[day.id]);
         PREDEFINED_SLOTS.forEach(slot => {
-          if (weeklyAvailability[day.id][slot.id]) {
-            availabilitiesToInsert.push({
+          const isSlotSelected = weeklyAvailability[day.id]?.[slot.id];
+          console.log(`🔍 Slot ${slot.id} for day ${day.id}:`, isSlotSelected);
+          
+          if (isSlotSelected) {
+            const availability = {
               team_id: teamId,
               user_id: playerId,
               day_of_week: day.id,
               start_time: slot.start + ':00',
               end_time: slot.end + ':00',
               week_start: weekStart
-            });
+            };
+            console.log("✅ Adding predefined availability:", availability);
+            availabilitiesToInsert.push(availability);
           }
         });
 
         // Ajouter les créneaux personnalisés
-        customSlots[day.id].forEach(slot => {
-          if (slot.start && slot.end) {
-            availabilitiesToInsert.push({
-              team_id: teamId,
-              user_id: playerId,
-              day_of_week: day.id,
-              start_time: slot.start + ':00',
-              end_time: slot.end + ':00',
-              week_start: weekStart
-            });
-          }
-        });
+        if (customSlots[day.id]) {
+          customSlots[day.id].forEach(slot => {
+            if (slot.start && slot.end) {
+              const availability = {
+                team_id: teamId,
+                user_id: playerId,
+                day_of_week: day.id,
+                start_time: slot.start + ':00',
+                end_time: slot.end + ':00',
+                week_start: weekStart
+              };
+              console.log("✅ Adding custom availability:", availability);
+              availabilitiesToInsert.push(availability);
+            }
+          });
+        }
       });
 
-      console.log("📝 Inserting availabilities:", availabilitiesToInsert);
+      console.log("📝 Final availabilities to insert:", availabilitiesToInsert);
+      console.log("📊 Total count:", availabilitiesToInsert.length);
 
       if (availabilitiesToInsert.length > 0) {
+        console.log("🚀 Making Supabase insert request...");
         const { error: insertError } = await supabase
           .from('player_availabilities')
           .insert(availabilitiesToInsert);
@@ -269,7 +284,9 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
         }
         console.log("✅ Successfully inserted availabilities");
       } else {
-        console.log("⚠️ No availabilities to insert");
+        console.log("⚠️ No availabilities to insert - checking why...");
+        console.log("🔍 weeklyAvailability keys:", Object.keys(weeklyAvailability));
+        console.log("🔍 customSlots keys:", Object.keys(customSlots));
       }
 
       toast({
