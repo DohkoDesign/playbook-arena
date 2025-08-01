@@ -35,13 +35,6 @@ export const PlayerPerformanceView = ({
 
   const gameConfig = teamData?.jeu ? getGameConfig(teamData.jeu) : null;
 
-  useEffect(() => {
-    if (userProfile?.tracker_stats) {
-      setTrackerStats(userProfile.tracker_stats);
-    }
-    setLoading(false);
-  }, [userProfile]);
-
   const refreshTrackerStats = async () => {
     if (!teamData?.jeu || !userProfile?.tracker_usernames?.[teamData.jeu]) {
       toast({
@@ -90,6 +83,24 @@ export const PlayerPerformanceView = ({
     }
   };
 
+  useEffect(() => {
+    const initializeTrackerData = async () => {
+      if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
+        setTrackerStats(userProfile.tracker_stats);
+      } else if (userProfile?.tracker_usernames?.[teamData?.jeu] && !userProfile?.tracker_stats) {
+        // Auto-fetch stats if tracker username is configured but no stats exist
+        await refreshTrackerStats();
+      }
+      setLoading(false);
+    };
+
+    if (userProfile && teamData) {
+      initializeTrackerData();
+    } else {
+      setLoading(false);
+    }
+  }, [userProfile, teamData]);
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -108,8 +119,12 @@ export const PlayerPerformanceView = ({
             <AlertCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">Configuration requise</h3>
             <p className="text-muted-foreground mb-4">
-              Configurez votre pseudo de tracker pour voir vos statistiques
+              Configurez votre pseudo de tracker dans les paramètres (icône en haut à droite) pour voir vos statistiques de {gameConfig?.name || 'jeu'}
             </p>
+            <Button variant="outline" onClick={() => window.location.href = '#'}>
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Aller aux paramètres
+            </Button>
           </CardContent>
         </Card>
       </div>
