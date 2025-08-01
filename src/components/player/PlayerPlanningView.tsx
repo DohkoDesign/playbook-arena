@@ -23,9 +23,26 @@ interface PersonalEvent {
   location?: string;
 }
 
+interface Availability {
+  id: string;
+  user_id: string;
+  team_id: string;
+  week_start: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+}
+
+interface PlayerWithProfile {
+  user_id: string;
+  pseudo: string;
+}
+
 export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps) => {
   const [personalEvents, setPersonalEvents] = useState<PersonalEvent[]>([]);
   const [teamEvents, setTeamEvents] = useState<any[]>([]);
+  const [teamAvailabilities, setTeamAvailabilities] = useState<Availability[]>([]);
+  const [teamMembers, setTeamMembers] = useState<PlayerWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedWeek, setSelectedWeek] = useState(new Date());
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
@@ -55,6 +72,36 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
 
       if (error) throw error;
       setTeamEvents(events || []);
+
+      // Charger les membres de l'équipe
+      const { data: memberIds, error: membersError } = await supabase
+        .from("team_members")
+        .select("user_id")
+        .eq("team_id", teamId);
+
+      if (membersError) throw membersError;
+
+      // Charger les profils des membres
+      if (memberIds && memberIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("user_id, pseudo")
+          .in("user_id", memberIds.map(m => m.user_id));
+
+        if (profilesError) throw profilesError;
+        setTeamMembers(profiles || []);
+      }
+
+      // Charger les disponibilités de l'équipe pour la semaine sélectionnée
+      const weekStart = getWeekStart(selectedWeek);
+      const { data: availabilities, error: availError } = await supabase
+        .from("player_availabilities")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("week_start", weekStart.toISOString().split('T')[0]);
+
+      if (availError) throw availError;
+      setTeamAvailabilities(availabilities || []);
 
       // Simuler des événements personnels
       const mockPersonalEvents: PersonalEvent[] = [
@@ -97,6 +144,13 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     }
   };
 
+  const getWeekStart = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Lundi comme premier jour
+    return new Date(d.setDate(diff));
+  };
+
   const saveAvailability = async () => {
     if (!availabilityWeek) {
       toast({
@@ -107,25 +161,74 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
       return;
     }
 
-    // Ici on sauvegarderait en base de données
-    console.log('Disponibilités pour la semaine du', availabilityWeek, ':', weeklyAvailability);
-    
-    setShowAvailabilityModal(false);
-    setAvailabilityWeek('');
-    setWeeklyAvailability({
-      monday: { available: false, start: '', end: '' },
-      tuesday: { available: false, start: '', end: '' },
-      wednesday: { available: false, start: '', end: '' },
-      thursday: { available: false, start: '', end: '' },
-      friday: { available: false, start: '', end: '' },
-      saturday: { available: false, start: '', end: '' },
-      sunday: { available: false, start: '', end: '' }
-    });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-    toast({
-      title: "Disponibilités enregistrées",
-      description: "Vos disponibilités ont été mises à jour avec succès",
-    });
+      const weekStartDate = new Date(availabilityWeek);
+      
+      // Supprimer les anciennes disponibilités pour cette semaine
+      await supabase
+        .from("player_availabilities")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("team_id", teamId)
+        .eq("week_start", weekStartDate.toISOString().split('T')[0]);
+
+      // Insérer les nouvelles disponibilités
+      const availabilitiesToInsert = [];
+      const dayMapping = {
+        monday: 0, tuesday: 1, wednesday: 2, thursday: 3,
+        friday: 4, saturday: 5, sunday: 6
+      };
+
+      Object.entries(weeklyAvailability).forEach(([day, availability]) => {
+        if (availability.available && availability.start && availability.end) {
+          availabilitiesToInsert.push({
+            user_id: user.id,
+            team_id: teamId,
+            week_start: weekStartDate.toISOString().split('T')[0],
+            day_of_week: dayMapping[day as keyof typeof dayMapping],
+            start_time: availability.start,
+            end_time: availability.end
+          });
+        }
+      });
+
+      if (availabilitiesToInsert.length > 0) {
+        const { error } = await supabase
+          .from("player_availabilities")
+          .insert(availabilitiesToInsert);
+
+        if (error) throw error;
+      }
+
+      // Recharger les données
+      fetchEvents();
+      
+      setShowAvailabilityModal(false);
+      setAvailabilityWeek('');
+      setWeeklyAvailability({
+        monday: { available: false, start: '', end: '' },
+        tuesday: { available: false, start: '', end: '' },
+        wednesday: { available: false, start: '', end: '' },
+        thursday: { available: false, start: '', end: '' },
+        friday: { available: false, start: '', end: '' },
+        saturday: { available: false, start: '', end: '' },
+        sunday: { available: false, start: '', end: '' }
+      });
+
+      toast({
+        title: "Disponibilités enregistrées",
+        description: "Vos disponibilités ont été mises à jour avec succès",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les disponibilités",
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleDayAvailability = (day: keyof typeof weeklyAvailability) => {
@@ -230,6 +333,48 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     });
   };
 
+  const findCommonTimeSlots = (availabilities: Availability[]) => {
+    if (availabilities.length < 2) return [];
+    
+    const timeSlots: { start: string; end: string; playerCount: number }[] = [];
+    const minPlayers = 3; // Minimum de joueurs pour un créneau commun
+    
+    // Convertir les heures en minutes pour faciliter le calcul
+    const timeToMinutes = (time: string) => {
+      const [hours, minutes] = time.split(':').map(Number);
+      return hours * 60 + minutes;
+    };
+    
+    const minutesToTime = (minutes: number) => {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    };
+    
+    // Créer une liste de tous les intervalles possibles (par tranches de 30 min)
+    for (let minute = 8 * 60; minute < 24 * 60; minute += 30) {
+      const startTime = minutesToTime(minute);
+      const endTime = minutesToTime(minute + 30);
+      
+      // Compter combien de joueurs sont disponibles sur ce créneau
+      const playersAvailable = availabilities.filter(avail => {
+        const availStart = timeToMinutes(avail.start_time);
+        const availEnd = timeToMinutes(avail.end_time);
+        return availStart <= minute && availEnd >= minute + 30;
+      }).length;
+      
+      if (playersAvailable >= minPlayers) {
+        timeSlots.push({
+          start: startTime,
+          end: endTime,
+          playerCount: playersAvailable
+        });
+      }
+    }
+    
+    return timeSlots;
+  };
+
   // Combiner et trier tous les événements par date
   const allEvents = [
     ...personalEvents.map(event => ({ ...event, source: 'personal' })),
@@ -314,37 +459,51 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                     {day}
                   </div>
                   
-                  {/* Créneaux simulés pour chaque jour */}
+                  {/* Créneaux réels pour chaque jour */}
                   <div className="space-y-1">
-                    {/* Joueur 1 */}
-                    <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs p-1 rounded">
-                      <div className="font-medium">Alex</div>
-                      <div>14h-18h</div>
-                    </div>
+                    {teamAvailabilities
+                      .filter(avail => avail.day_of_week === index)
+                      .map(availability => {
+                        const player = teamMembers.find(m => m.user_id === availability.user_id);
+                        const colors = [
+                          'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300',
+                          'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300',
+                          'bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-300',
+                          'bg-pink-100 dark:bg-pink-900/20 text-pink-800 dark:text-pink-300',
+                          'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300'
+                        ];
+                        const colorIndex = teamMembers.findIndex(m => m.user_id === availability.user_id) % colors.length;
+                        
+                        return (
+                          <div 
+                            key={availability.id}
+                            className={`${colors[colorIndex]} text-xs p-1 rounded`}
+                          >
+                            <div className="font-medium">{player?.pseudo || 'Joueur'}</div>
+                            <div>
+                              {availability.start_time.slice(0, 5)}-{availability.end_time.slice(0, 5)}
+                            </div>
+                          </div>
+                        );
+                      })
+                    }
                     
-                    {/* Joueur 2 */}
-                    {index < 5 && (
-                      <div className="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs p-1 rounded">
-                        <div className="font-medium">Mike</div>
-                        <div>19h-23h</div>
-                      </div>
-                    )}
-                    
-                    {/* Joueur 3 */}
-                    {index % 2 === 0 && (
-                      <div className="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-300 text-xs p-1 rounded">
-                        <div className="font-medium">Sarah</div>
-                        <div>16h-20h</div>
-                      </div>
-                    )}
-                    
-                    {/* Créneaux communs */}
-                    {index < 4 && (
-                      <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs p-1 rounded border-2 border-orange-300">
-                        <div className="font-bold">🔥 Créneau commun</div>
-                        <div>17h-18h</div>
-                      </div>
-                    )}
+                    {/* Afficher les créneaux communs s'il y en a */}
+                    {(() => {
+                      const dayAvailabilities = teamAvailabilities.filter(avail => avail.day_of_week === index);
+                      const commonSlots = findCommonTimeSlots(dayAvailabilities);
+                      
+                      return commonSlots.map((slot, slotIndex) => (
+                        <div 
+                          key={`common-${index}-${slotIndex}`}
+                          className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs p-1 rounded border-2 border-orange-300"
+                        >
+                          <div className="font-bold">🔥 Créneau commun</div>
+                          <div>{slot.start}-{slot.end}</div>
+                          <div className="text-[10px]">{slot.playerCount} joueurs</div>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </div>
               ))}

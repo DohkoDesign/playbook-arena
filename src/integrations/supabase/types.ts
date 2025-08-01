@@ -152,6 +152,42 @@ export type Database = {
           },
         ]
       }
+      player_availabilities: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          start_time: string
+          team_id: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          start_time: string
+          team_id: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          start_time?: string
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       player_profiles: {
         Row: {
           created_at: string
