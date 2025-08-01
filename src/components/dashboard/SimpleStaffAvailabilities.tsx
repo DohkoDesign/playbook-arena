@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { startOfWeek } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -98,13 +99,12 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         throw profilesError;
       }
 
-      // Récupérer la semaine courante correctement
+      // Récupérer la semaine courante avec la même logique que côté joueur
       const today = new Date();
-      const mondayOfWeek = new Date(today);
-      mondayOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
-      const weekStart = mondayOfWeek.toISOString().split('T')[0];
+      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
+      const weekStart = weekStartDate.toISOString().split('T')[0];
       
-      console.log("📅 Week start calculated:", weekStart);
+      console.log("📅 Week start calculated with startOfWeek:", weekStart);
       console.log("📅 Today:", today.toISOString().split('T')[0]);
 
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
