@@ -188,7 +188,9 @@ export const PlayerAvailabilityManager = ({ teamId, playerId }: PlayerAvailabili
     try {
       setSaving(true);
       
-      console.log("💾 Saving availabilities...");
+      console.log("💾 Starting availability save process...");
+      console.log("🔍 Current weekly availability state:", weeklyAvailability);
+      console.log("📊 Team ID:", teamId, "Player ID:", playerId);
 
       // Supprimer toutes les anciennes disponibilités
       const { error: deleteError } = await supabase

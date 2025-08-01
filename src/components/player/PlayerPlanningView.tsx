@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PlayerAvailabilityManager } from "./PlayerAvailabilityManager";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -318,127 +319,21 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
         </CardContent>
       </Card>
 
-      {/* Modal de disponibilités */}
+      {/* Modal de disponibilités - intégration avec PlayerAvailabilityManager */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Mes Disponibilités</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {Object.entries(weeklyAvailability).map(([dayKey, dayData]) => (
-                <div key={dayKey} className={`p-4 border rounded-lg ${dayData.enabled ? 'bg-primary/5 border-primary/20' : ''}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${dayData.enabled ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
-                        {getDayName(dayKey).substring(0, 1)}
-                      </div>
-                      <span className="font-medium">{getDayName(dayKey)}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        checked={dayData.enabled}
-                        onCheckedChange={() => toggleDayEnabled(dayKey)}
-                      />
-                      {dayData.enabled && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedDay(dayKey);
-                            setShowDayModal(true);
-                          }}
-                        >
-                          Configurer
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {dayData.enabled && dayData.slots.length > 0 && (
-                    <div className="space-y-1">
-                      {dayData.slots.map((slot, index) => (
-                        <div key={slot.id} className="text-xs text-muted-foreground">
-                          Créneau {index + 1}: {slot.start} - {slot.end}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowAvailabilityModal(false)}>
-                Annuler
-              </Button>
-              <Button onClick={saveAvailabilities}>
-                <Check className="w-4 h-4 mr-2" />
-                Sauvegarder
-              </Button>
-            </div>
+          <div className="py-4">
+            <PlayerAvailabilityManager teamId={teamId} playerId={playerId} />
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de configuration par jour */}
-      <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Configurer {getDayName(selectedDay)}</DialogTitle>
-          </DialogHeader>
           
-          <div className="space-y-4">
-            {weeklyAvailability[selectedDay]?.slots.map((slot, index) => (
-              <div key={slot.id} className="p-3 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium">Créneau {index + 1}</span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeTimeSlot(selectedDay, slot.id)}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs">Début</Label>
-                    <input
-                      type="time"
-                      value={slot.start}
-                      onChange={(e) => updateTimeSlot(selectedDay, slot.id, 'start', e.target.value)}
-                      className="w-full p-2 border rounded text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Fin</Label>
-                    <input
-                      type="time"
-                      value={slot.end}
-                      onChange={(e) => updateTimeSlot(selectedDay, slot.id, 'end', e.target.value)}
-                      className="w-full p-2 border rounded text-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            <Button
-              variant="outline"
-              onClick={() => addTimeSlot(selectedDay)}
-              className="w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter un créneau
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowAvailabilityModal(false)}>
+              Fermer
             </Button>
-
-            <div className="flex justify-end">
-              <Button onClick={() => setShowDayModal(false)}>
-                Fermer
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
