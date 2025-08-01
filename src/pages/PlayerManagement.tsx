@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +10,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   User, 
@@ -16,13 +22,17 @@ import {
   TrendingDown, 
   Plus, 
   X,
-  Calendar,
+  Calendar as CalendarIcon,
   BarChart3,
   MessageSquare,
-  Save
+  Save,
+  Clock,
+  Trophy,
+  Star
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export const PlayerManagement = () => {
   const { teamId, userId } = useParams();
@@ -32,10 +42,13 @@ export const PlayerManagement = () => {
   const [player, setPlayer] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [playerProfile, setPlayerProfile] = useState<any>(null);
+  const [availabilities, setAvailabilities] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  // États pour l'édition
+  // États pour l'édition du profil
   const [pointsForts, setPointsForts] = useState<string[]>([]);
   const [pointsFaibles, setPointsFaibles] = useState<string[]>([]);
   const [objectifs, setObjectifs] = useState<string[]>([]);
@@ -44,11 +57,28 @@ export const PlayerManagement = () => {
   const [newPointFaible, setNewPointFaible] = useState("");
   const [newObjectif, setNewObjectif] = useState("");
 
+  // États pour le planning
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [newEventTitle, setNewEventTitle] = useState("");
+  const [newEventDescription, setNewEventDescription] = useState("");
+  const [newEventStartTime, setNewEventStartTime] = useState("");
+  const [newEventEndTime, setNewEventEndTime] = useState("");
+
   useEffect(() => {
     if (teamId && userId) {
-      fetchPlayerData();
+      fetchAllData();
     }
   }, [teamId, userId]);
+
+  const fetchAllData = async () => {
+    await Promise.all([
+      fetchPlayerData(),
+      fetchAvailabilities(),
+      fetchEvents(),
+      fetchFeedbacks()
+    ]);
+  };
 
   const fetchPlayerData = async () => {
     try {
@@ -103,6 +133,123 @@ export const PlayerManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAvailabilities = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("player_availabilities")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("user_id", userId)
+        .order("day_of_week", { ascending: true });
+
+      if (error) throw error;
+      setAvailabilities(data || []);
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des disponibilités:", error);
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("team_id", teamId)
+        .order("date_debut", { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des événements:", error);
+    }
+  };
+
+  const fetchFeedbacks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("player_feedbacks")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setFeedbacks(data || []);
+    } catch (error: any) {
+      console.error("Erreur lors du chargement des feedbacks:", error);
+    }
+  };
+
+  const createPersonalEvent = async () => {
+    if (!selectedDate || !newEventTitle || !newEventStartTime || !newEventEndTime) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const startDateTime = new Date(selectedDate);
+      const [startHour, startMinute] = newEventStartTime.split(':');
+      startDateTime.setHours(parseInt(startHour), parseInt(startMinute));
+
+      const endDateTime = new Date(selectedDate);
+      const [endHour, endMinute] = newEventEndTime.split(':');
+      endDateTime.setHours(parseInt(endHour), parseInt(endMinute));
+
+      const { error } = await supabase
+        .from("events")
+        .insert({
+          team_id: teamId,
+          titre: newEventTitle,
+          description: newEventDescription,
+          type: "session_individuelle",
+          date_debut: startDateTime.toISOString(),
+          date_fin: endDateTime.toISOString(),
+          created_by: userId
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Succès",
+        description: "Événement ajouté au planning du joueur",
+      });
+
+      setShowEventModal(false);
+      setNewEventTitle("");
+      setNewEventDescription("");
+      setNewEventStartTime("");
+      setNewEventEndTime("");
+      fetchEvents();
+    } catch (error: any) {
+      console.error("Erreur lors de la création de l'événement:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'événement",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getDayName = (dayIndex: number) => {
+    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    return days[dayIndex];
+  };
+
+  const formatTime = (time: string) => {
+    return time.slice(0, 5);
+  };
+
+  const getEventsForDate = (date: Date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.date_debut);
+      return eventDate.toDateString() === date.toDateString();
+    });
   };
 
   const savePlayerProfile = async () => {
@@ -399,41 +546,271 @@ export const PlayerManagement = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="performance">
-          <Card>
-            <CardHeader>
-              <CardTitle>Statistiques de performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Les statistiques de performance seront disponibles prochainement.
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="performance" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Statistiques du tracker */}
+            {profile?.tracker_stats && Object.keys(profile.tracker_stats).length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Trophy className="w-5 h-5 text-yellow-600" />
+                    <span>Statistiques du tracker</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {Object.entries(profile.tracker_stats).map(([key, value]: [string, any]) => (
+                      <div key={key} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                        <span className="font-medium capitalize">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <Badge variant="secondary">
+                          {typeof value === 'object' ? JSON.stringify(value) : value}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Statistiques du tracker</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Aucune statistique disponible. Le joueur doit configurer son tracker.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Usernames du tracker */}
+            {profile?.tracker_usernames && Object.keys(profile.tracker_usernames).length > 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Star className="w-5 h-5 text-blue-600" />
+                    <span>Comptes tracker</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(profile.tracker_usernames).map(([platform, username]: [string, any]) => (
+                      <div key={platform} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                        <span className="font-medium capitalize">{platform}</span>
+                        <span className="text-sm text-muted-foreground">{username}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Comptes tracker</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Aucun compte tracker configuré.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="planning">
-          <Card>
-            <CardHeader>
-              <CardTitle>Planning et disponibilités</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Le planning du joueur sera disponible prochainement.
-              </p>
-            </CardContent>
-          </Card>
+        <TabsContent value="planning" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Calendrier */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Planning personnel</span>
+                  <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
+                    <DialogTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Ajouter événement
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Ajouter un événement personnel</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="event-title">Titre *</Label>
+                          <Input
+                            id="event-title"
+                            value={newEventTitle}
+                            onChange={(e) => setNewEventTitle(e.target.value)}
+                            placeholder="Titre de l'événement"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="event-description">Description</Label>
+                          <Textarea
+                            id="event-description"
+                            value={newEventDescription}
+                            onChange={(e) => setNewEventDescription(e.target.value)}
+                            placeholder="Description de l'événement"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="start-time">Heure de début *</Label>
+                            <Input
+                              id="start-time"
+                              type="time"
+                              value={newEventStartTime}
+                              onChange={(e) => setNewEventStartTime(e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="end-time">Heure de fin *</Label>
+                            <Input
+                              id="end-time"
+                              type="time"
+                              value={newEventEndTime}
+                              onChange={(e) => setNewEventEndTime(e.target.value)}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={() => setShowEventModal(false)}>
+                            Annuler
+                          </Button>
+                          <Button onClick={createPersonalEvent}>
+                            Créer l'événement
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={setSelectedDate}
+                  className={cn("rounded-md border pointer-events-auto")}
+                  locale={fr}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Disponibilités */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Clock className="w-5 h-5 text-green-600" />
+                  <span>Disponibilités régulières</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {availabilities.length > 0 ? (
+                  <div className="space-y-3">
+                    {availabilities.map((availability) => (
+                      <div key={availability.id} className="p-3 bg-green-50 rounded-lg">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">
+                            {getDayName(availability.day_of_week)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {formatTime(availability.start_time)} - {formatTime(availability.end_time)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground">
+                    Aucune disponibilité configurée par le joueur.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Événements du jour sélectionné */}
+            {selectedDate && (
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle>
+                    Événements du {format(selectedDate, "dd MMMM yyyy", { locale: fr })}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {getEventsForDate(selectedDate).length > 0 ? (
+                    <div className="space-y-3">
+                      {getEventsForDate(selectedDate).map((event) => (
+                        <div key={event.id} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-medium">{event.titre}</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {format(new Date(event.date_debut), "HH:mm")} - {format(new Date(event.date_fin), "HH:mm")}
+                              </p>
+                              {event.description && (
+                                <p className="text-sm mt-2">{event.description}</p>
+                              )}
+                            </div>
+                            <Badge variant="outline">{event.type}</Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Aucun événement prévu pour cette date.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
-        <TabsContent value="feedback">
+        <TabsContent value="feedback" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Historique des feedbacks</CardTitle>
+              <CardTitle className="flex items-center space-x-2">
+                <MessageSquare className="w-5 h-5 text-blue-600" />
+                <span>Historique des feedbacks</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                L'historique des feedbacks sera disponible prochainement.
-              </p>
+              {feedbacks.length > 0 ? (
+                <div className="space-y-4">
+                  {feedbacks.map((feedback) => (
+                    <div key={feedback.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-medium">{feedback.title}</h4>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Badge variant="outline">{feedback.category}</Badge>
+                            <Badge variant={feedback.status === 'pending' ? 'secondary' : 'default'}>
+                              {feedback.status}
+                            </Badge>
+                            {feedback.is_anonymous && (
+                              <Badge variant="outline">Anonyme</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {format(new Date(feedback.created_at), "dd/MM/yyyy HH:mm")}
+                        </span>
+                      </div>
+                      <p className="text-sm">{feedback.content}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground">
+                  Aucun feedback pour ce joueur.
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
