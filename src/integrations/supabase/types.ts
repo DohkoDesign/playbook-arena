@@ -476,6 +476,75 @@ export type Database = {
         }
         Relationships: []
       }
+      vod_reviews: {
+        Row: {
+          coach_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          timestamps: Json | null
+          updated_at: string
+          vod_id: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          timestamps?: Json | null
+          updated_at?: string
+          vod_id: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          timestamps?: Json | null
+          updated_at?: string
+          vod_id?: string
+        }
+        Relationships: []
+      }
+      vod_shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          include_notes: boolean | null
+          include_timestamps: boolean | null
+          message: string | null
+          review_id: string | null
+          title: string
+          vod_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          include_notes?: boolean | null
+          include_timestamps?: boolean | null
+          message?: string | null
+          review_id?: string | null
+          title: string
+          vod_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          include_notes?: boolean | null
+          include_timestamps?: boolean | null
+          message?: string | null
+          review_id?: string | null
+          title?: string
+          vod_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
