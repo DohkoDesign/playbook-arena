@@ -1,10 +1,25 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MessageSquare, Send, Clock, User } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  MessageSquare, 
+  Plus, 
+  Send, 
+  Eye, 
+  EyeOff,
+  AlertTriangle,
+  Lightbulb,
+  Heart,
+  Bug,
+  HelpCircle
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -17,38 +32,97 @@ interface PlayerFeedbackViewProps {
 
 interface Feedback {
   id: string;
-  message: string;
-  type: string;
+  title: string;
+  content: string;
+  category: 'suggestion' | 'complaint' | 'compliment' | 'bug' | 'other';
+  is_anonymous: boolean;
+  status: 'pending' | 'reviewed' | 'resolved';
   created_at: string;
-  response?: string;
-  responded_at?: string;
 }
+
+const categoryConfig = {
+  suggestion: {
+    label: 'Suggestion',
+    icon: Lightbulb,
+    color: 'bg-blue-50 text-blue-700 border-blue-200'
+  },
+  complaint: {
+    label: 'Plainte',
+    icon: AlertTriangle,
+    color: 'bg-red-50 text-red-700 border-red-200'
+  },
+  compliment: {
+    label: 'Compliment',
+    icon: Heart,
+    color: 'bg-green-50 text-green-700 border-green-200'
+  },
+  bug: {
+    label: 'Bug/Problème',
+    icon: Bug,
+    color: 'bg-orange-50 text-orange-700 border-orange-200'
+  },
+  other: {
+    label: 'Autre',
+    icon: HelpCircle,
+    color: 'bg-gray-50 text-gray-700 border-gray-200'
+  }
+};
+
+const statusConfig = {
+  pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-800' },
+  reviewed: { label: 'Examiné', color: 'bg-blue-100 text-blue-800' },
+  resolved: { label: 'Résolu', color: 'bg-green-100 text-green-800' }
+};
 
 export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps) => {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    category: 'suggestion' as Feedback['category'],
+    is_anonymous: false
+  });
   const [submitting, setSubmitting] = useState(false);
-  const [newMessage, setNewMessage] = useState("");
-  const [messageType, setMessageType] = useState("general");
   const { toast } = useToast();
 
   useEffect(() => {
-    if (playerId) {
-      fetchFeedbacks();
-    }
-  }, [playerId]);
+    fetchFeedbacks();
+  }, [teamId, playerId]);
 
   const fetchFeedbacks = async () => {
     try {
-      // Pour cette démo, on simule des feedbacks depuis localStorage
-      const savedFeedbacks = localStorage.getItem(`feedbacks_${playerId}`);
-      if (savedFeedbacks) {
-        setFeedbacks(JSON.parse(savedFeedbacks));
-      }
+      setLoading(true);
+      
+      // Récupérer seulement les feedbacks non-anonymes du joueur
+      const { data, error } = await supabase
+        .from('player_feedbacks')
+        .select('*')
+        .eq('team_id', teamId)
+        .eq('user_id', playerId)
+        .eq('is_anonymous', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Mapper les données pour correspondre à l'interface
+      const mappedFeedbacks: Feedback[] = (data || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        content: item.content,
+        category: item.category as Feedback['category'],
+        is_anonymous: item.is_anonymous,
+        status: item.status as Feedback['status'],
+        created_at: item.created_at
+      }));
+      
+      setFeedbacks(mappedFeedbacks);
     } catch (error: any) {
+      console.error('Error fetching feedbacks:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger vos messages",
+        description: "Impossible de charger les feedbacks",
         variant: "destructive",
       });
     } finally {
@@ -56,36 +130,63 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
     }
   };
 
-  const sendFeedback = async () => {
-    if (!newMessage.trim()) return;
-
-    setSubmitting(true);
-
-    try {
-      const newFeedback: Feedback = {
-        id: Date.now().toString(),
-        message: newMessage.trim(),
-        type: messageType,
-        created_at: new Date().toISOString()
-      };
-
-      const updatedFeedbacks = [newFeedback, ...feedbacks];
-      setFeedbacks(updatedFeedbacks);
-      
-      // Sauvegarder localement (en prod, ce serait dans Supabase)
-      localStorage.setItem(`feedbacks_${playerId}`, JSON.stringify(updatedFeedbacks));
-
-      setNewMessage("");
-      setMessageType("general");
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été transmis au staff",
-      });
-    } catch (error: any) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title.trim() || !formData.content.trim()) {
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer le message",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      
+      const feedbackData = {
+        team_id: teamId,
+        user_id: formData.is_anonymous ? null : playerId,
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        category: formData.category,
+        is_anonymous: formData.is_anonymous
+      };
+
+      const { error } = await supabase
+        .from('player_feedbacks')
+        .insert([feedbackData]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Feedback envoyé",
+        description: formData.is_anonymous 
+          ? "Votre feedback anonyme a été envoyé avec succès"
+          : "Votre feedback a été envoyé avec succès",
+      });
+
+      // Reset form
+      setFormData({
+        title: '',
+        content: '',
+        category: 'suggestion',
+        is_anonymous: false
+      });
+      
+      setShowCreateModal(false);
+      
+      // Recharger les feedbacks si ce n'était pas anonyme
+      if (!formData.is_anonymous) {
+        fetchFeedbacks();
+      }
+      
+    } catch (error: any) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer le feedback",
         variant: "destructive",
       });
     } finally {
@@ -93,40 +194,13 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
     }
   };
 
-  const feedbackTypes = [
-    { value: "general", label: "Message général" },
-    { value: "coaching_request", label: "Demande de coaching" },
-    { value: "role_change", label: "Changement de rôle" },
-    { value: "character_change", label: "Changement de personnage" },
-    { value: "schedule", label: "Planning / Disponibilité" },
-    { value: "suggestion", label: "Suggestion d'amélioration" }
-  ];
-
-  const getTypeLabel = (type: string) => {
-    const found = feedbackTypes.find(t => t.value === type);
-    return found ? found.label : type;
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "coaching_request":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "role_change":
-      case "character_change":
-        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
-      case "schedule":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "suggestion":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p>Chargement des messages...</p>
+        <div className="text-center space-y-2">
+          <div className="w-8 h-8 bg-primary rounded-lg mx-auto animate-pulse"></div>
+          <p>Chargement des feedbacks...</p>
+        </div>
       </div>
     );
   }
@@ -134,125 +208,185 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <MessageSquare className="w-5 h-5 text-primary" />
-          <h2 className="text-2xl font-bold">Communication Staff</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Mes Feedbacks</h2>
+          <p className="text-muted-foreground">
+            Partagez vos suggestions, compliments ou signalements avec votre équipe
+          </p>
         </div>
+        
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Nouveau Feedback
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Créer un nouveau feedback</DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Titre *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Résumé de votre feedback..."
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Catégorie *</Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as Feedback['category'] }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(categoryConfig).map(([key, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <SelectItem key={key} value={key}>
+                          <div className="flex items-center space-x-2">
+                            <Icon className="w-4 h-4" />
+                            <span>{config.label}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content">Message *</Label>
+                <Textarea
+                  id="content"
+                  value={formData.content}
+                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Décrivez votre feedback en détail..."
+                  rows={6}
+                  required
+                />
+              </div>
+
+              <div className="flex items-center space-x-3 p-4 border rounded-lg bg-muted/20">
+                <div className="flex items-center space-x-2">
+                  {formData.is_anonymous ? (
+                    <EyeOff className="w-5 h-5 text-muted-foreground" />
+                  ) : (
+                    <Eye className="w-5 h-5 text-muted-foreground" />
+                  )}
+                  <Label htmlFor="anonymous" className="cursor-pointer">
+                    Envoyer de manière anonyme
+                  </Label>
+                </div>
+                <Switch
+                  id="anonymous"
+                  checked={formData.is_anonymous}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_anonymous: checked }))}
+                />
+              </div>
+              
+              {formData.is_anonymous && (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Note :</strong> Les feedbacks anonymes ne pourront pas être consultés dans votre historique personnel.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowCreateModal(false)}
+                  disabled={submitting}
+                >
+                  Annuler
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                  ) : (
+                    <Send className="w-4 h-4 mr-2" />
+                  )}
+                  Envoyer
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      {/* Formulaire de nouveau message */}
+      {/* Liste des feedbacks non-anonymes */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Send className="w-4 h-4" />
-            <span>Nouveau Message</span>
+            <MessageSquare className="w-5 h-5" />
+            <span>Mes feedbacks envoyés</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="messageType">Type de message</Label>
-            <Select value={messageType} onValueChange={setMessageType}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {feedbackTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
-            <Textarea
-              id="message"
-              placeholder="Décrivez votre demande ou remarque..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              rows={4}
-            />
-          </div>
-
-          <Button 
-            onClick={sendFeedback} 
-            disabled={submitting || !newMessage.trim()}
-            className="w-full"
-          >
-            {submitting ? "Envoi..." : "Envoyer le message"}
-          </Button>
+        <CardContent>
+          {feedbacks.length === 0 ? (
+            <div className="text-center py-12">
+              <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">Aucun feedback pour le moment</h3>
+              <p className="text-muted-foreground mb-4">
+                Commencez par créer votre premier feedback pour partager vos idées avec l'équipe.
+              </p>
+              <Button onClick={() => setShowCreateModal(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Créer un feedback
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {feedbacks.map((feedback) => {
+                const categoryInfo = categoryConfig[feedback.category];
+                const statusInfo = statusConfig[feedback.status];
+                const Icon = categoryInfo.icon;
+                
+                return (
+                  <div key={feedback.id} className="p-4 border rounded-lg hover:shadow-sm transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-lg border ${categoryInfo.color}`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{feedback.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(feedback.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className={statusInfo.color}>
+                        {statusInfo.label}
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {feedback.content}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Catégorie: {categoryInfo.label}</span>
+                      <span>ID: {feedback.id.slice(0, 8)}...</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      {/* Historique des messages */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Historique des messages</h3>
-        
-        {feedbacks.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h4 className="text-lg font-semibold mb-2">Aucun message</h4>
-              <p className="text-muted-foreground">
-                Vous n'avez pas encore envoyé de message au staff. N'hésitez pas à communiquer !
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="space-y-3">
-            {feedbacks.map((feedback) => (
-              <Card key={feedback.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium text-sm">Vous</span>
-                      <div className={`px-2 py-1 rounded-full text-xs ${getTypeColor(feedback.type)}`}>
-                        {getTypeLabel(feedback.type)}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                      <Clock className="w-3 h-3" />
-                      <span>
-                        {format(new Date(feedback.created_at), "PPP 'à' HH:mm", { locale: fr })}
-                      </span>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <p className="text-sm whitespace-pre-wrap">{feedback.message}</p>
-                    
-                    {feedback.response ? (
-                      <div className="border-t pt-3">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <User className="w-4 h-4 text-primary" />
-                          <span className="font-medium text-sm text-primary">Réponse du staff</span>
-                          <div className="flex items-center space-x-1 text-xs text-muted-foreground">
-                            <Clock className="w-3 h-3" />
-                            <span>
-                              {format(new Date(feedback.responded_at!), "PPP 'à' HH:mm", { locale: fr })}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="bg-primary/5 p-3 rounded-lg">
-                          <p className="text-sm whitespace-pre-wrap">{feedback.response}</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                        En attente de réponse du staff
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

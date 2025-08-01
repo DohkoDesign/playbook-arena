@@ -188,6 +188,45 @@ export type Database = {
         }
         Relationships: []
       }
+      player_feedbacks: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_anonymous: boolean
+          status: string
+          team_id: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          status?: string
+          team_id: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_anonymous?: boolean
+          status?: string
+          team_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       player_profiles: {
         Row: {
           created_at: string
