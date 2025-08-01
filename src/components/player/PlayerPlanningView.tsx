@@ -307,7 +307,6 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     }));
   };
 
-
   const saveAvailabilities = async () => {
     try {
       // Ici on sauvegarderait en base
@@ -325,63 +324,81 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     }
   };
 
-  // Composant TimeSelector personnalisé pour remplacer la popup native
-  const TimeSelector = ({ value, onChange, label }: { value: number, onChange: (value: number) => void, label: string }) => {
-    const [isOpen, setIsOpen] = useState(false);
+
+  // Nouveau composant de sélection d'horaire inline
+  const InlineTimeSelector = ({ value, onChange, label }: { value: number, onChange: (value: number) => void, label: string }) => {
     const hours = Math.floor(value / 60);
     const minutes = value % 60;
 
-    return (
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-20 h-8 text-xs font-mono">
-            <Clock className="w-3 h-3 mr-1" />
-            {minutesToTime(value)}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-64 p-4" align="start">
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">{label}</Label>
-            
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Heures: {hours}h</Label>
-                <Slider
-                  value={[hours]}
-                  onValueChange={([newHours]) => {
-                    onChange(newHours * 60 + minutes);
-                  }}
-                  max={23}
-                  min={0}
-                  step={1}
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label className="text-xs text-muted-foreground">Minutes: {minutes}min</Label>
-                <Slider
-                  value={[minutes]}
-                  onValueChange={([newMinutes]) => {
-                    onChange(hours * 60 + newMinutes);
-                  }}
-                  max={59}
-                  min={0}
-                  step={15}
-                  className="mt-1"
-                />
-              </div>
-            </div>
+    const incrementHour = () => {
+      const newHours = hours < 23 ? hours + 1 : 0;
+      onChange(newHours * 60 + minutes);
+    };
 
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-lg font-mono">{minutesToTime(value)}</span>
-              <Button size="sm" onClick={() => setIsOpen(false)}>
-                <Check className="w-3 h-3" />
-              </Button>
-            </div>
+    const decrementHour = () => {
+      const newHours = hours > 0 ? hours - 1 : 23;
+      onChange(newHours * 60 + minutes);
+    };
+
+    const incrementMinute = () => {
+      const newMinutes = minutes < 45 ? minutes + 15 : 0;
+      onChange(hours * 60 + newMinutes);
+    };
+
+    const decrementMinute = () => {
+      const newMinutes = minutes > 0 ? minutes - 15 : 45;
+      onChange(hours * 60 + newMinutes);
+    };
+
+    return (
+      <div className="flex flex-col space-y-2">
+        <Label className="text-xs text-muted-foreground">{label}</Label>
+        <div className="flex items-center space-x-2 bg-background border rounded-lg p-2">
+          {/* Heures */}
+          <div className="flex flex-col items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-xs"
+              onClick={incrementHour}
+            >
+              +
+            </Button>
+            <span className="text-lg font-mono w-8 text-center">{hours.toString().padStart(2, '0')}</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-xs"
+              onClick={decrementHour}
+            >
+              -
+            </Button>
           </div>
-        </PopoverContent>
-      </Popover>
+          
+          <span className="text-lg font-mono">:</span>
+          
+          {/* Minutes */}
+          <div className="flex flex-col items-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-xs"
+              onClick={incrementMinute}
+            >
+              +
+            </Button>
+            <span className="text-lg font-mono w-8 text-center">{minutes.toString().padStart(2, '0')}</span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-xs"
+              onClick={decrementMinute}
+            >
+              -
+            </Button>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -593,25 +610,19 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                             </Button>
                           </div>
                           
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                              <Label className="text-xs text-muted-foreground">Début:</Label>
-                              <TimeSelector
-                                value={slot.start}
-                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
-                                label="Heure de début"
-                              />
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                              <Label className="text-xs text-muted-foreground">Fin:</Label>
-                              <TimeSelector
-                                value={slot.end}
-                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
-                                label="Heure de fin"
-                              />
-                            </div>
-                          </div>
+                           <div className="grid grid-cols-2 gap-4">
+                             <InlineTimeSelector
+                               value={slot.start}
+                               onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
+                               label="Heure de début"
+                             />
+                             
+                             <InlineTimeSelector
+                               value={slot.end}
+                               onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
+                               label="Heure de fin"
+                             />
+                           </div>
                         </div>
                       ))}
                       
