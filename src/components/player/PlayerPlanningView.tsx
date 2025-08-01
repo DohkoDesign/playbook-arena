@@ -321,7 +321,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
 
       {/* Modal de disponibilités - intégration avec PlayerAvailabilityManager */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto w-[95vw]">
           <DialogHeader>
             <DialogTitle>Mes Disponibilités</DialogTitle>
           </DialogHeader>
