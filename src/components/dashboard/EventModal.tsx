@@ -273,15 +273,6 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
               >
                 ← Retour aux templates
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={applySuggestion}
-                className="text-xs"
-              >
-                <Sparkles className="w-3 h-3 mr-1" />
-                Suggestion automatique
-              </Button>
             </div>
 
             <div className="space-y-2">
