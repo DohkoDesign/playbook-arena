@@ -27,7 +27,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getGameConfig } from "@/data/gameConfigs";
-import { IntelligentEventCreator } from "./IntelligentEventCreator";
+
 
 interface MatchAnalysisViewProps {
   teamId: string;
@@ -293,12 +293,6 @@ export const MatchAnalysisView = ({ teamId, gameType }: MatchAnalysisViewProps) 
         </Card>
       </div>
 
-      {/* Section intelligente pour créer des événements */}
-      <IntelligentEventCreator 
-        teamId={teamId} 
-        gameType={gameType} 
-        onEventCreated={fetchData} 
-      />
 
       {/* Liste des matchs avec design amélioré */}
       <div className="space-y-4">
