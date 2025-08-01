@@ -194,6 +194,9 @@ export const NewVODManager = ({ teamId }: NewVODManagerProps) => {
         .upsert({
           event_id: selectedEvent.id,
           vods: updatedVODs as any
+        }, {
+          onConflict: 'event_id',
+          ignoreDuplicates: false
         });
 
       if (error) throw error;

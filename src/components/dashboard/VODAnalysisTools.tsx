@@ -371,31 +371,15 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
       </div>
 
       <Tabs value={currentTool} onValueChange={setCurrentTool} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="vod-management" className="flex items-center space-x-2">
             <Plus className="w-4 h-4" />
             <span>Gestion VODs</span>
-          </TabsTrigger>
-          <TabsTrigger value="vod-review" className="flex items-center space-x-2">
-            <PlayCircle className="w-4 h-4" />
-            <span>Revue VOD</span>
-          </TabsTrigger>
-          <TabsTrigger value="pattern-analysis" className="flex items-center space-x-2">
-            <TrendingUp className="w-4 h-4" />
-            <span>Patterns</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="vod-management" className="mt-6">
           {renderVODManagement()}
-        </TabsContent>
-
-        <TabsContent value="vod-review" className="mt-6">
-          {renderVODReview()}
-        </TabsContent>
-
-        <TabsContent value="pattern-analysis" className="mt-6">
-          {renderPatternAnalysis()}
         </TabsContent>
       </Tabs>
     </div>
