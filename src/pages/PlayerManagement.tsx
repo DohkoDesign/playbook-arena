@@ -554,52 +554,75 @@ export const PlayerManagement = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Trophy className="w-5 h-5 text-yellow-600" />
-                    <span>Statistiques du tracker</span>
+                    <span>Statistiques de performance</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {Object.entries(profile.tracker_stats).map(([key, value]: [string, any]) => (
-                      <div key={key} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="font-medium capitalize">
-                          {key.replace(/_/g, ' ')}
-                        </span>
-                        <Badge variant="secondary">
-                          {typeof value === 'object' ? JSON.stringify(value) : value}
-                        </Badge>
-                      </div>
-                    ))}
+                  <div className="grid gap-3">
+                    {Object.entries(profile.tracker_stats).map(([key, value]: [string, any]) => {
+                      const displayKey = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                      const displayValue = typeof value === 'object' 
+                        ? Object.entries(value).map(([k, v]) => `${k}: ${v}`).join(', ')
+                        : value;
+                      
+                      return (
+                        <div key={key} className="flex flex-col space-y-1 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border">
+                          <span className="text-sm font-medium text-muted-foreground">
+                            {displayKey}
+                          </span>
+                          <span className="text-lg font-bold text-foreground">
+                            {displayValue}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Statistiques du tracker</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Trophy className="w-5 h-5 text-yellow-600" />
+                    <span>Statistiques de performance</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Aucune statistique disponible. Le joueur doit configurer son tracker.
-                  </p>
+                  <div className="text-center py-8">
+                    <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">
+                      Aucune statistique disponible
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Le joueur doit configurer son tracker dans son profil
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Usernames du tracker */}
+            {/* Comptes de jeu */}
             {profile?.tracker_usernames && Object.keys(profile.tracker_usernames).length > 0 ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Star className="w-5 h-5 text-blue-600" />
-                    <span>Comptes tracker</span>
+                    <span>Comptes de jeu</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
+                  <div className="grid gap-3">
                     {Object.entries(profile.tracker_usernames).map(([platform, username]: [string, any]) => (
-                      <div key={platform} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <span className="font-medium capitalize">{platform}</span>
-                        <span className="text-sm text-muted-foreground">{username}</span>
+                      <div key={platform} className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border">
+                        <div>
+                          <span className="font-medium capitalize text-foreground">{platform}</span>
+                          <p className="text-sm text-muted-foreground">Plateforme de jeu</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-mono text-sm bg-white px-2 py-1 rounded border">
+                            {username}
+                          </span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -608,12 +631,21 @@ export const PlayerManagement = () => {
             ) : (
               <Card>
                 <CardHeader>
-                  <CardTitle>Comptes tracker</CardTitle>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Star className="w-5 h-5 text-blue-600" />
+                    <span>Comptes de jeu</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
-                    Aucun compte tracker configuré.
-                  </p>
+                  <div className="text-center py-8">
+                    <Star className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground">
+                      Aucun compte configuré
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Le joueur doit ajouter ses comptes de jeu
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -691,13 +723,15 @@ export const PlayerManagement = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  className={cn("rounded-md border pointer-events-auto")}
-                  locale={fr}
-                />
+                <div className="w-full">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    className="rounded-md border w-full"
+                    locale={fr}
+                  />
+                </div>
               </CardContent>
             </Card>
 
