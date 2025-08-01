@@ -372,7 +372,7 @@ export const PlayerManagement = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(`/dashboard/${teamId}`)}
+                onClick={() => navigate('/dashboard')}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
