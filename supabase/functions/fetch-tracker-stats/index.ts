@@ -223,29 +223,75 @@ async function fetchLoLStats(username: string): Promise<TrackerResponse> {
 }
 
 async function fetchApexStats(username: string): Promise<TrackerResponse> {
-  // Simulation de données Apex Legends réalistes
+  // Générer des données variables basées sur le nom d'utilisateur
+  const userHash = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const level = 150 + (userHash % 100); // Level entre 150-250
+  const rankScore = 4000 + (userHash % 2000); // Score entre 4000-6000
+  
+  // Déterminer le rang basé sur le score
+  let rank = "Platine IV";
+  if (rankScore >= 5400) rank = "Diamant III";
+  else if (rankScore >= 5200) rank = "Diamant IV"; 
+  else if (rankScore >= 5000) rank = "Platine I";
+  else if (rankScore >= 4800) rank = "Platine II";
+  else if (rankScore >= 4600) rank = "Platine III";
+  
+  const matchesPlayed = 800 + (userHash % 300);
+  const wins = Math.floor(matchesPlayed * (0.08 + (userHash % 20) / 100)); // 8-28% winrate
+  const kills = Math.floor(matchesPlayed * (2.5 + (userHash % 30) / 10)); // 2.5-5.5 kills/game
+  const damage = kills * (180 + (userHash % 100)); // Damage variable
+
   const mockData = {
     player: {
       username: username,
-      level: 187,
-      rankScore: 4832,
-      rank: "Platinum IV"
+      level: level,
+      rankScore: rankScore,
+      rank: rank,
+      currentSeason: "Season 19",
+      platform: "PC"
     },
     stats: {
-      matchesPlayed: 892,
-      wins: 78,
-      kills: 2341,
-      damage: 486203,
-      kd: 1.45,
-      avgDamage: 545.2
+      matchesPlayed: matchesPlayed,
+      wins: wins,
+      winRate: ((wins / matchesPlayed) * 100).toFixed(1),
+      kills: kills,
+      deaths: Math.floor(kills / (1.2 + (userHash % 8) / 10)), // KD entre 1.2-2.0
+      damage: damage,
+      kd: (kills / Math.floor(kills / (1.2 + (userHash % 8) / 10))).toFixed(2),
+      avgDamage: (damage / matchesPlayed).toFixed(0),
+      revives: Math.floor(matchesPlayed * (0.3 + (userHash % 5) / 10)),
+      top5Finishes: Math.floor(matchesPlayed * (0.15 + (userHash % 15) / 100)),
+      top3Finishes: Math.floor(matchesPlayed * (0.08 + (userHash % 10) / 100))
     },
     legends: {
-      mostPlayed: "Wraith",
+      mostPlayed: ["Wraith", "Pathfinder", "Bloodhound", "Octane", "Bangalore"][userHash % 5],
       killsByLegend: {
-        "Wraith": 634,
-        "Pathfinder": 387,
-        "Bloodhound": 298
+        "Wraith": Math.floor(kills * 0.4),
+        "Pathfinder": Math.floor(kills * 0.25),
+        "Bloodhound": Math.floor(kills * 0.2),
+        "Octane": Math.floor(kills * 0.1),
+        "Bangalore": Math.floor(kills * 0.05)
+      },
+      winsByLegend: {
+        "Wraith": Math.floor(wins * 0.45),
+        "Pathfinder": Math.floor(wins * 0.25),
+        "Bloodhound": Math.floor(wins * 0.2),
+        "Octane": Math.floor(wins * 0.1)
       }
+    },
+    recent: {
+      last10Games: {
+        wins: Math.floor(10 * (wins / matchesPlayed)),
+        avgKills: (2 + (userHash % 20) / 10).toFixed(1),
+        avgDamage: (400 + (userHash % 200)).toFixed(0),
+        avgPlacement: (8 + (userHash % 12)).toFixed(1)
+      }
+    },
+    season: {
+      currentRank: rank,
+      highestRank: rankScore > 5000 ? "Diamant II" : "Platine I",
+      rp: rankScore,
+      rp_needed: 5400 - rankScore > 0 ? 5400 - rankScore : 0
     }
   };
 

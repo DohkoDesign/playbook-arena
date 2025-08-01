@@ -206,24 +206,142 @@ export const PlayerPerformanceView = ({
       )}
 
       {trackerStats?.stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {Object.entries(trackerStats.stats).map(([key, value]) => (
-            <Card key={key}>
-              <CardContent className="pt-6">
-                <div className="flex items-center">
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  <div className="ml-2">
-                    <p className="text-sm font-medium capitalize">
-                      {key.replace(/([A-Z])/g, ' $1')}
-                    </p>
-                    <p className="text-2xl font-bold">
-                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
-                    </p>
+        <div className="space-y-6">
+          {/* Statistiques générales */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Object.entries(trackerStats.stats).map(([key, value]) => (
+              <Card key={key}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    <div className="ml-2">
+                      <p className="text-sm font-medium capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').replace(/([a-z])([A-Z])/g, '$1 $2')}
+                      </p>
+                      <p className="text-2xl font-bold">
+                        {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(2)) : String(value)}
+                      </p>
+                    </div>
                   </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Statistiques par légende/agent */}
+          {(trackerStats?.legends || trackerStats?.agents) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5" />
+                  {trackerStats?.legends ? 'Légendes' : 'Agents'} les plus joués
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {trackerStats.legends?.killsByLegend && (
+                    <div>
+                      <h4 className="font-medium mb-3">Éliminations par Légende</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {Object.entries(trackerStats.legends.killsByLegend).map(([legend, kills]) => (
+                          <div key={legend} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="font-medium">{legend}</span>
+                            <Badge variant="outline">{String(kills)} kills</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {trackerStats.legends?.winsByLegend && (
+                    <div>
+                      <h4 className="font-medium mb-3">Victoires par Légende</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {Object.entries(trackerStats.legends.winsByLegend).map(([legend, wins]) => (
+                          <div key={legend} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="font-medium">{legend}</span>
+                            <Badge variant="outline" className="bg-green-50">{String(wins)} wins</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {trackerStats.agents?.winRateByAgent && (
+                    <div>
+                      <h4 className="font-medium mb-3">Winrate par Agent</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {Object.entries(trackerStats.agents.winRateByAgent).map(([agent, winRate]) => (
+                          <div key={agent} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                            <span className="font-medium">{agent}</span>
+                            <Badge variant="outline">{String(winRate)}%</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )}
+
+          {/* Statistiques récentes */}
+          {trackerStats?.recent && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  Performances Récentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(trackerStats.recent.last10Games || trackerStats.recent.last5Games || {}).map(([key, value]) => (
+                    <div key={key} className="text-center">
+                      <p className="text-sm text-muted-foreground capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').replace(/avg/i, 'Moy.')}
+                      </p>
+                      <p className="text-xl font-bold">{String(value)}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Informations de saison */}
+          {trackerStats?.season && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  Saison Actuelle
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Rang Actuel</p>
+                    <Badge className="text-lg px-3 py-1">{trackerStats.season.currentRank}</Badge>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Meilleur Rang</p>
+                    <Badge variant="outline" className="text-lg px-3 py-1">{trackerStats.season.highestRank}</Badge>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">RP Actuels</p>
+                    <p className="text-xl font-bold">{trackerStats.season.rp}</p>
+                  </div>
+                  {trackerStats.season.rp_needed > 0 && (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">RP pour rank up</p>
+                      <p className="text-xl font-bold text-blue-600">{trackerStats.season.rp_needed}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 
