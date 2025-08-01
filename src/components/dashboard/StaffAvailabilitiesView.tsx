@@ -46,32 +46,51 @@ export const StaffAvailabilitiesView = ({ teamId }: StaffAvailabilitiesViewProps
     try {
       setLoading(true);
       
-      // Récupérer les joueurs de l'équipe
+      console.log("🔍 Fetching data for team:", teamId);
+      
+      // D'abord récupérer les membres de l'équipe
       const { data: teamMembers, error: membersError } = await supabase
         .from('team_members')
         .select('user_id')
         .eq('team_id', teamId);
 
-      if (membersError) throw membersError;
+      console.log("👥 Team members:", teamMembers);
 
-      // Récupérer les profils pour avoir les pseudos
-      const playersList = [];
-      for (const member of teamMembers) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('pseudo')
-          .eq('user_id', member.user_id)
-          .single();
-        
-        playersList.push({
-          id: member.user_id,
-          pseudo: profile?.pseudo || 'Joueur inconnu'
-        });
+      if (membersError) {
+        console.error("Team members error:", membersError);
+        throw membersError;
       }
-      
+
+      if (!teamMembers || teamMembers.length === 0) {
+        console.log("⚠️ No team members found");
+        setPlayers([]);
+        setAvailabilities([]);
+        return;
+      }
+
+      // Récupérer les profils des membres
+      const userIds = teamMembers.map(m => m.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, pseudo, photo_profil')
+        .in('user_id', userIds);
+
+      console.log("📋 Profiles:", profiles);
+
+      if (profilesError) {
+        console.error("Profiles error:", profilesError);
+        throw profilesError;
+      }
+
+      // Créer la liste des joueurs
+      const playersList = (profiles || []).map(profile => ({
+        id: profile.user_id,
+        pseudo: profile.pseudo || 'Joueur inconnu'
+      }));
+
       setPlayers(playersList);
 
-      // Récupérer toutes les disponibilités de l'équipe
+      // Récupérer les disponibilités
       const { data: availabilitiesData, error: availError } = await supabase
         .from('player_availabilities')
         .select('*')
@@ -79,20 +98,28 @@ export const StaffAvailabilitiesView = ({ teamId }: StaffAvailabilitiesViewProps
         .order('day_of_week')
         .order('start_time');
 
-      if (availError) throw availError;
+      console.log("📅 Availabilities data:", availabilitiesData);
+      console.log("❌ Availabilities error:", availError);
+
+      if (availError) {
+        console.error("Availabilities error:", availError);
+        throw availError;
+      }
 
       // Enrichir avec les pseudos
-      const enrichedAvailabilities = availabilitiesData.map(avail => ({
+      const enrichedAvailabilities = (availabilitiesData || []).map(avail => ({
         ...avail,
         pseudo: playersList.find(p => p.id === avail.user_id)?.pseudo || 'Joueur inconnu'
       }));
 
+      console.log("✅ Final enriched availabilities:", enrichedAvailabilities);
       setAvailabilities(enrichedAvailabilities);
+      
     } catch (error: any) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Error fetching data:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les disponibilités",
+        description: `Impossible de charger les disponibilités: ${error.message}`,
         variant: "destructive",
       });
     } finally {

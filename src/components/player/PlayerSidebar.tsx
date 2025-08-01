@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Users, BookOpen, Video, Settings, Target, TrendingUp, User, MessageSquare } from "lucide-react";
+import { Calendar, Users, BookOpen, Video, Settings, Target, TrendingUp, User, MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PlayerSidebarProps {
@@ -28,6 +28,7 @@ export const PlayerSidebar = ({
         { id: "fiche", label: "Ma Fiche", icon: User },
         { id: "objectives", label: "Mes Objectifs", icon: Target },
         { id: "planning", label: "Planning Personnel", icon: Calendar },
+        { id: "availabilities", label: "Mes Disponibilités", icon: Clock },
         { id: "performance", label: "Performances", icon: TrendingUp },
         { id: "feedback", label: "Mes Feedbacks", icon: MessageSquare },
       ]
