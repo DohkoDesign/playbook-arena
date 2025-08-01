@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PostMatchVODManager } from "./PostMatchVODManager";
+import { NewVODManager } from "./NewVODManager";
 
 interface VODAnalysisToolsProps {
   teamId: string;
@@ -86,137 +86,7 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
   };
 
   const renderVODManagement = () => (
-    <div className="space-y-6">
-      {/* Sélection du match pour ajouter des VODs */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Video className="w-5 h-5 mr-2" />
-            Gestion des VODs Post-Match
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground">Chargement des matchs...</p>
-            </div>
-          ) : matchesWithResults.length === 0 ? (
-            <div className="text-center py-8">
-              <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Aucun match disponible</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Créez des événements dans le calendrier pour ajouter des VODs
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <Label>Sélectionner un match pour ajouter des VODs</Label>
-              <Select value={selectedMatch?.id || ""} onValueChange={(value) => {
-                const match = matchesWithResults.find(m => m.id === value);
-                setSelectedMatch(match);
-              }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir un match" />
-                </SelectTrigger>
-                <SelectContent>
-                  {matchesWithResults.map((match) => (
-                    <SelectItem key={match.id} value={match.id}>
-                      <div className="flex items-center space-x-2">
-                        <span>{match.titre}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {new Date(match.date_debut).toLocaleDateString('fr-FR')}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs">
-                          {match.type}
-                        </Badge>
-                        {match.coaching_sessions?.length > 0 && match.coaching_sessions[0]?.vods && (
-                          <Badge variant="default" className="text-xs">
-                            {Array.isArray(match.coaching_sessions[0].vods) 
-                              ? match.coaching_sessions[0].vods.length 
-                              : 0} VOD(s)
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Gestionnaire de VODs pour le match sélectionné */}
-      {selectedMatch && (
-        <PostMatchVODManager 
-          eventId={selectedMatch.id}
-          teamId={teamId}
-          onVODsUpdated={fetchMatchesWithResults}
-        />
-      )}
-
-      {/* Résumé des VODs existantes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="w-5 h-5 mr-2" />
-            Résumé des VODs par Match
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {matchesWithResults
-              .filter(match => 
-                match.coaching_sessions?.length > 0 && 
-                match.coaching_sessions[0]?.vods &&
-                Array.isArray(match.coaching_sessions[0].vods) &&
-                match.coaching_sessions[0].vods.length > 0
-              )
-              .map((match) => {
-                const vodCount = Array.isArray(match.coaching_sessions[0]?.vods) 
-                  ? match.coaching_sessions[0].vods.length 
-                  : 0;
-                const validatedCount = Array.isArray(match.coaching_sessions[0]?.vods)
-                  ? match.coaching_sessions[0].vods.filter((vod: any) => vod.validated).length
-                  : 0;
-
-                return (
-                  <div key={match.id} className="border rounded-lg p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium">{match.titre}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(match.date_debut).toLocaleDateString('fr-FR')} - {match.type}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Badge variant="outline">
-                          {vodCount} VOD(s)
-                        </Badge>
-                        <Badge variant={validatedCount > 0 ? "default" : "secondary"}>
-                          {validatedCount} validée(s)
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            
-            {matchesWithResults
-              .filter(match => 
-                !match.coaching_sessions?.length ||
-                !match.coaching_sessions[0]?.vods ||
-                !Array.isArray(match.coaching_sessions[0].vods) ||
-                match.coaching_sessions[0].vods.length === 0
-              ).length === matchesWithResults.length && (
-              <div className="text-center py-4 text-muted-foreground">
-                Aucune VOD ajoutée pour le moment
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <NewVODManager teamId={teamId} />
   );
 
   const renderVODReview = () => (
