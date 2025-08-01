@@ -21,7 +21,6 @@ export default {
 			fontFamily: {
 				'inter': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 				'montserrat': ['Montserrat', 'sans-serif'],
-				'orbitron': ['Orbitron', 'monospace'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -67,16 +66,9 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-			},
-			backgroundImage: {
-				'gradient-gaming': 'var(--gradient-primary)',
-				'gradient-secondary': 'var(--gradient-secondary)',
-				'gradient-accent': 'var(--gradient-accent)',
+				// Keep colors minimal and use existing tokens
 			},
 			boxShadow: {
-				'gaming': 'var(--shadow-gaming)',
-				'glow-primary': 'var(--glow-primary)',
-				'glow-accent': 'var(--glow-accent)',
 				'elegant': 'var(--shadow-elegant)',
 				'card': 'var(--shadow-card)',
 				'dropdown': 'var(--shadow-dropdown)'
@@ -86,36 +78,7 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
-			animation: {
-				'float': 'float 3s ease-in-out infinite',
-				'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-				'gradient-shift': 'gradient-shift 3s ease infinite',
-				'neon-pulse': 'neon-pulse 2s ease-in-out infinite',
-				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			},
 			keyframes: {
-				float: {
-					'0%, 100%': { transform: 'translateY(0px)' },
-					'50%': { transform: 'translateY(-10px)' },
-				},
-				'pulse-glow': {
-					'0%, 100%': { boxShadow: 'var(--glow-primary)' },
-					'50%': { boxShadow: 'var(--glow-accent)' },
-				},
-				'gradient-shift': {
-					'0%': { backgroundPosition: '0% 50%' },
-					'50%': { backgroundPosition: '100% 50%' },
-					'100%': { backgroundPosition: '0% 50%' },
-				},
-				'neon-pulse': {
-					'0%, 100%': { 
-						textShadow: '0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)), 0 0 15px hsl(var(--primary))' 
-					},
-					'50%': { 
-						textShadow: '0 0 10px hsl(var(--accent)), 0 0 20px hsl(var(--accent)), 0 0 30px hsl(var(--accent))' 
-					},
-				},
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -132,6 +95,10 @@ export default {
 						height: '0'
 					}
 				}
+			},
+			animation: {
+				'accordion-down': 'accordion-down 0.2s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},

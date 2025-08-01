@@ -1,149 +1,124 @@
-/* Modern Gaming Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@900&family=Orbitron:wght@400;500;600;700&display=swap');
+/* Design System - Noir et Blanc */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* Remove default outlines */
+  /* Supprimer les contours blancs par défaut */
   * {
     outline: none !important;
   }
   
   *:focus, *:focus-visible {
     outline: none !important;
-    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.5) !important;
+    box-shadow: none !important;
   }
-
   :root {
-    /* Modern Gaming Color Palette */
-    --background: 8 12 23; /* Dark navy */
-    --foreground: 248 250 252; /* Light gray */
+    /* Gris plus doux */
+    --background: 0 0% 98%; /* Blanc cassé */
+    --foreground: 0 0% 15%; /* Gris foncé au lieu de noir */
     
-    --card: 15 23 42; /* Slate-800 */
-    --card-foreground: 248 250 252;
+    --card: 0 0% 100%; /* Blanc pur */
+    --card-foreground: 0 0% 15%;
     
-    --popover: 15 23 42;
-    --popover-foreground: 248 250 252;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 15%;
     
-    --primary: 168 85 247; /* Purple-500 */
-    --primary-foreground: 255 255 255;
+    --primary: 0 0% 20%; /* Gris foncé au lieu de noir */
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 71 85 105; /* Slate-600 */
-    --secondary-foreground: 248 250 252;
+    --secondary: 0 0% 94%; /* Gris très clair */
+    --secondary-foreground: 0 0% 15%;
     
-    --muted: 30 41 59; /* Slate-700 */
-    --muted-foreground: 148 163 184; /* Slate-400 */
+    --muted: 0 0% 94%;
+    --muted-foreground: 0 0% 50%;
     
-    --accent: 6 182 212; /* Cyan-500 */
-    --accent-foreground: 15 23 42;
+    --accent: 0 0% 94%;
+    --accent-foreground: 0 0% 15%;
     
-    --destructive: 239 68 68; /* Red-500 */
-    --destructive-foreground: 248 250 252;
+    --destructive: 0 84% 60%; /* Rouge pour erreurs */
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 51 65 85; /* Slate-600 */
-    --input: 30 41 59;
-    --ring: 168 85 247;
+    --border: 0 0% 88%; /* Gris clair */
+    --input: 0 0% 88%;
+    --ring: 0 0% 20%;
     
-    --radius: 0.75rem;
-
-    /* Gaming Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(270 91% 65%), hsl(188 94% 57%));
-    --gradient-secondary: linear-gradient(135deg, hsl(188 94% 57%), hsl(168 85% 55%));
-    --gradient-accent: linear-gradient(135deg, hsl(31 100% 60%), hsl(349 100% 65%));
-    --gradient-brand: var(--gradient-primary);
-
-    /* Gaming Effects */
-    --glow-primary: 0 0 40px hsl(270 91% 65% / 0.3);
-    --glow-accent: 0 0 30px hsl(188 94% 57% / 0.4);
-    --shadow-gaming: 0 10px 30px hsl(270 91% 20% / 0.4);
-    --shadow-card: 0 4px 20px hsl(0 0% 0% / 0.3);
+    --radius: 12px;
+    
+    /* Gradients simples */
+    --gradient-brand: linear-gradient(135deg, hsl(0 0% 20%), hsl(0 0% 35%));
+    --gradient-subtle: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
+    
+    /* Ombres douces */
+    --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
     /* Sidebar variables */
-    --sidebar-background: 15 23 42;
-    --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 168 85 247;
-    --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 30 41 59;
-    --sidebar-accent-foreground: 248 250 252;
-    --sidebar-border: 51 65 85;
-    --sidebar-ring: 168 85 247;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 20%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 0%;
   }
 
   .dark {
-    /* Enhanced Dark Mode */
-    --background: 2 6 23; /* Darker navy */
-    --foreground: 248 250 252;
-    --card: 8 12 23;
-    --card-foreground: 248 250 252;
-    --popover: 8 12 23;
-    --popover-foreground: 248 250 252;
-    --primary: 168 85 247; /* Purple-500 */
-    --primary-foreground: 15 23 42;
-    --secondary: 51 65 85;
-    --secondary-foreground: 248 250 252;
-    --muted: 15 23 42;
-    --muted-foreground: 148 163 184;
-    --accent: 6 182 212; /* Cyan-500 */
-    --accent-foreground: 15 23 42;
-    --destructive: 220 38% 56%;
-    --destructive-foreground: 248 250 252;
-    --border: 30 41 59;
-    --input: 15 23 42;
-    --ring: 168 85 247;
+    --background: 0 0% 8%; /* Gris très foncé au lieu de noir pur */
+    --foreground: 0 0% 92%; /* Blanc cassé */
+    
+    --card: 0 0% 12%; /* Gris foncé au lieu de très foncé */
+    --card-foreground: 0 0% 92%;
+    
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 92%;
+    
+    --primary: 0 0% 85%; /* Gris clair pour le mode sombre */
+    --primary-foreground: 0 0% 15%;
+    
+    --secondary: 0 0% 18%; /* Gris moins foncé */
+    --secondary-foreground: 0 0% 92%;
+    
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
+    
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 92%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 92%;
+    
+    --border: 0 0% 22%; /* Bordures moins foncées */
+    --input: 0 0% 22%;
+    --ring: 0 0% 85%;
+    
+    --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+    --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 
-    /* Enhanced Gaming Effects */
-    --glow-primary: 0 0 50px hsl(270 91% 65% / 0.4);
-    --glow-accent: 0 0 40px hsl(188 94% 57% / 0.5);
-    --shadow-gaming: 0 15px 40px hsl(270 91% 20% / 0.6);
-
-    --sidebar-background: 8 12 23;
-    --sidebar-foreground: 248 250 252;
-    --sidebar-primary: 168 85 247;
-    --sidebar-primary-foreground: 15 23 42;
-    --sidebar-accent: 15 23 42;
-    --sidebar-accent-foreground: 248 250 252;
-    --sidebar-border: 30 41 59;
-    --sidebar-ring: 168 85 247;
+    --sidebar-background: 0 0% 12%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 0 0% 85%;
+    --sidebar-primary-foreground: 0 0% 15%;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 92%;
+    --sidebar-border: 0 0% 22%;
+    --sidebar-ring: 0 0% 85%;
   }
-}
-
-/* Gaming Animations & Effects */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: var(--glow-primary); }
-  50% { box-shadow: var(--glow-accent); }
-}
-
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes neon-pulse {
-  0%, 100% { text-shadow: 0 0 5px hsl(var(--primary)), 0 0 10px hsl(var(--primary)), 0 0 15px hsl(var(--primary)); }
-  50% { text-shadow: 0 0 10px hsl(var(--accent)), 0 0 20px hsl(var(--accent)), 0 0 30px hsl(var(--accent)); }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
   body {
     @apply bg-background text-foreground font-inter;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-image: 
-      radial-gradient(circle at 20% 50%, hsl(270 91% 65% / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(188 94% 57% / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, hsl(31 100% 60% / 0.05) 0%, transparent 50%);
   }
   
   /* Smooth scrolling */
@@ -161,66 +136,38 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.3);
     border-radius: 4px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.7);
+    background: hsl(var(--muted-foreground) / 0.5);
   }
 }
 
 @layer utilities {
-  /* Gaming Utilities */
-  .gaming-float { animation: float 3s ease-in-out infinite; }
-  .gaming-glow { animation: pulse-glow 2s ease-in-out infinite; }
-  .gaming-gradient { 
-    background: var(--gradient-primary);
-    background-size: 200% 200%;
-    animation: gradient-shift 3s ease infinite;
-  }
-  .neon-text { animation: neon-pulse 2s ease-in-out infinite; }
-
   /* Glass morphism */
-  .glass-effect {
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+  .glass {
+    @apply bg-background/70 backdrop-blur-xl border border-border/20;
   }
   
-  /* Enhanced Cards */
-  .gaming-card {
-    @apply bg-card/80 backdrop-blur-lg rounded-2xl border border-primary/20 shadow-gaming;
-    transition: all 0.3s ease;
-  }
-  
-  .gaming-card:hover {
-    @apply border-primary/40;
-    box-shadow: var(--glow-primary), var(--shadow-gaming);
-    transform: translateY(-2px);
+  /* Cards */
+  .card-apple {
+    @apply bg-card rounded-2xl shadow-card border border-border/50 backdrop-blur-sm;
   }
   
   /* Buttons */
-  .btn-gaming {
-    @apply bg-gradient-to-r from-primary to-accent text-primary-foreground rounded-xl font-medium;
-    @apply transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105;
-    @apply border border-primary/20 backdrop-blur-sm;
+  .btn-apple {
+    @apply rounded-xl font-medium transition-all duration-200 shadow-sm hover:shadow-md;
   }
   
-  /* Cyber grid effect */
-  .cyber-grid {
-    background-image: 
-      linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px);
-    background-size: 50px 50px;
+  /* Sidebar */
+  .sidebar-apple {
+    @apply glass border-r border-border/50;
   }
 }
 
 /* Font family */
 .font-inter {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.font-orbitron {
-  font-family: 'Orbitron', monospace;
 }
