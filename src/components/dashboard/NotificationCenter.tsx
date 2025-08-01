@@ -121,6 +121,10 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
   };
 
   const handleAction = async (notification: Notification) => {
+    console.log("🔔 Notification clicked:", notification);
+    console.log("🔔 Action URL:", notification.action_url);
+    console.log("🔔 Action Label:", notification.action_label);
+    
     // Marquer comme lu d'abord
     if (!notification.is_read) {
       await markAsRead(notification.id);
@@ -128,8 +132,11 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
     
     // Puis naviguer si une URL d'action est définie
     if (notification.action_url) {
+      console.log("🚀 Navigating to:", notification.action_url);
       navigate(notification.action_url);
       setIsOpen(false);
+    } else {
+      console.log("⚠️ No action URL defined for this notification");
     }
   };
 
