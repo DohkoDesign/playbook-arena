@@ -71,7 +71,12 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchAvailabilities();
+    console.log("🚀 SimpleAvailabilityManager mounted with:", { teamId, playerId, selectedWeek });
+    if (teamId && playerId) {
+      fetchAvailabilities();
+    } else {
+      console.error("❌ Missing teamId or playerId:", { teamId, playerId });
+    }
   }, [teamId, playerId, selectedWeek]);
 
   const fetchAvailabilities = async () => {

@@ -327,7 +327,13 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           </DialogHeader>
           
           <div className="py-4">
-            <SimpleAvailabilityManager teamId={teamId} playerId={playerId} />
+            {teamId && playerId ? (
+              <SimpleAvailabilityManager teamId={teamId} playerId={playerId} />
+            ) : (
+              <div className="text-center text-red-500 p-4">
+                <p>❌ Erreur: teamId={teamId}, playerId={playerId}</p>
+              </div>
+            )}
           </div>
           
           <div className="flex justify-end pt-4 border-t">
