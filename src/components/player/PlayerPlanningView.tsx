@@ -223,7 +223,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
       prev.map(folder => 
         folder.id === folderId 
           ? { ...folder, isOpen: !folder.isOpen }
-          : folder
+          : folder // Ne pas modifier les autres dossiers
       )
     );
   };
