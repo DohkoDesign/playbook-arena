@@ -50,11 +50,12 @@ export const SmartDashboard = ({ teamId, gameType, isStaff = true, onViewChange 
           .gte("date", new Date().toISOString())
           .limit(5),
         
-        // Membres de l'équipe
+        // Membres de l'équipe (seulement les joueurs actifs)
         supabase
           .from("team_members")
           .select("*, profiles(pseudo)")
-          .eq("team_id", teamId),
+          .eq("team_id", teamId)
+          .in("role", ["joueur", "remplacant", "capitaine"]),
         
         // Placeholder pour les objectifs (feature à implémenter)
         Promise.resolve({ data: [] })
@@ -151,31 +152,35 @@ export const SmartDashboard = ({ teamId, gameType, isStaff = true, onViewChange 
     <div className="space-y-6">
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <Card className="border-l-4 border-l-primary bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Événements à venir</p>
                 <p className="text-2xl font-bold">{stats.upcomingEvents}</p>
               </div>
-              <Calendar className="h-8 w-8 text-primary" />
+              <div className="p-3 rounded-full bg-primary/10">
+                <Calendar className="h-6 w-6 text-primary" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-cyan/10 to-cyan/5 border-cyan/20">
+        <Card className="border-l-4 border-l-blue-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Membres équipe</p>
+                <p className="text-sm font-medium text-muted-foreground">Joueurs actifs</p>
                 <p className="text-2xl font-bold">{stats.teamMembers}</p>
               </div>
-              <Users className="h-8 w-8 text-cyan" />
+              <div className="p-3 rounded-full bg-blue-500/10">
+                <Users className="h-6 w-6 text-blue-500" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-orange/10 to-orange/5 border-orange/20">
+        <Card className="border-l-4 border-l-orange-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -184,19 +189,23 @@ export const SmartDashboard = ({ teamId, gameType, isStaff = true, onViewChange 
                 </p>
                 <p className="text-2xl font-bold">{isStaff ? stats.pendingTasks : stats.completedObjectives}</p>
               </div>
-              {isStaff ? <AlertCircle className="h-8 w-8 text-orange" /> : <CheckCircle2 className="h-8 w-8 text-orange" />}
+              <div className="p-3 rounded-full bg-orange-500/10">
+                {isStaff ? <AlertCircle className="h-6 w-6 text-orange-500" /> : <CheckCircle2 className="h-6 w-6 text-orange-500" />}
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-violet/10 to-violet/5 border-violet/20">
+        <Card className="border-l-4 border-l-green-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Performance</p>
                 <p className="text-2xl font-bold">85%</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-violet" />
+              <div className="p-3 rounded-full bg-green-500/10">
+                <TrendingUp className="h-6 w-6 text-green-500" />
+              </div>
             </div>
           </CardContent>
         </Card>
