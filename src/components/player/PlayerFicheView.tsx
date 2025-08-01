@@ -52,6 +52,8 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
 
   const fetchPlayerData = async () => {
     try {
+      console.log('Fetching player data for:', playerId, 'teamId:', teamId);
+      
       // Charger le profil du joueur
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
@@ -59,15 +61,22 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
         .eq("user_id", playerId)
         .single();
 
-      if (profileError) throw profileError;
+      console.log('Profile data:', profileData, 'error:', profileError);
 
-      // Charger le profil joueur détaillé
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        throw profileError;
+      }
+
+      // Charger le profil joueur détaillé (optionnel)
       const { data: playerProfileData, error: playerError } = await supabase
         .from("player_profiles")
         .select("*")
         .eq("user_id", playerId)
         .eq("team_id", teamId)
-        .single();
+        .maybeSingle(); // Utiliser maybeSingle au lieu de single
+
+      console.log('Player profile data:', playerProfileData, 'error:', playerError);
 
       const playerProfile: PlayerProfile = {
         id: profileData.id,
@@ -86,6 +95,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
 
       // Utiliser les vraies statistiques du tracker si disponibles
       if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
+        console.log('Using tracker stats:', userProfile.tracker_stats);
         const trackerStats = userProfile.tracker_stats;
         const realStats: PlayerStats = {
           matchs_joues: trackerStats.stats?.matchesPlayed || trackerStats.stats?.gamesPlayed || 0,
@@ -97,6 +107,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
         };
         setStats(realStats);
       } else {
+        console.log('No tracker stats, using default');
         // Fallback vers des données simulées si pas de tracker configuré
         const mockStats: PlayerStats = {
           matchs_joues: 0,
@@ -109,9 +120,10 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
         setStats(mockStats);
       }
     } catch (error: any) {
+      console.error('Error in fetchPlayerData:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les données du joueur",
+        description: "Impossible de charger les données du joueur: " + error.message,
         variant: "destructive",
       });
     } finally {
