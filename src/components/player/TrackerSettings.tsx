@@ -42,12 +42,23 @@ export const TrackerSettings = ({ userId, userProfile, teamData }: TrackerSettin
   }, [userProfile]);
 
   const updateTrackerUsername = async (game: string, username: string) => {
+    if (!username.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le pseudo ne peut pas être vide",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUpdating(true);
     try {
       const updatedUsernames = {
         ...trackerUsernames,
-        [game]: username
+        [game]: username.trim()
       };
+
+      console.log('Updating tracker username:', { game, username: username.trim(), updatedUsernames });
 
       const { error } = await supabase
         .from("profiles")
@@ -61,13 +72,14 @@ export const TrackerSettings = ({ userId, userProfile, teamData }: TrackerSettin
       setTrackerUsernames(updatedUsernames);
       
       toast({
-        title: "Pseudo mis à jour",
-        description: `Votre pseudo ${getGameConfig(game)?.name} a été mis à jour avec succès`,
+        title: "Pseudo sauvegardé",
+        description: `Votre pseudo ${getGameConfig(game)?.name} a été sauvegardé avec succès. Cliquez sur "Actualiser" pour récupérer vos stats.`,
       });
     } catch (error: any) {
+      console.error('Error updating tracker username:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour le pseudo",
+        description: "Impossible de sauvegarder le pseudo",
         variant: "destructive",
       });
     } finally {
@@ -86,6 +98,7 @@ export const TrackerSettings = ({ userId, userProfile, teamData }: TrackerSettin
     }
 
     setIsRefreshing(true);
+    console.log('Refreshing stats for:', teamData.jeu, 'with username:', trackerUsernames[teamData.jeu]);
     try {
       const { data, error } = await supabase.functions.invoke('fetch-tracker-stats', {
         body: {

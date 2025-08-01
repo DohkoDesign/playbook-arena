@@ -85,10 +85,15 @@ export const PlayerPerformanceView = ({
 
   useEffect(() => {
     const initializeTrackerData = async () => {
+      console.log('PlayerPerformanceView - userProfile:', userProfile);
+      console.log('PlayerPerformanceView - teamData:', teamData);
+      
       if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
+        console.log('Setting existing tracker stats:', userProfile.tracker_stats);
         setTrackerStats(userProfile.tracker_stats);
         setLoading(false);
       } else if (userProfile?.tracker_usernames?.[teamData?.jeu]) {
+        console.log('Auto-fetching stats for game:', teamData.jeu, 'username:', userProfile.tracker_usernames[teamData.jeu]);
         // Auto-fetch stats if tracker username is configured but no stats exist
         try {
           setRefreshing(true);
@@ -98,6 +103,8 @@ export const PlayerPerformanceView = ({
               username: userProfile.tracker_usernames[teamData.jeu]
             }
           });
+
+          console.log('Tracker API response:', data, error);
 
           if (error) throw error;
 
@@ -124,6 +131,7 @@ export const PlayerPerformanceView = ({
           setLoading(false);
         }
       } else {
+        console.log('No tracker username configured for game:', teamData?.jeu);
         setLoading(false);
       }
     };
