@@ -6,10 +6,12 @@ export const HeroSection = () => {
     <section className="pt-32 pb-20 px-6">
       <div className="container mx-auto text-center max-w-4xl">
         <div className="mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-gradient-brand bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
             Gérez vos équipes eSport
             <br />
-            comme un professionnel
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              comme un professionnel
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             La plateforme tout-en-un pour organiser, planifier et optimiser les performances 
