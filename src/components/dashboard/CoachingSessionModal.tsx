@@ -260,43 +260,60 @@ export const CoachingSessionModal = ({
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Users className="w-5 h-5" />
+                      <Users className="w-5 h-5 text-primary" />
                       <span>Notre équipe</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        {compositionEquipe.map((character, index) => (
-                          <Badge
-                            key={index}
-                            variant="default"
-                            className="cursor-pointer"
-                            onClick={() => toggleCharacterInComposition(character, true)}
-                          >
-                            {character}
-                            <X className="w-3 h-3 ml-1" />
-                          </Badge>
-                        ))}
+                    <div className="space-y-4">
+                      {/* Selected composition */}
+                      <div className="min-h-[40px] p-3 border-2 border-dashed border-primary/20 rounded-lg bg-primary/5">
+                        {compositionEquipe.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {compositionEquipe.map((character, index) => (
+                              <Badge
+                                key={index}
+                                variant="default"
+                                className="cursor-pointer hover:bg-destructive transition-colors"
+                                onClick={() => toggleCharacterInComposition(character, true)}
+                              >
+                                {character}
+                                <X className="w-3 h-3 ml-1" />
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted-foreground text-sm">
+                            Sélectionnez vos {getCompositionLabel().toLowerCase()}
+                          </div>
+                        )}
                       </div>
                       
-                      <div className="text-xs text-muted-foreground mb-2">
-                        {getCompositionLabel()} disponibles ({compositionEquipe.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):
+                      <div className="text-xs text-muted-foreground">
+                        {getCompositionLabel()} sélectionnés: {compositionEquipe.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}
                       </div>
                       
-                      <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                        {getCompositionOptions().filter(option => !compositionEquipe.includes(option)).map((option) => (
-                          <Button
-                            key={option}
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            disabled={compositionEquipe.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
-                            onClick={() => toggleCharacterInComposition(option, true)}
-                          >
-                            {option}
-                          </Button>
-                        ))}
+                      {/* Available options */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {getCompositionLabel()} disponibles:
+                        </Label>
+                        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-muted/30">
+                          {getCompositionOptions()
+                            .filter(option => !compositionEquipe.includes(option))
+                            .map((option) => (
+                            <Button
+                              key={option}
+                              size="sm"
+                              variant="outline"
+                              className="text-xs justify-start hover:bg-primary hover:text-primary-foreground"
+                              disabled={compositionEquipe.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
+                              onClick={() => toggleCharacterInComposition(option, true)}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -306,43 +323,60 @@ export const CoachingSessionModal = ({
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center space-x-2">
-                      <Trophy className="w-5 h-5" />
+                      <Trophy className="w-5 h-5 text-destructive" />
                       <span>Équipe adverse</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-2">
-                        {compositionAdversaire.map((character, index) => (
-                          <Badge
-                            key={index}
-                            variant="secondary"
-                            className="cursor-pointer"
-                            onClick={() => toggleCharacterInComposition(character, false)}
-                          >
-                            {character}
-                            <X className="w-3 h-3 ml-1" />
-                          </Badge>
-                        ))}
+                    <div className="space-y-4">
+                      {/* Selected composition */}
+                      <div className="min-h-[40px] p-3 border-2 border-dashed border-destructive/20 rounded-lg bg-destructive/5">
+                        {compositionAdversaire.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {compositionAdversaire.map((character, index) => (
+                              <Badge
+                                key={index}
+                                variant="destructive"
+                                className="cursor-pointer hover:bg-muted transition-colors"
+                                onClick={() => toggleCharacterInComposition(character, false)}
+                              >
+                                {character}
+                                <X className="w-3 h-3 ml-1" />
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-muted-foreground text-sm">
+                            Sélectionnez leurs {getCompositionLabel().toLowerCase()}
+                          </div>
+                        )}
                       </div>
                       
-                      <div className="text-xs text-muted-foreground mb-2">
-                        {getCompositionLabel()} disponibles ({compositionAdversaire.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}):
+                      <div className="text-xs text-muted-foreground">
+                        {getCompositionLabel()} sélectionnés: {compositionAdversaire.length}/{gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5}
                       </div>
                       
-                      <div className="grid grid-cols-4 gap-1 max-h-32 overflow-y-auto">
-                        {getCompositionOptions().filter(option => !compositionAdversaire.includes(option)).map((option) => (
-                          <Button
-                            key={option}
-                            size="sm"
-                            variant="outline"
-                            className="text-xs"
-                            disabled={compositionAdversaire.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
-                            onClick={() => toggleCharacterInComposition(option, false)}
-                          >
-                            {option}
-                          </Button>
-                        ))}
+                      {/* Available options */}
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">
+                          {getCompositionLabel()} disponibles:
+                        </Label>
+                        <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto p-2 border rounded-lg bg-muted/30">
+                          {getCompositionOptions()
+                            .filter(option => !compositionAdversaire.includes(option))
+                            .map((option) => (
+                            <Button
+                              key={option}
+                              size="sm"
+                              variant="outline"
+                              className="text-xs justify-start hover:bg-destructive hover:text-destructive-foreground"
+                              disabled={compositionAdversaire.length >= (gameConfig?.id === 'rocket_league' || gameConfig?.id === 'apex_legends' ? 3 : 5)}
+                              onClick={() => toggleCharacterInComposition(option, false)}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
