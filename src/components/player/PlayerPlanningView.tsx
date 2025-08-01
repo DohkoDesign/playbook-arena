@@ -325,77 +325,68 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   };
 
 
-  // Nouveau composant de sélection d'horaire inline
-  const InlineTimeSelector = ({ value, onChange, label }: { value: number, onChange: (value: number) => void, label: string }) => {
+  // Composant Apple-style time picker
+  const AppleTimePicker = ({ value, onChange, label }: { value: number, onChange: (value: number) => void, label: string }) => {
     const hours = Math.floor(value / 60);
     const minutes = value % 60;
 
-    const incrementHour = () => {
-      const newHours = hours < 23 ? hours + 1 : 0;
-      onChange(newHours * 60 + minutes);
-    };
-
-    const decrementHour = () => {
-      const newHours = hours > 0 ? hours - 1 : 23;
-      onChange(newHours * 60 + minutes);
-    };
-
-    const incrementMinute = () => {
-      const newMinutes = minutes < 45 ? minutes + 15 : 0;
-      onChange(hours * 60 + newMinutes);
-    };
-
-    const decrementMinute = () => {
-      const newMinutes = minutes > 0 ? minutes - 15 : 45;
-      onChange(hours * 60 + newMinutes);
-    };
+    // Générer les options d'heures (0-23)
+    const hourOptions = Array.from({ length: 24 }, (_, i) => i);
+    // Générer les options de minutes par tranches de 15 (0, 15, 30, 45)
+    const minuteOptions = [0, 15, 30, 45];
 
     return (
-      <div className="flex flex-col space-y-2">
-        <Label className="text-xs text-muted-foreground">{label}</Label>
-        <div className="flex items-center space-x-2 bg-background border rounded-lg p-2">
-          {/* Heures */}
-          <div className="flex flex-col items-center">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 w-6 p-0 text-xs"
-              onClick={incrementHour}
-            >
-              +
-            </Button>
-            <span className="text-lg font-mono w-8 text-center">{hours.toString().padStart(2, '0')}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 w-6 p-0 text-xs"
-              onClick={decrementHour}
-            >
-              -
-            </Button>
+      <div className="space-y-3">
+        <Label className="text-sm font-medium text-foreground">{label}</Label>
+        <div className="bg-background/50 backdrop-blur-sm rounded-2xl p-4 border border-border/50">
+          <div className="flex items-center justify-center space-x-1">
+            {/* Sélecteur d'heures style Apple */}
+            <div className="flex flex-col items-center">
+              <Label className="text-xs text-muted-foreground mb-2">Heure</Label>
+              <div className="relative">
+                <select
+                  value={hours}
+                  onChange={(e) => onChange(parseInt(e.target.value) * 60 + minutes)}
+                  className="appearance-none bg-background/80 border border-border/50 rounded-xl px-4 py-3 text-lg font-medium text-center min-w-[80px] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer hover:bg-background/90"
+                >
+                  {hourOptions.map((hour) => (
+                    <option key={hour} value={hour}>
+                      {hour.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="text-2xl font-light text-muted-foreground self-end pb-3">:</div>
+
+            {/* Sélecteur de minutes style Apple */}
+            <div className="flex flex-col items-center">
+              <Label className="text-xs text-muted-foreground mb-2">Minutes</Label>
+              <div className="relative">
+                <select
+                  value={minutes}
+                  onChange={(e) => onChange(hours * 60 + parseInt(e.target.value))}
+                  className="appearance-none bg-background/80 border border-border/50 rounded-xl px-4 py-3 text-lg font-medium text-center min-w-[80px] focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer hover:bg-background/90"
+                >
+                  {minuteOptions.map((minute) => (
+                    <option key={minute} value={minute}>
+                      {minute.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
           
-          <span className="text-lg font-mono">:</span>
-          
-          {/* Minutes */}
-          <div className="flex flex-col items-center">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 w-6 p-0 text-xs"
-              onClick={incrementMinute}
-            >
-              +
-            </Button>
-            <span className="text-lg font-mono w-8 text-center">{minutes.toString().padStart(2, '0')}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-6 w-6 p-0 text-xs"
-              onClick={decrementMinute}
-            >
-              -
-            </Button>
+          {/* Affichage du temps sélectionné style Apple */}
+          <div className="mt-4 text-center">
+            <div className="inline-flex items-center justify-center bg-primary/10 rounded-full px-4 py-2">
+              <Clock className="w-4 h-4 mr-2 text-primary" />
+              <span className="text-lg font-medium">
+                {hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -611,13 +602,13 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                           </div>
                           
                            <div className="grid grid-cols-2 gap-4">
-                             <InlineTimeSelector
+                             <AppleTimePicker
                                value={slot.start}
                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
                                label="Heure de début"
                              />
                              
-                             <InlineTimeSelector
+                             <AppleTimePicker
                                value={slot.end}
                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
                                label="Heure de fin"
