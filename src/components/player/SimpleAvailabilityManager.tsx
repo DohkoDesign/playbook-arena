@@ -23,6 +23,7 @@ import { fr } from "date-fns/locale";
 interface SimpleAvailabilityManagerProps {
   teamId: string;
   playerId: string;
+  onSaveSuccess?: () => void;
 }
 
 interface TimeSlot {
@@ -58,7 +59,7 @@ const getWeekStart = (date: Date = new Date()) => {
   return monday.toISOString().split('T')[0];
 };
 
-export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabilityManagerProps) => {
+export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: SimpleAvailabilityManagerProps) => {
   const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
   const [weeklyAvailability, setWeeklyAvailability] = useState<Record<number, Record<string, boolean>>>({
     1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 0: {}
@@ -269,6 +270,9 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
         title: "Succès",
         description: "Vos disponibilités ont été sauvegardées",
       });
+
+      // Appeler la fonction de succès pour fermer la popup
+      onSaveSuccess?.();
 
     } catch (error: any) {
       console.error("❌ Error saving availabilities:", error);

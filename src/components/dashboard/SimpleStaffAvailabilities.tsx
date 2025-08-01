@@ -77,14 +77,26 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
       // Récupérer tous les joueurs de l'équipe
       const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
-        .select(`
-          user_id,
-          profiles!inner(pseudo, photo_profil)
-        `)
+        .select("user_id, role")
         .eq("team_id", teamId)
         .in("role", ["joueur", "remplacant", "capitaine"]);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("❌ Team members error:", membersError);
+        throw membersError;
+      }
+
+      // Récupérer les profils des joueurs séparément
+      const userIds = teamMembers?.map(m => m.user_id) || [];
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, pseudo, photo_profil")
+        .in("user_id", userIds);
+
+      if (profilesError) {
+        console.error("❌ Profiles error:", profilesError);
+        throw profilesError;
+      }
 
       // Récupérer les disponibilités de la semaine courante
       const startOfWeek = new Date();
@@ -101,6 +113,7 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
 
       // Créer le résumé par joueur
       const playerSummaries: PlayerSummary[] = teamMembers?.map(member => {
+        const playerProfile = profiles?.find(p => p.user_id === member.user_id);
         const playerAvailabilities = availabilitiesData?.filter(avail => 
           avail.user_id === member.user_id
         ) || [];
@@ -109,17 +122,19 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
 
         return {
           id: member.user_id,
-          pseudo: (member.profiles as any)?.pseudo || "Joueur",
-          photo_profil: (member.profiles as any)?.photo_profil,
+          pseudo: playerProfile?.pseudo || "Joueur",
+          photo_profil: playerProfile?.photo_profil,
           totalSlots: playerAvailabilities.length,
           availableDays,
           slots: playerAvailabilities.map(avail => ({
             ...avail,
-            pseudo: (member.profiles as any)?.pseudo || "Joueur",
-            photo_profil: (member.profiles as any)?.photo_profil
+            pseudo: playerProfile?.pseudo || "Joueur",
+            photo_profil: playerProfile?.photo_profil
           }))
         };
       }) || [];
+
+      console.log("📊 Player summaries:", playerSummaries);
 
       setPlayers(playerSummaries);
 

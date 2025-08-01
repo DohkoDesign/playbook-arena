@@ -13,11 +13,13 @@ import {
   Settings,
   Plus,
   Check,
-  X
+  X,
+  Users
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SimpleAvailabilityManager } from "./SimpleAvailabilityManager";
+import { PlayerTeamAvailabilities } from "./PlayerTeamAvailabilities";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -54,6 +56,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showTeamAvailabilityModal, setShowTeamAvailabilityModal] = useState(false);
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [weeklyAvailability, setWeeklyAvailability] = useState<WeeklyAvailability>({
@@ -231,10 +234,19 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           <h2 className="text-2xl font-bold">Mon Planning</h2>
           <p className="text-muted-foreground">Organisez votre entraînement et vos disponibilités</p>
         </div>
-        <Button onClick={() => setShowAvailabilityModal(true)}>
-          <Settings className="w-4 h-4 mr-2" />
-          Mes disponibilités
-        </Button>
+        <div className="flex space-x-3">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowTeamAvailabilityModal(true)}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Dispo équipe
+          </Button>
+          <Button onClick={() => setShowAvailabilityModal(true)}>
+            <Settings className="w-4 h-4 mr-2" />
+            Mes disponibilités
+          </Button>
+        </div>
       </div>
 
       {/* Calendrier */}
@@ -328,7 +340,11 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           
           <div className="py-4">
             {teamId && playerId ? (
-              <SimpleAvailabilityManager teamId={teamId} playerId={playerId} />
+              <SimpleAvailabilityManager 
+                teamId={teamId} 
+                playerId={playerId} 
+                onSaveSuccess={() => setShowAvailabilityModal(false)}
+              />
             ) : (
               <div className="text-center text-red-500 p-4">
                 <p>❌ Erreur: teamId={teamId}, playerId={playerId}</p>
@@ -338,6 +354,25 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           
           <div className="flex justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => setShowAvailabilityModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal des disponibilités de l'équipe */}
+      <Dialog open={showTeamAvailabilityModal} onOpenChange={setShowTeamAvailabilityModal}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>Disponibilités de l'équipe</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <PlayerTeamAvailabilities teamId={teamId} playerId={playerId} />
+          </div>
+          
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowTeamAvailabilityModal(false)}>
               Fermer
             </Button>
           </div>
