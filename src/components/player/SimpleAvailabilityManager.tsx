@@ -270,7 +270,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
       <div className="space-y-4">
         <div className="animate-pulse">
           <div className="h-8 bg-muted rounded w-1/3 mb-4"></div>
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="grid grid-cols-7 gap-2">
             {[...Array(7)].map((_, i) => (
               <div key={i} className="h-40 bg-muted rounded"></div>
             ))}
@@ -293,17 +293,17 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
         </Button>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="grid grid-cols-7 gap-2">
         {DAYS_CONFIG.map(day => (
-          <Card key={day.id} className="flex-shrink-0 w-72 overflow-hidden">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-center text-sm font-medium">
-                <div className="text-lg font-bold">{day.short}</div>
-                <div className="text-xs text-muted-foreground">{day.name}</div>
+          <Card key={day.id} className="overflow-hidden">
+            <CardHeader className="pb-2 px-2">
+              <CardTitle className="text-center text-xs font-medium">
+                <div className="text-sm font-bold">{day.short}</div>
+                <div className="text-xs text-muted-foreground hidden sm:block">{day.name}</div>
               </CardTitle>
             </CardHeader>
             
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2 px-2 pb-2">
               {/* Créneaux prédéfinis */}
               {PREDEFINED_SLOTS.map(slot => {
                 const Icon = slot.icon;
@@ -312,7 +312,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
                 return (
                   <div
                     key={slot.id}
-                    className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    className={`p-2 rounded-lg border cursor-pointer transition-all ${
                       isActive 
                         ? 'bg-primary text-primary-foreground border-primary' 
                         : 'bg-muted/30 hover:bg-muted/50 border-border'
@@ -320,14 +320,14 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
                     onClick={() => toggleSlot(day.id, slot.id)}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Icon className="w-4 h-4" />
-                        <span className="text-sm font-medium">{slot.label}</span>
+                      <div className="flex items-center space-x-1">
+                        <Icon className="w-3 h-3" />
+                        <span className="text-xs font-medium">{slot.label}</span>
                       </div>
                       <Switch
                         checked={isActive}
                         onChange={() => {}} // Géré par le clic sur le div
-                        className="pointer-events-none"
+                        className="pointer-events-none scale-75"
                       />
                     </div>
                     <div className="text-xs mt-1 opacity-75">
@@ -339,19 +339,19 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
 
               {/* Créneaux personnalisés */}
               {customSlots[day.id].map(slot => (
-                <div key={slot.id} className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Personnalisé</span>
+                <div key={slot.id} className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Custom</span>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => removeCustomSlot(day.id, slot.id)}
                       className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-2 h-2" />
                     </Button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <input
                       type="time"
                       value={slot.start}
@@ -373,10 +373,10 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
                 variant="outline"
                 size="sm"
                 onClick={() => addCustomSlot(day.id)}
-                className="w-full"
+                className="w-full text-xs h-8"
               >
-                <Plus className="w-3 h-3 mr-1" />
-                Ajouter
+                <Plus className="w-2 h-2 mr-1" />
+                +
               </Button>
             </CardContent>
           </Card>
