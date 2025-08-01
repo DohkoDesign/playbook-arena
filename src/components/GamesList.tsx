@@ -24,11 +24,11 @@ export const GamesList = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {POPULAR_GAMES.map((game, index) => (
             <div 
               key={game.name}
-              className="relative h-32 rounded-lg overflow-hidden cursor-pointer group transition-transform hover:scale-105"
+              className="relative flex-shrink-0 w-40 h-56 rounded-lg overflow-hidden cursor-pointer group transition-transform hover:scale-105"
               style={{ 
                 backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${game.image})`,
                 backgroundSize: 'cover',
