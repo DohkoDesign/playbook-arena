@@ -559,35 +559,58 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
               Définissez vos créneaux de disponibilité pour chaque jour de la semaine. Utilisez les curseurs pour ajuster précisément vos horaires.
             </p>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-4">
               {Object.entries(weeklyAvailability).map(([dayKey, dayData]) => (
-                <Card key={dayKey} className={dayData.enabled ? "border-2 border-primary/20 bg-primary/5" : "border border-border"}>
-                  <CardHeader className="pb-3">
+                <div key={dayKey} className={`group transition-all duration-300 ${dayData.enabled ? "bg-gradient-to-r from-primary/5 to-primary/10" : "bg-background/50"} backdrop-blur-sm rounded-2xl border ${dayData.enabled ? "border-primary/20 shadow-lg shadow-primary/5" : "border-border/30"}`}>
+                  {/* En-tête du jour style Apple */}
+                  <div className="p-6 border-b border-border/20">
                     <div className="flex items-center justify-between">
-                      <Label className="text-lg font-semibold">{getDayName(dayKey)}</Label>
-                      <Switch
-                        checked={dayData.enabled}
-                        onCheckedChange={() => toggleDayEnabled(dayKey)}
-                      />
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${dayData.enabled ? "bg-primary text-primary-foreground shadow-lg" : "bg-muted text-muted-foreground"}`}>
+                          <span className="text-lg font-semibold">
+                            {getDayName(dayKey).substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-semibold text-foreground">{getDayName(dayKey)}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {dayData.enabled 
+                              ? `${dayData.slots.length} créneau${dayData.slots.length > 1 ? 'x' : ''} configuré${dayData.slots.length > 1 ? 's' : ''}` 
+                              : "Non disponible"}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        {dayData.enabled && dayData.slots.length > 0 && (
+                          <div className="text-sm text-muted-foreground bg-background/50 rounded-full px-3 py-1">
+                            {minutesToTime(Math.min(...dayData.slots.map(s => s.start)))} - {minutesToTime(Math.max(...dayData.slots.map(s => s.end)))}
+                          </div>
+                        )}
+                        <Switch
+                          checked={dayData.enabled}
+                          onCheckedChange={() => toggleDayEnabled(dayKey)}
+                          className="data-[state=checked]:bg-primary"
+                        />
+                      </div>
                     </div>
-                  </CardHeader>
+                  </div>
                   
+                  {/* Section des créneaux avec animation */}
                   {dayData.enabled && (
-                    <CardContent className="space-y-3">
-                      {dayData.slots.map((slot) => (
-                        <div key={slot.id} className="p-4 rounded-lg border-2 border-primary/20 bg-primary/5 transition-all">
-                          <div className="flex items-center justify-between mb-3">
+                    <div className="p-6 space-y-4 animate-fade-in">
+                      {dayData.slots.map((slot, index) => (
+                        <div key={slot.id} className="group/slot bg-background/60 backdrop-blur-sm rounded-xl border border-border/30 p-5 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center space-x-3">
-                              <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                 <Check className="w-4 h-4 text-green-600" />
-                                <span className="text-sm font-medium text-green-700">Disponible</span>
                               </div>
-                              
-                              <div className="text-sm text-muted-foreground">
-                                {minutesToTime(slot.start)} - {minutesToTime(slot.end)}
-                                <span className="ml-2">
-                                  ({Math.round((slot.end - slot.start) / 60 * 10) / 10}h)
-                                </span>
+                              <div>
+                                <span className="text-sm font-medium text-green-700">Créneau {index + 1}</span>
+                                <div className="text-xs text-muted-foreground">
+                                  {minutesToTime(slot.start)} - {minutesToTime(slot.end)} • {Math.round((slot.end - slot.start) / 60 * 10) / 10}h
+                                </div>
                               </div>
                             </div>
                             
@@ -595,25 +618,25 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                               variant="ghost"
                               size="sm"
                               onClick={() => removeAvailabilitySlot(dayKey, slot.id)}
-                              className="h-7 w-7 p-0 text-red-600 hover:text-red-800"
+                              className="opacity-0 group-hover/slot:opacity-100 transition-opacity h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-4 h-4" />
                             </Button>
                           </div>
                           
-                           <div className="grid grid-cols-2 gap-4">
-                             <AppleTimePicker
-                               value={slot.start}
-                               onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
-                               label="Heure de début"
-                             />
-                             
-                             <AppleTimePicker
-                               value={slot.end}
-                               onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
-                               label="Heure de fin"
-                             />
-                           </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <AppleTimePicker
+                              value={slot.start}
+                              onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
+                              label="Heure de début"
+                            />
+                            
+                            <AppleTimePicker
+                              value={slot.end}
+                              onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
+                              label="Heure de fin"
+                            />
+                          </div>
                         </div>
                       ))}
                       
@@ -621,14 +644,14 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                         variant="outline"
                         size="sm"
                         onClick={() => addAvailabilitySlot(dayKey)}
-                        className="w-full h-8 border-dashed"
+                        className="w-full h-12 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 rounded-xl"
                       >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Ajouter un créneau
+                        <Plus className="w-4 h-4 mr-2 text-primary" />
+                        <span className="text-primary font-medium">Ajouter un créneau</span>
                       </Button>
-                    </CardContent>
+                    </div>
                   )}
-                </Card>
+                </div>
               ))}
             </div>
 
