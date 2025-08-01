@@ -185,7 +185,19 @@ const PlayerDashboard = () => {
       case "objectives":
         return <PlayerObjectivesView teamId={teamData.id} playerId={user?.id || ""} />;
       case "planning":
-        return <PlayerPlanningView teamId={teamData.id} playerId={user?.id || ""} />;
+        console.log("🚀 Rendering planning view with data:", { teamId: teamData.id, playerId: user?.id });
+        try {
+          return <PlayerPlanningView teamId={teamData.id} playerId={user?.id || ""} />;
+        } catch (error) {
+          console.error("❌ Error rendering PlayerPlanningView:", error);
+          return (
+            <div className="p-8">
+              <h2 className="text-2xl font-bold mb-4">Planning Personnel</h2>
+              <p className="text-red-500">Erreur de chargement du composant planning</p>
+              <pre className="bg-gray-100 p-4 mt-4 text-sm">{error?.toString()}</pre>
+            </div>
+          );
+        }
       case "performance":
         return <PlayerPerformanceView teamId={teamData.id} playerId={user?.id || ""} userProfile={userProfile} teamData={teamData} />;
       
