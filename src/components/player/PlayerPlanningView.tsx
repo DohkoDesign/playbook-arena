@@ -74,6 +74,7 @@ interface WeeklyAvailability {
 }
 
 export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps) => {
+  console.log("🗓️ PlayerPlanningView loaded with:", { teamId, playerId });
   const [personalEvents, setPersonalEvents] = useState<PersonalEvent[]>([]);
   const [teamEvents, setTeamEvents] = useState<any[]>([]);
   const [eventFolders, setEventFolders] = useState<EventFolder[]>([]);
@@ -401,13 +402,18 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     );
   };
 
+  console.log("🔄 PlayerPlanningView rendering state:", { loading, teamId, playerId });
+
   if (loading) {
+    console.log("⏳ Still loading...");
     return (
       <div className="flex items-center justify-center h-64">
         <p>Chargement du planning...</p>
       </div>
     );
   }
+
+  console.log("✅ PlayerPlanningView rendering complete");
 
   return (
     <div className="space-y-6">
