@@ -174,11 +174,13 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
   const saveAvailabilities = async () => {
     try {
       setSaving(true);
-      console.log("💾 Saving availabilities...");
+      console.log("💾 Saving availabilities for:", { teamId, playerId });
 
       const weekStart = getWeekStart();
+      console.log("📅 Week start:", weekStart);
 
       // Supprimer les anciennes disponibilités
+      console.log("🗑️ Deleting old availabilities...");
       const { error: deleteError } = await supabase
         .from('player_availabilities')
         .delete()
@@ -186,7 +188,10 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
         .eq('user_id', playerId)
         .eq('week_start', weekStart);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error("❌ Delete error:", deleteError);
+        throw deleteError;
+      }
 
       const availabilitiesToInsert = [];
 
@@ -220,12 +225,20 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
         });
       });
 
+      console.log("📝 Inserting availabilities:", availabilitiesToInsert);
+
       if (availabilitiesToInsert.length > 0) {
         const { error: insertError } = await supabase
           .from('player_availabilities')
           .insert(availabilitiesToInsert);
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("❌ Insert error:", insertError);
+          throw insertError;
+        }
+        console.log("✅ Successfully inserted availabilities");
+      } else {
+        console.log("⚠️ No availabilities to insert");
       }
 
       toast({

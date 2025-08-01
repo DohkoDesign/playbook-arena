@@ -143,6 +143,16 @@
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.5);
   }
+
+  /* Masquer la scrollbar sur les navigateurs webkit */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE et Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Safari et Chrome */
+  }
 }
 
 @layer utilities {

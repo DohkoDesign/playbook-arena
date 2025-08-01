@@ -317,49 +317,52 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         </Card>
       )}
 
-      {/* Liste des joueurs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {players.map(player => (
-          <Card key={player.id}>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3 mb-3">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={player.photo_profil} />
-                  <AvatarFallback>
-                    {player.pseudo.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold">{player.pseudo}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {player.totalSlots} créneau{player.totalSlots > 1 ? 'x' : ''}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-1">
-                  {[1, 2, 3, 4, 5, 6, 0].map(day => (
-                    <Badge 
-                      key={day}
-                      variant={player.availableDays.includes(day) ? "default" : "outline"}
-                      className="text-xs"
-                    >
-                      {dayShort[day]}
-                    </Badge>
-                  ))}
+      {/* Liste des joueurs - horizontal sans scroll */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Joueurs de l'équipe</h3>
+        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+          {players.map(player => (
+            <Card key={player.id} className="flex-shrink-0 w-64">
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-3 mb-3">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={player.photo_profil} />
+                    <AvatarFallback>
+                      {player.pseudo.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold">{player.pseudo}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {player.totalSlots} créneau{player.totalSlots > 1 ? 'x' : ''}
+                    </p>
+                  </div>
                 </div>
                 
-                {player.totalSlots === 0 && (
-                  <div className="text-center py-2">
-                    <XCircle className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
-                    <p className="text-xs text-muted-foreground">Aucune disponibilité</p>
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1">
+                    {[1, 2, 3, 4, 5, 6, 0].map(day => (
+                      <Badge 
+                        key={day}
+                        variant={player.availableDays.includes(day) ? "default" : "outline"}
+                        className="text-xs"
+                      >
+                        {dayShort[day]}
+                      </Badge>
+                    ))}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  
+                  {player.totalSlots === 0 && (
+                    <div className="text-center py-2">
+                      <XCircle className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">Aucune disponibilité</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
