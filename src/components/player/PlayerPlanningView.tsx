@@ -247,7 +247,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
         <CardContent className="p-6">
           <div className="flex gap-4">
             {/* Calendrier - aligné à gauche, plus grand */}
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 pb-4">
               <ShadcnCalendar
                 mode="single"
                 selected={selectedDate}

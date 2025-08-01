@@ -11,9 +11,11 @@ import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { TeamSettingsView } from "@/components/dashboard/TeamSettingsView";
 import { RecruitmentView } from "@/components/dashboard/RecruitmentView";
+import { StaffFeedbackView } from "@/components/dashboard/StaffFeedbackView";
+import { StaffAvailabilitiesView } from "@/components/dashboard/StaffAvailabilitiesView";
 import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "settings" | "recruitment";
+type DashboardView = "calendar" | "strategies" | "players" | "coaching" | "settings" | "recruitment" | "feedbacks" | "availabilities";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -127,6 +129,10 @@ const Dashboard = () => {
         return <TeamSettingsView teamId={selectedTeam} gameType={gameType} teams={teams} onTeamUpdated={() => checkUserTeams(user?.id || "")} />;
       case "recruitment":
         return <RecruitmentView teamId={selectedTeam} gameType={gameType} />;
+      case "feedbacks":
+        return <StaffFeedbackView teamId={selectedTeam} />;
+      case "availabilities":
+        return <StaffAvailabilitiesView teamId={selectedTeam} />;
       default:
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
     }

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch } from "lucide-react";
+import { Calendar, Users, BookOpen, Video, Plus, Settings, UserSearch, MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DashboardSidebarProps {
@@ -34,6 +34,13 @@ export const DashboardSidebar = ({
         { id: "players", label: "Membres", icon: Users },
         { id: "strategies", label: "Stratégies", icon: BookOpen },
         { id: "coaching", label: "Coaching", icon: Video },
+      ]
+    },
+    {
+      title: "Communication",
+      items: [
+        { id: "feedbacks", label: "Feedbacks Joueurs", icon: MessageSquare },
+        { id: "availabilities", label: "Disponibilités", icon: Clock },
       ]
     },
     {
