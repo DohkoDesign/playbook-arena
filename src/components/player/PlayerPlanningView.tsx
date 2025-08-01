@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { PlayerAvailabilityManager } from "./PlayerAvailabilityManager";
+import { SimpleAvailabilityManager } from "./SimpleAvailabilityManager";
 import { format, isSameDay } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -327,7 +327,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           </DialogHeader>
           
           <div className="py-4">
-            <PlayerAvailabilityManager teamId={teamId} playerId={playerId} />
+            <SimpleAvailabilityManager teamId={teamId} playerId={playerId} />
           </div>
           
           <div className="flex justify-end pt-4 border-t">
