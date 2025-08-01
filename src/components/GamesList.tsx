@@ -1,6 +1,21 @@
+import valorantImg from '../assets/valorant.png';
+import leagueOfLegendsImg from '../assets/league-of-legends.png';
+import csgoImg from '../assets/cs-go-cs2.png';
+import rocketLeagueImg from '../assets/rocket-league.png';
+import overwatchImg from '../assets/overwatch-2.png';
+import apexLegendsImg from '../assets/apex-legends.png';
+import codWarzoneImg from '../assets/call-of-duty-warzone.png';
+import codMultiplayerImg from '../assets/call-of-duty-multiplayer.png';
+
 const POPULAR_GAMES = [
-  "Valorant", "League of Legends", "CS:GO / CS2", "Rocket League", 
-  "Overwatch 2", "Apex Legends", "Call of Duty Warzone", "Call of Duty Multiplayer"
+  { name: "Valorant", image: valorantImg },
+  { name: "League of Legends", image: leagueOfLegendsImg },
+  { name: "CS:GO / CS2", image: csgoImg },
+  { name: "Rocket League", image: rocketLeagueImg },
+  { name: "Overwatch 2", image: overwatchImg },
+  { name: "Apex Legends", image: apexLegendsImg },
+  { name: "Call of Duty Warzone", image: codWarzoneImg },
+  { name: "Call of Duty Multiplayer", image: codMultiplayerImg }
 ];
 
 export const GamesList = () => {
@@ -20,16 +35,18 @@ export const GamesList = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
           {POPULAR_GAMES.map((game, index) => (
             <div 
-              key={game}
+              key={game.name}
               className="bg-card border border-border rounded-lg p-4 text-center hover:bg-muted/50 transition-colors cursor-pointer group"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="w-12 h-12 bg-gradient-brand rounded-lg mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <span className="text-primary-foreground font-bold text-sm">
-                  {game.charAt(0)}
-                </span>
+              <div className="w-16 h-16 rounded-lg mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
+                <img 
+                  src={game.image} 
+                  alt={game.name} 
+                  className="w-full h-full object-cover rounded-lg"
+                />
               </div>
-              <h3 className="font-medium text-sm">{game}</h3>
+              <h3 className="font-medium text-sm">{game.name}</h3>
             </div>
           ))}
         </div>
