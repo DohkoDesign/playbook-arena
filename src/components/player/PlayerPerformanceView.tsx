@@ -160,7 +160,7 @@ export const PlayerPerformanceView = ({
                       {key.replace(/([A-Z])/g, ' $1')}
                     </p>
                     <p className="text-2xl font-bold">
-                      {typeof value === 'number' ? value.toFixed(2) : value}
+                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
                     </p>
                   </div>
                 </div>
