@@ -20,7 +20,8 @@ import {
   Gamepad2,
   UserPlus,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  BarChart3
 } from "lucide-react";
 
 export default function PlayerSignup() {
@@ -40,7 +41,8 @@ export default function PlayerSignup() {
     password: "",
     photoUrl: "",
     role: "",
-    personnages: [] as string[]
+    personnages: [] as string[],
+    trackerUsername: "" // Nouveau champ pour le pseudo de tracker
   });
   
   const [step, setStep] = useState(1); // 1: Info perso, 2: Jeu et rôle, 3: Confirmation
@@ -99,7 +101,7 @@ export default function PlayerSignup() {
   };
 
   const handleSignup = async () => {
-    if (!formData.pseudo || !formData.email || !formData.password || !formData.role) {
+    if (!formData.pseudo || !formData.email || !formData.password || !formData.role || !formData.trackerUsername) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -127,7 +129,11 @@ export default function PlayerSignup() {
       if (authError) throw authError;
 
       if (authData.user) {
-        // Créer le profil joueur
+        // Créer le profil joueur avec le pseudo de tracker
+        const trackerUsernames = {
+          [team.jeu]: formData.trackerUsername
+        };
+
         const { error: profileError } = await supabase
           .from("profiles")
           .insert({
@@ -136,7 +142,8 @@ export default function PlayerSignup() {
             photo_profil: formData.photoUrl || null,
             role: 'player',
             jeux_joues: [team.jeu],
-            personnages_favoris: formData.personnages
+            personnages_favoris: formData.personnages,
+            tracker_usernames: trackerUsernames
           });
 
         if (profileError) throw profileError;
@@ -390,6 +397,24 @@ export default function PlayerSignup() {
                       )}
                     </div>
                   )}
+
+                  {/* Champ pour le pseudo de tracker */}
+                  <div className="space-y-2">
+                    <Label htmlFor="trackerUsername">Pseudo Tracker {gameConfig.name} *</Label>
+                    <div className="relative">
+                      <BarChart3 className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="trackerUsername"
+                        className="pl-9"
+                        placeholder={`Votre pseudo sur ${gameConfig.trackerName || 'tracker.gg'}`}
+                        value={formData.trackerUsername}
+                        onChange={(e) => setFormData(prev => ({ ...prev, trackerUsername: e.target.value }))}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Ce pseudo sera utilisé pour récupérer vos statistiques de jeu automatiquement
+                    </p>
+                  </div>
                 </>
               )}
 
@@ -433,6 +458,10 @@ export default function PlayerSignup() {
                         </div>
                       </div>
                     )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Pseudo Tracker:</span>
+                      <span className="font-medium">{formData.trackerUsername}</span>
+                    </div>
                   </div>
 
                   <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
@@ -469,7 +498,7 @@ export default function PlayerSignup() {
                     onClick={() => setStep(step + 1)}
                     disabled={
                       (step === 1 && (!formData.pseudo || !formData.email || !formData.password)) ||
-                      (step === 2 && !formData.role)
+                      (step === 2 && (!formData.role || !formData.trackerUsername))
                     }
                   >
                     Suivant

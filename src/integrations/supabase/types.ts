@@ -242,6 +242,9 @@ export type Database = {
           photo_profil: string | null
           pseudo: string
           role: Database["public"]["Enums"]["user_role"] | null
+          tracker_last_updated: string | null
+          tracker_stats: Json | null
+          tracker_usernames: Json | null
           updated_at: string
           user_id: string
         }
@@ -254,6 +257,9 @@ export type Database = {
           photo_profil?: string | null
           pseudo: string
           role?: Database["public"]["Enums"]["user_role"] | null
+          tracker_last_updated?: string | null
+          tracker_stats?: Json | null
+          tracker_usernames?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -266,6 +272,9 @@ export type Database = {
           photo_profil?: string | null
           pseudo?: string
           role?: Database["public"]["Enums"]["user_role"] | null
+          tracker_last_updated?: string | null
+          tracker_stats?: Json | null
+          tracker_usernames?: Json | null
           updated_at?: string
           user_id?: string
         }

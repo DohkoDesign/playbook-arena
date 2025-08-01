@@ -6,6 +6,9 @@ export interface GameConfig {
   maps: string[];
   roles: string[];
   strategyTypes: string[];
+  trackerName?: string;
+  trackerUrl?: string;
+  trackerApiEndpoint?: string;
   analyticsFields: {
     composition: string[];
     performance: string[];
@@ -17,6 +20,9 @@ export const gameConfigs: Record<string, GameConfig> = {
   valorant: {
     id: "valorant",
     name: "Valorant",
+    trackerName: "Tracker.gg",
+    trackerUrl: "https://tracker.gg/valorant",
+    trackerApiEndpoint: "valorant",
     characters: [
       "Brimstone", "Viper", "Omen", "Killjoy", "Cypher", "Sova", "Sage", "Phoenix",
       "Jett", "Reyna", "Raze", "Breach", "Skye", "Yoru", "Astra", "KAY/O",
