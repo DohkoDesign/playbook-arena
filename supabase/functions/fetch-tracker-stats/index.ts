@@ -52,6 +52,15 @@ serve(async (req) => {
       case 'apex_legends':
         trackerData = await fetchApexStats(username);
         break;
+      case 'rocket_league':
+        trackerData = await fetchRocketLeagueStats(username);
+        break;
+      case 'cod_warzone':
+        trackerData = await fetchCODWarzoneStats(username);
+        break;
+      case 'cod_multiplayer':
+        trackerData = await fetchCODMultiplayerStats(username);
+        break;
       default:
         trackerData = {
           success: false,
@@ -236,6 +245,127 @@ async function fetchApexStats(username: string): Promise<TrackerResponse> {
         "Wraith": 634,
         "Pathfinder": 387,
         "Bloodhound": 298
+      }
+    }
+  };
+
+  return {
+    success: true,
+    data: mockData
+  };
+}
+
+async function fetchRocketLeagueStats(username: string): Promise<TrackerResponse> {
+  // Simulation de données Rocket League réalistes
+  const mockData = {
+    player: {
+      username: username,
+      rank: "Champion I",
+      mmr: 1156,
+      division: "Div III"
+    },
+    stats: {
+      matchesPlayed: 287,
+      winRate: 63.4,
+      goals: 1.8,
+      saves: 1.2,
+      assists: 0.9,
+      score: 287.5,
+      mvps: 45
+    },
+    modes: {
+      "1v1": { rank: "Diamond III", mmr: 1045 },
+      "2v2": { rank: "Champion I", mmr: 1156 },
+      "3v3": { rank: "Diamond II", mmr: 967 }
+    },
+    car: {
+      mostUsed: "Octane",
+      winRateByCar: {
+        "Octane": 65.2,
+        "Dominus": 58.7,
+        "Fennec": 61.9
+      }
+    }
+  };
+
+  return {
+    success: true,
+    data: mockData
+  };
+}
+
+async function fetchCODWarzoneStats(username: string): Promise<TrackerResponse> {
+  // Simulation de données COD Warzone réalistes
+  const mockData = {
+    player: {
+      username: username,
+      level: 89,
+      prestige: 2,
+      battlePassTier: 45
+    },
+    stats: {
+      matchesPlayed: 456,
+      wins: 23,
+      kills: 1247,
+      deaths: 892,
+      kd: 1.4,
+      avgDamage: 1245.7,
+      avgPlacement: 15.2,
+      topTenFinishes: 156
+    },
+    weapons: {
+      mostUsed: "AK-74",
+      killsByWeapon: {
+        "AK-74": 287,
+        "M4A1": 198,
+        "Kar98k": 156
+      }
+    },
+    modes: {
+      "Battle Royale": { matches: 234, wins: 18 },
+      "Plunder": { matches: 156, wins: 5 },
+      "Resurgence": { matches: 66, wins: 0 }
+    }
+  };
+
+  return {
+    success: true,
+    data: mockData
+  };
+}
+
+async function fetchCODMultiplayerStats(username: string): Promise<TrackerResponse> {
+  // Simulation de données COD Multiplayer réalistes
+  const mockData = {
+    player: {
+      username: username,
+      level: 142,
+      prestige: 3,
+      battlePassTier: 67
+    },
+    stats: {
+      matchesPlayed: 892,
+      wins: 534,
+      winRate: 59.9,
+      kills: 12847,
+      deaths: 8965,
+      kd: 1.43,
+      spm: 287.5,
+      accuracy: 18.7,
+      headshots: 1847
+    },
+    modes: {
+      "Team Deathmatch": { matches: 234, kd: 1.52 },
+      "Domination": { matches: 198, kd: 1.38 },
+      "Search & Destroy": { matches: 156, kd: 1.29 },
+      "Hardpoint": { matches: 123, kd: 1.47 }
+    },
+    weapons: {
+      mostUsed: "M4A1",
+      killsByWeapon: {
+        "M4A1": 2847,
+        "AK-74": 2198,
+        "MP5": 1756
       }
     }
   };
