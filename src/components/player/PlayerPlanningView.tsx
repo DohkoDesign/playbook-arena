@@ -245,18 +245,20 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col lg:flex-row gap-6">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Calendrier - 2 colonnes sur large écran */}
+            <div className="lg:col-span-2">
               <ShadcnCalendar
                 mode="single"
                 selected={selectedDate}
                 onSelect={(date) => date && setSelectedDate(date)}
-                className="rounded-md border w-full"
+                className="rounded-md border w-full h-fit"
                 locale={fr}
               />
             </div>
 
-            <div className="flex-1 min-w-0">
+            {/* Événements du jour - 1 colonne */}
+            <div className="lg:col-span-1">
               <h3 className="font-semibold text-lg mb-4">
                 {format(selectedDate, "EEEE d MMMM", { locale: fr })}
               </h3>
@@ -264,7 +266,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                 {getEventsForDate(selectedDate).map((event, index) => (
                   <div key={event.id || index} className="p-3 border rounded-lg">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium">{event.title || event.titre}</h4>
+                      <h4 className="font-medium text-sm">{event.title || event.titre}</h4>
                       <Badge variant="outline" className="text-xs">
                         {event.type || 'Équipe'}
                       </Badge>
