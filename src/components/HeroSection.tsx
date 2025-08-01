@@ -1,73 +1,101 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
+import { Button } from "./ui/button";
+import { Users, Calendar, BarChart3, Target, Sparkles } from "lucide-react";
 
 export const HeroSection = () => {
+  const scrollToFeatures = () => {
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <section className="pt-32 pb-20 px-6">
-      <div className="container mx-auto text-center max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
-            Gérez vos équipes eSport
-            <br />
-            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              comme un professionnel
-            </span>
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            La plateforme tout-en-un pour organiser, planifier et optimiser les performances 
-            de vos équipes sur les 25 jeux compétitifs les plus populaires.
-          </p>
-        </div>
+    <section className="relative min-h-screen flex items-center justify-center cyber-grid overflow-hidden">
+      {/* Animated background orbs */}
+      <div className="absolute top-20 left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl gaming-float"></div>
+      <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent/20 rounded-full blur-3xl gaming-float" style={{animationDelay: "1.5s"}}></div>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-accent opacity-10 rounded-full blur-2xl gaming-float" style={{animationDelay: "3s"}}></div>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 group" onClick={() => window.location.href = '/auth'}>
-            Commencer gratuitement
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
-          <Button size="lg" variant="outline" className="border-2" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
-            Découvrir les fonctionnalités
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Users className="h-6 w-6 text-foreground" />
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center space-y-8 max-w-5xl mx-auto">
+          
+          {/* Main heading */}
+          <div className="space-y-6">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm font-medium">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span>Plateforme eSport nouvelle génération</span>
             </div>
-            <h3 className="font-semibold mb-2">Gestion d'équipe</h3>
-            <p className="text-sm text-muted-foreground">
-              Organisez vos rosters avec rôles et remplaçants
+            
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-orbitron font-bold leading-tight">
+              <span className="bg-gradient-gaming bg-clip-text text-transparent neon-pulse">
+                SHADOW HUB
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              La plateforme ultime pour gérer vos équipes eSport comme un professionnel. 
+              <span className="text-accent font-semibold"> Analytics avancées</span>, 
+              <span className="text-primary font-semibold"> coaching intelligent</span> et 
+              <span className="text-secondary font-semibold"> stratégies gagnantes</span>.
             </p>
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Calendar className="h-6 w-6 text-foreground" />
-            </div>
-            <h3 className="font-semibold mb-2">Planning intégré</h3>
-            <p className="text-sm text-muted-foreground">
-              Planifiez scrims, matchs et sessions de coaching
-            </p>
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+            <Button 
+              size="lg" 
+              className="btn-gaming px-8 py-4 text-lg group relative overflow-hidden"
+              onClick={() => window.location.href = '/auth'}
+            >
+              <span className="relative z-10">Commencer gratuitement</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-accent to-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="glass-effect border-primary/30 hover:border-primary/50 px-8 py-4 text-lg hover:bg-primary/10"
+              onClick={scrollToFeatures}
+            >
+              Découvrir les fonctionnalités
+            </Button>
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-              <Target className="h-6 w-6 text-foreground" />
-            </div>
-            <h3 className="font-semibold mb-2">Stratégies & Playbook</h3>
-            <p className="text-sm text-muted-foreground">
-              Créez et annotez vos stratégies sur toutes les maps
-            </p>
+          {/* Feature highlights */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-16 max-w-4xl mx-auto">
+            {[
+              { icon: Users, title: "Gestion d'équipe", desc: "Rosters optimisés" },
+              { icon: Calendar, title: "Planning intelligent", desc: "Entraînements & matchs" },
+              { icon: BarChart3, title: "Analytics poussées", desc: "Performances détaillées" },
+              { icon: Target, title: "Stratégies gagnantes", desc: "Coaching professionnel" }
+            ].map((feature, index) => (
+              <div 
+                key={feature.title}
+                className="gaming-card p-6 text-center hover:scale-105 transition-all duration-300"
+                style={{animationDelay: `${index * 200}ms`}}
+              >
+                <div className="mx-auto w-12 h-12 bg-gradient-gaming rounded-xl flex items-center justify-center mb-4 gaming-glow">
+                  <feature.icon className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="font-orbitron font-semibold text-sm mb-2">{feature.title}</h3>
+                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+              </div>
+            ))}
           </div>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-muted rounded-xl flex items-center justify-center mx-auto mb-4">
-              <TrendingUp className="h-6 w-6 text-foreground" />
+          {/* Stats */}
+          <div className="flex justify-center items-center space-x-12 pt-12 text-center">
+            <div className="space-y-1">
+              <div className="text-3xl font-orbitron font-bold text-primary">500+</div>
+              <div className="text-sm text-muted-foreground">Équipes actives</div>
             </div>
-            <h3 className="font-semibold mb-2">Suivi performance</h3>
-            <p className="text-sm text-muted-foreground">
-              Analysez et améliorez les performances individuelles
-            </p>
+            <div className="w-px h-12 bg-border"></div>
+            <div className="space-y-1">
+              <div className="text-3xl font-orbitron font-bold text-accent">15k+</div>
+              <div className="text-sm text-muted-foreground">Joueurs</div>
+            </div>
+            <div className="w-px h-12 bg-border"></div>
+            <div className="space-y-1">
+              <div className="text-3xl font-orbitron font-bold text-secondary">8</div>
+              <div className="text-sm text-muted-foreground">Jeux supportés</div>
+            </div>
           </div>
         </div>
       </div>
