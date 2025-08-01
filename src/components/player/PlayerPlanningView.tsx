@@ -262,6 +262,109 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
         </Button>
       </div>
 
+      {/* Calendrier des disponibilités d'équipe */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Users className="w-5 h-5 mr-2" />
+            Disponibilités de l'équipe
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Navigation par semaine */}
+            <div className="flex items-center justify-between">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const newDate = new Date(selectedWeek);
+                  newDate.setDate(newDate.getDate() - 7);
+                  setSelectedWeek(newDate);
+                }}
+              >
+                ← Semaine précédente
+              </Button>
+              <div className="text-center">
+                <p className="font-medium">
+                  Semaine du {selectedWeek.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {selectedWeek.getFullYear()}
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const newDate = new Date(selectedWeek);
+                  newDate.setDate(newDate.getDate() + 7);
+                  setSelectedWeek(newDate);
+                }}
+              >
+                Semaine suivante →
+              </Button>
+            </div>
+
+            {/* Grille des disponibilités par jour */}
+            <div className="grid grid-cols-7 gap-2">
+              {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day, index) => (
+                <div key={day} className="space-y-2">
+                  <div className="text-center font-medium text-sm bg-muted/50 rounded p-2">
+                    {day}
+                  </div>
+                  
+                  {/* Créneaux simulés pour chaque jour */}
+                  <div className="space-y-1">
+                    {/* Joueur 1 */}
+                    <div className="bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 text-xs p-1 rounded">
+                      <div className="font-medium">Alex</div>
+                      <div>14h-18h</div>
+                    </div>
+                    
+                    {/* Joueur 2 */}
+                    {index < 5 && (
+                      <div className="bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs p-1 rounded">
+                        <div className="font-medium">Mike</div>
+                        <div>19h-23h</div>
+                      </div>
+                    )}
+                    
+                    {/* Joueur 3 */}
+                    {index % 2 === 0 && (
+                      <div className="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-300 text-xs p-1 rounded">
+                        <div className="font-medium">Sarah</div>
+                        <div>16h-20h</div>
+                      </div>
+                    )}
+                    
+                    {/* Créneaux communs */}
+                    {index < 4 && (
+                      <div className="bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300 text-xs p-1 rounded border-2 border-orange-300">
+                        <div className="font-bold">🔥 Créneau commun</div>
+                        <div>17h-18h</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Légende */}
+            <div className="flex flex-wrap gap-4 text-xs border-t pt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-100 dark:bg-green-900/20 rounded"></div>
+                <span>Disponibilités individuelles</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-orange-100 dark:bg-orange-900/20 border-2 border-orange-300 rounded"></div>
+                <span>Créneaux communs (3+ joueurs)</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Modal de disponibilités */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
         <DialogContent className="max-w-2xl">
