@@ -18,12 +18,12 @@ export const HeroSection = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 group">
+          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 group" onClick={() => window.location.href = '/auth'}>
             Commencer gratuitement
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2">
-            Voir la démo
+          <Button size="lg" variant="outline" className="border-2" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+            Découvrir les fonctionnalités
           </Button>
         </div>
 

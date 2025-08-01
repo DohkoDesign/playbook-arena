@@ -1,10 +1,10 @@
 const POPULAR_GAMES = [
   "Valorant", "League of Legends", "Counter-Strike 2", "Rocket League", 
-  "Overwatch 2", "Apex Legends", "Fortnite", "Call of Duty", 
+  "Overwatch 2", "Apex Legends", "Call of Duty Warzone", "Call of Duty MP", 
   "Rainbow Six Siege", "Dota 2", "Street Fighter 6", "Tekken 8",
-  "Mortal Kombat", "FIFA", "Hearthstone", "Teamfight Tactics",
-  "Clash Royale", "PUBG", "Free Fire", "Starcraft II",
-  "Age of Empires", "Warcraft III", "Smash Bros", "Genshin Impact", "Halo"
+  "Mortal Kombat 1", "FC 25", "Hearthstone", "Teamfight Tactics",
+  "Clash Royale", "PUBG", "Starcraft II", "Fortnite",
+  "Age of Empires IV", "Warcraft III", "Super Smash Bros", "Halo Infinite"
 ];
 
 export const GamesList = () => {
@@ -13,11 +13,11 @@ export const GamesList = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            25 jeux compétitifs supportés
+            24+ jeux compétitifs supportés
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Gérez vos équipes sur tous les jeux eSport majeurs avec des configurations 
-            automatiques adaptées à chaque discipline.
+            automatiques adaptées à chaque discipline et des rosters spécialisés.
           </p>
         </div>
 
