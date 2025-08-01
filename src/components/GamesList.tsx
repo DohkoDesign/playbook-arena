@@ -1,10 +1,6 @@
 const POPULAR_GAMES = [
-  "Valorant", "League of Legends", "Counter-Strike 2", "Rocket League", 
-  "Overwatch 2", "Apex Legends", "Call of Duty Warzone", "Call of Duty MP", 
-  "Rainbow Six Siege", "Dota 2", "Street Fighter 6", "Tekken 8",
-  "Mortal Kombat 1", "FC 25", "Hearthstone", "Teamfight Tactics",
-  "Clash Royale", "PUBG", "Starcraft II", "Fortnite",
-  "Age of Empires IV", "Warcraft III", "Super Smash Bros", "Halo Infinite"
+  "Valorant", "League of Legends", "CS:GO / CS2", "Rocket League", 
+  "Overwatch 2", "Apex Legends", "Call of Duty Warzone", "Call of Duty Multiplayer"
 ];
 
 export const GamesList = () => {
@@ -13,7 +9,7 @@ export const GamesList = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            20+ jeux compétitifs supportés
+            8 jeux compétitifs supportés
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Gérez vos équipes sur tous les jeux eSport majeurs avec des configurations 
@@ -21,7 +17,7 @@ export const GamesList = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
           {POPULAR_GAMES.map((game, index) => (
             <div 
               key={game}
