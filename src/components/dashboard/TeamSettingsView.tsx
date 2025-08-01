@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Settings, Upload, Palette, Trash2, Save, Plus, Edit,
-  Building, Users, Trophy, Paintbrush
+  Building, Users, Trophy, Paintbrush, UserCog
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getGameConfig } from "@/data/gameConfigs";
 import { DeleteTeamModal } from "./DeleteTeamModal";
+import { TeamMembersManager } from "./TeamMembersManager";
 
 interface TeamSettingsViewProps {
   teamId: string;
@@ -271,8 +272,9 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
       </div>
 
       <Tabs defaultValue="teams" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
+          <TabsTrigger value="members">Membres</TabsTrigger>
           <TabsTrigger value="appearance">Apparence</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
           <TabsTrigger value="danger">Zone de danger</TabsTrigger>
@@ -442,6 +444,13 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="members" className="space-y-6 mt-6">
+          <TeamMembersManager 
+            teamId={teamId}
+            onMembersUpdated={onTeamUpdated}
+          />
         </TabsContent>
 
         <TabsContent value="appearance" className="space-y-6 mt-6">

@@ -254,6 +254,30 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   };
 
   const isPlayer = userProfile?.role === 'player';
+  
+  // Vérifier si l'utilisateur a un rôle staff dans une équipe
+  const [isStaff, setIsStaff] = useState(false);
+  
+  useEffect(() => {
+    const checkStaffRole = async () => {
+      if (!user) return;
+      
+      try {
+        const { data: teamMembers } = await supabase
+          .from("team_members")
+          .select("role")
+          .eq("user_id", user.id);
+          
+        const staffRoles = ['owner', 'coach', 'manager'];
+        const hasStaffRole = teamMembers?.some(member => staffRoles.includes(member.role));
+        setIsStaff(hasStaffRole || false);
+      } catch (error) {
+        console.error("Error checking staff role:", error);
+      }
+    };
+    
+    checkStaffRole();
+  }, [user]);
 
   return (
     <div className="space-y-6">
@@ -263,7 +287,7 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className={`grid w-full ${isPlayer && !isStaff ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="w-4 h-4" />
             Profil
@@ -272,7 +296,7 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
             <Lock className="w-4 h-4" />
             Sécurité
           </TabsTrigger>
-          {isPlayer && (
+          {isPlayer && !isStaff && (
             <TabsTrigger value="tracker" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               Tracker
@@ -411,7 +435,7 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
           </Card>
         </TabsContent>
 
-        {isPlayer && (
+        {isPlayer && !isStaff && (
           <TabsContent value="tracker" className="space-y-4">
             <TrackerSettings 
               userId={user?.id || ''} 
