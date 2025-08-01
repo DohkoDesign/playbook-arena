@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { User as SupabaseUser } from "@supabase/supabase-js";
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, User, Mail, Lock, BarChart3 } from "lucide-react";
+import { TrackerSettings } from "../player/TrackerSettings";
 
 interface ProfileSettingsProps {
   user: SupabaseUser | null;
@@ -20,6 +22,8 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [teamData, setTeamData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -29,6 +33,7 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       setPseudo(user.user_metadata?.pseudo || "");
       setEmail(user.email || "");
       loadProfile();
+      loadUserData();
     }
   }, [user]);
 
@@ -38,17 +43,48 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("photo_profil")
+        .select("*")
         .eq("user_id", user.id)
         .single();
 
       if (error && error.code !== "PGRST116") {
         console.error("Error loading profile:", error);
-      } else if (data?.photo_profil) {
-        setAvatarUrl(data.photo_profil);
+      } else if (data) {
+        setUserProfile(data);
+        if (data.photo_profil) {
+          setAvatarUrl(data.photo_profil);
+        }
       }
     } catch (error) {
       console.error("Error loading profile:", error);
+    }
+  };
+
+  const loadUserData = async () => {
+    if (!user) return;
+    
+    try {
+      // Récupérer les données d'équipe du joueur
+      const { data: teamMembers, error: teamError } = await supabase
+        .from("team_members")
+        .select(`
+          team_id,
+          teams:team_id (
+            id,
+            nom,
+            jeu
+          )
+        `)
+        .eq("user_id", user.id)
+        .limit(1);
+
+      if (teamError) throw teamError;
+
+      if (teamMembers && teamMembers.length > 0) {
+        setTeamData(teamMembers[0].teams);
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
     }
   };
 
@@ -94,8 +130,8 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       onProfileUpdate?.();
       
       toast({
-        title: "Succès",
-        description: "Photo de profil mise à jour",
+        title: "Photo mise à jour",
+        description: "Votre photo de profil a été changée",
       });
     } catch (error: any) {
       toast({
@@ -132,8 +168,8 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
 
       onProfileUpdate?.();
       toast({
-        title: "Succès",
-        description: "Profil mis à jour",
+        title: "Profil mis à jour",
+        description: "Vos informations ont été sauvegardées",
       });
     } catch (error: any) {
       toast({
@@ -158,8 +194,8 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       if (error) throw error;
 
       toast({
-        title: "Succès",
-        description: "Un email de confirmation a été envoyé à votre nouvelle adresse",
+        title: "Email en cours de mise à jour",
+        description: "Vérifiez votre nouvelle adresse email pour confirmer",
       });
     } catch (error: any) {
       toast({
@@ -203,8 +239,8 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       setConfirmPassword("");
       
       toast({
-        title: "Succès",
-        description: "Mot de passe mis à jour",
+        title: "Mot de passe mis à jour",
+        description: "Votre mot de passe a été changé avec succès",
       });
     } catch (error: any) {
       toast({
@@ -217,139 +253,174 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
     }
   };
 
+  const isPlayer = userProfile?.role === 'player';
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold">Paramètres du profil</h2>
-        <p className="text-muted-foreground">Gérez vos informations personnelles</p>
+        <h2 className="text-2xl font-semibold">Paramètres</h2>
+        <p className="text-muted-foreground">Gérez votre profil et vos préférences</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Photo de profil</CardTitle>
-          <CardDescription>
-            Changez votre photo de profil
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <Avatar className="w-20 h-20">
-              <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="text-lg">
-                {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="space-y-2">
-              <Label htmlFor="avatar-upload" className="cursor-pointer">
-                <Button variant="outline" disabled={uploading} asChild>
-                  <span>
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4 mr-2" />
-                    )}
-                    Changer la photo
-                  </span>
-                </Button>
-              </Label>
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-              />
-              <p className="text-xs text-muted-foreground">
-                JPG, PNG jusqu'à 2MB
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="profile" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="w-4 h-4" />
+            Profil
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-2">
+            <Lock className="w-4 h-4" />
+            Sécurité
+          </TabsTrigger>
+          {isPlayer && (
+            <TabsTrigger value="tracker" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Tracker
+            </TabsTrigger>
+          )}
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Informations personnelles</CardTitle>
-          <CardDescription>
-            Mettez à jour vos informations de base
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pseudo">Pseudo</Label>
-            <Input
-              id="pseudo"
-              value={pseudo}
-              onChange={(e) => setPseudo(e.target.value)}
-              placeholder="Votre pseudo"
-            />
-          </div>
-          <Button onClick={handleUpdateProfile} disabled={loading}>
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Mettre à jour le profil
-          </Button>
-        </CardContent>
-      </Card>
+        <TabsContent value="profile" className="space-y-4">
+          {/* Photo de profil */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Photo de profil</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-6">
+                <Avatar className="w-20 h-20">
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback className="text-lg">
+                    {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-2">
+                  <Label htmlFor="avatar-upload" className="cursor-pointer">
+                    <Button variant="outline" disabled={uploading} asChild>
+                      <span>
+                        {uploading ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <Upload className="w-4 h-4 mr-2" />
+                        )}
+                        Changer
+                      </span>
+                    </Button>
+                  </Label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    JPG, PNG jusqu'à 2MB
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Adresse email</CardTitle>
-          <CardDescription>
-            Changez votre adresse email
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="votre@email.com"
-            />
-          </div>
-          <Button onClick={handleUpdateEmail} disabled={loading}>
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Mettre à jour l'email
-          </Button>
-        </CardContent>
-      </Card>
+          {/* Informations de base */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Informations générales</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pseudo">Pseudo</Label>
+                <Input
+                  id="pseudo"
+                  value={pseudo}
+                  onChange={(e) => setPseudo(e.target.value)}
+                  placeholder="Votre pseudo"
+                />
+              </div>
+              <Button onClick={handleUpdateProfile} disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Sauvegarder
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Mot de passe</CardTitle>
-          <CardDescription>
-            Changez votre mot de passe
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="new-password">Nouveau mot de passe</Label>
-            <Input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Nouveau mot de passe"
+        <TabsContent value="security" className="space-y-4">
+          {/* Email */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                Adresse email
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                />
+              </div>
+              <Button onClick={handleUpdateEmail} disabled={loading} variant="outline">
+                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Modifier l'email
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Mot de passe */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Lock className="w-5 h-5" />
+                Mot de passe
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmer</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+              <Button onClick={handleUpdatePassword} disabled={loading}>
+                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Changer le mot de passe
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {isPlayer && (
+          <TabsContent value="tracker" className="space-y-4">
+            <TrackerSettings 
+              userId={user?.id || ''} 
+              userProfile={userProfile} 
+              teamData={teamData} 
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirmer le mot de passe"
-            />
-          </div>
-          <Button onClick={handleUpdatePassword} disabled={loading}>
-            {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Mettre à jour le mot de passe
-          </Button>
-        </CardContent>
-      </Card>
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 };
