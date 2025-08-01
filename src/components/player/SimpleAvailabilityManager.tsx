@@ -129,6 +129,13 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
     }
   };
 
+  const handleSaveClick = () => {
+    console.log("🔘 Save button clicked");
+    console.log("📊 Current weekly availability:", weeklyAvailability);
+    console.log("📊 Current custom slots:", customSlots);
+    saveAvailabilities();
+  };
+
   const toggleSlot = (dayId: number, slotId: string) => {
     setWeeklyAvailability(prev => ({
       ...prev,
@@ -263,7 +270,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
       <div className="space-y-4">
         <div className="animate-pulse">
           <div className="h-8 bg-muted rounded w-1/3 mb-4"></div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
             {[...Array(7)].map((_, i) => (
               <div key={i} className="h-40 bg-muted rounded"></div>
             ))}
@@ -280,15 +287,15 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
           <Clock className="w-5 h-5" />
           <h2 className="text-xl font-bold">Mes Disponibilités</h2>
         </div>
-        <Button onClick={saveAvailabilities} disabled={saving}>
+        <Button onClick={handleSaveClick} disabled={saving}>
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Sauvegarde..." : "Sauvegarder"}
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
         {DAYS_CONFIG.map(day => (
-          <Card key={day.id} className="overflow-hidden">
+          <Card key={day.id} className="flex-shrink-0 w-72 overflow-hidden">
             <CardHeader className="pb-3">
               <CardTitle className="text-center text-sm font-medium">
                 <div className="text-lg font-bold">{day.short}</div>
