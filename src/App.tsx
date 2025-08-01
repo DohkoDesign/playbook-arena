@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Setup from "./pages/Setup";
 import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
+import { PlayerManagement } from "./pages/PlayerManagement";
 
 import JoinTeam from "./pages/JoinTeam";
 import NotFound from "./pages/NotFound";
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/setup" element={<Setup />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />
+            <Route path="/player-management/:teamId/:userId" element={<PlayerManagement />} />
             
             <Route path="/join-team/:token" element={<JoinTeam />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Users, UserPlus, Edit, Target, TrendingUp, TrendingDown } from "lucide-react";
+import { Users, UserPlus, Target, TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InvitationModal } from "./InvitationModal";
-import { PlayerProfileModal } from "./PlayerProfileModal";
 
 interface PlayersViewProps {
   teamId: string;
@@ -19,9 +18,8 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
   const [team, setTeam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (teamId) {
@@ -47,11 +45,12 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
 
   const fetchTeamMembers = async () => {
     try {
-      // D'abord récupérer les membres de l'équipe
+      // D'abord récupérer les membres de l'équipe (seulement les joueurs)
       const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
         .select("*")
-        .eq("team_id", teamId);
+        .eq("team_id", teamId)
+        .in("role", ["joueur", "remplacant", "capitaine"]);
 
       if (membersError) throw membersError;
 
@@ -104,17 +103,12 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
     }
   };
 
-  const openPlayerProfile = (member: any) => {
-    setSelectedPlayer(member);
-    setShowProfileModal(true);
+  const openPlayerManagement = (member: any) => {
+    navigate(`/player-management/${teamId}/${member.user_id}`);
   };
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case "manager":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "coach":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "capitaine":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
       case "joueur":
@@ -162,30 +156,31 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
           members.map((member) => (
             <Card key={member.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
-                      {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
+                        {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">
+                          {member.profiles?.pseudo || "Joueur"}
+                        </CardTitle>
+                        <Badge className={getRoleColor(member.role)}>
+                          {member.role}
+                        </Badge>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">
-                        {member.profiles?.pseudo || "Joueur"}
-                      </CardTitle>
-                      <Badge className={getRoleColor(member.role)}>
-                        {member.role}
-                      </Badge>
-                    </div>
+                    {!isPlayerView && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openPlayerManagement(member)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Gérer
+                      </Button>
+                    )}
                   </div>
-                  {!isPlayerView && (member.role === "joueur" || member.role === "remplacant") && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openPlayerProfile(member)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
               </CardHeader>
               
               <CardContent className="space-y-3">
@@ -243,26 +238,13 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
         )}
       </div>
 
-      {/* Modals */}
+      {/* Modal d'invitation */}
       {showInviteModal && team && (
         <InvitationModal
           isOpen={showInviteModal}
           onClose={() => setShowInviteModal(false)}
           teamId={teamId}
           teamName={team.nom}
-        />
-      )}
-
-      {showProfileModal && selectedPlayer && (
-        <PlayerProfileModal
-          isOpen={showProfileModal}
-          onClose={() => {
-            setShowProfileModal(false);
-            setSelectedPlayer(null);
-          }}
-          player={selectedPlayer}
-          teamId={teamId}
-          onProfileUpdated={fetchTeamMembers}
         />
       )}
     </div>
