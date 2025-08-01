@@ -158,9 +158,17 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
               <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
-                        {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
-                      </div>
+                      {member.profiles?.photo_profil ? (
+                        <img 
+                          src={member.profiles.photo_profil} 
+                          alt={`Photo de profil de ${member.profiles.pseudo}`}
+                          className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
+                          {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                      )}
                       <div>
                         <CardTitle className="text-lg">
                           {member.profiles?.pseudo || "Joueur"}

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationCenter } from "@/components/dashboard/NotificationCenter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +13,12 @@ import { LogOut, Settings, User, Bell } from "lucide-react";
 interface PlayerHeaderProps {
   playerName: string;
   teamName: string;
+  teamId: string;
+  userId: string;
   onLogout: () => void;
 }
 
-export const PlayerHeader = ({ playerName, teamName, onLogout }: PlayerHeaderProps) => {
+export const PlayerHeader = ({ playerName, teamName, teamId, userId, onLogout }: PlayerHeaderProps) => {
   return (
     <header className="h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="h-full px-6 flex items-center justify-between">
@@ -30,10 +33,7 @@ export const PlayerHeader = ({ playerName, teamName, onLogout }: PlayerHeaderPro
 
         <div className="flex items-center space-x-4">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </Button>
+          <NotificationCenter teamId={teamId} userId={userId} />
 
           {/* Menu utilisateur */}
           <DropdownMenu>

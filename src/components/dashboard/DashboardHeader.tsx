@@ -6,6 +6,7 @@ import { User } from "@supabase/supabase-js";
 import { LogOut, Settings, Bell } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ProfileSettings } from "./ProfileSettings";
+import { NotificationCenter } from "./NotificationCenter";
 import { supabase } from "@/integrations/supabase/client";
 import { getGameConfig } from "@/data/gameConfigs";
 
@@ -68,13 +69,12 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
       <div className="flex items-center space-x-4">
         <ThemeToggle />
         
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-full w-9 h-9 p-0 hover:bg-accent/60"
-        >
-          <Bell className="w-4 h-4" />
-        </Button>
+        {user && currentTeam && (
+          <NotificationCenter 
+            teamId={currentTeam.id} 
+            userId={user.id} 
+          />
+        )}
 
         <Button
           variant="ghost"
