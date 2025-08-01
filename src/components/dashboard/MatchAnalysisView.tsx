@@ -78,26 +78,24 @@ export const MatchAnalysisView = ({ teamId, gameType }: MatchAnalysisViewProps) 
     try {
       setLoading(true);
       
-      // Récupérer les événements passés
-      const { data: eventsData, error: eventsError } = await supabase
-        .from("events")
-        .select("*")
-        .eq("team_id", teamId)
-        .in("type", ["match", "scrim", "tournoi"])
-        .lt("date_fin", new Date().toISOString())
-        .order("date_debut", { ascending: false });
-
-      if (eventsError) throw eventsError;
-
-      // Récupérer les analyses existantes
+      // Récupérer uniquement les analyses validées avec leurs événements
       const { data: analysesData, error: analysesError } = await supabase
         .from("coaching_sessions")
         .select("*, events!inner(*)")
-        .eq("events.team_id", teamId);
+        .eq("events.team_id", teamId)
+        .not("resultat", "is", null); // Seulement les analyses avec résultats
 
       if (analysesError) throw analysesError;
 
-      setEvents(eventsData || []);
+      // Transformer pour l'affichage avec statut
+      const eventsWithAnalysis = analysesData?.map(analysis => ({
+        ...analysis.events,
+        analysis_status: 'completed',
+        analysis_id: analysis.id,
+        analysis_data: analysis
+      })) || [];
+
+      setEvents(eventsWithAnalysis);
       setAnalyses(analysesData || []);
     } catch (error: any) {
       console.error("Erreur:", error);

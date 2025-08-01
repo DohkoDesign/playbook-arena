@@ -11,12 +11,13 @@ import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { MatchAnalysisView } from "@/components/dashboard/MatchAnalysisView";
+import { VODAnalysisTools } from "@/components/dashboard/VODAnalysisTools";
 import { TeamSettingsView } from "@/components/dashboard/TeamSettingsView";
 import { RecruitmentView } from "@/components/dashboard/RecruitmentView";
 import { StaffFeedbackView } from "@/components/dashboard/StaffFeedbackView";
 import { StaffAvailabilitiesView } from "@/components/dashboard/StaffAvailabilitiesView";
 
-type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "match-analysis" | "settings" | "recruitment" | "feedbacks" | "availabilities";
+type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "match-analysis" | "coaching-analysis" | "settings" | "recruitment" | "feedbacks" | "availabilities";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -132,6 +133,8 @@ const Dashboard = () => {
         return <CoachingView teamId={selectedTeam} gameType={gameType} />;
       case "match-analysis":
         return <MatchAnalysisView teamId={selectedTeam} gameType={gameType} />;
+      case "coaching-analysis":
+        return <VODAnalysisTools teamId={selectedTeam} gameType={gameType} />;
       case "settings":
         return <TeamSettingsView teamId={selectedTeam} gameType={gameType} teams={teams} onTeamUpdated={() => checkUserTeams(user?.id || "")} />;
       case "recruitment":
