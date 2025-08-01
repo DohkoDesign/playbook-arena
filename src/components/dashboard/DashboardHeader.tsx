@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, Settings, Shield } from "lucide-react";
 import { ProfileSettings } from "./ProfileSettings";
 import { NotificationCenter } from "./NotificationCenter";
+import { TeamSettingsView } from "./TeamSettingsView";
 import { supabase } from "@/integrations/supabase/client";
 import { getGameConfig } from "@/data/gameConfigs";
 
@@ -25,6 +26,7 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeaderProps) => {
   const [showProfileSettings, setShowProfileSettings] = useState(false);
+  const [showTeamSettings, setShowTeamSettings] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
   
   const gameConfig = currentTeam?.jeu ? getGameConfig(currentTeam.jeu) : null;
@@ -106,8 +108,17 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
               className="cursor-pointer"
             >
               <Settings className="mr-2 h-4 w-4" />
-              <span>Paramètres</span>
+              <span>Paramètres du profil</span>
             </DropdownMenuItem>
+            {currentTeam && (
+              <DropdownMenuItem 
+                onClick={() => setShowTeamSettings(true)}
+                className="cursor-pointer"
+              >
+                <Shield className="mr-2 h-4 w-4" />
+                <span>Paramètres de l'équipe</span>
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem 
               onClick={onLogout}
@@ -131,6 +142,24 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
               loadUserAvatar(); // Recharger l'avatar après mise à jour
             }} 
           />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTeamSettings} onOpenChange={setShowTeamSettings}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-background border-border">
+          <DialogHeader>
+            <DialogTitle>Paramètres de l'équipe</DialogTitle>
+          </DialogHeader>
+          {currentTeam && (
+            <TeamSettingsView 
+              teamId={currentTeam.id}
+              gameType={currentTeam.jeu}
+              teams={[currentTeam]}
+              onTeamUpdated={() => {
+                // Recharger les données de l'équipe si nécessaire
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </header>

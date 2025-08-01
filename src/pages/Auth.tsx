@@ -67,14 +67,14 @@ const Auth = () => {
         });
 
         // Redirection selon le statut de l'utilisateur
-        if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
+        if (createdTeams && createdTeams.length > 0) {
+          // L'utilisateur a créé des équipes - priorité absolue pour l'interface admin
+          console.log("➡️ Redirecting to /dashboard (team creator)");
+          navigate("/dashboard");
+        } else if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
           // L'utilisateur a le rôle player et est membre d'au moins une équipe
           console.log("➡️ Redirecting to /player");
           navigate("/player");
-        } else if (createdTeams && createdTeams.length > 0) {
-          // L'utilisateur a créé des équipes
-          console.log("➡️ Redirecting to /dashboard");
-          navigate("/dashboard");
         } else if (teamMembers && teamMembers.length > 0) {
           // L'utilisateur est membre d'une équipe mais pas player
           console.log("➡️ Redirecting to /dashboard (team member)");
