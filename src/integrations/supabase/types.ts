@@ -485,6 +485,7 @@ export type Database = {
         | "manager"
         | "capitaine"
         | "test"
+        | "owner"
       user_role: "staff" | "player"
     }
     CompositeTypes: {
@@ -657,6 +658,7 @@ export const Constants = {
         "manager",
         "capitaine",
         "test",
+        "owner",
       ],
       user_role: ["staff", "player"],
     },
