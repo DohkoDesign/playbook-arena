@@ -124,12 +124,9 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
 
       setStats({
         totalMembers: members.length,
-        activeMembers: members.filter(m => {
-          // Vérifier si le membre a des données de profil valides
-          return m.profiles && typeof m.profiles === 'object' && 
-                 !Array.isArray(m.profiles) && 
-                 (m.profiles as any).tracker_last_updated;
-        }).length,
+        activeMembers: members.filter(m => 
+          m.role && ['joueur', 'remplacant', 'capitaine'].includes(m.role)
+        ).length,
         upcomingEvents: upcomingEvents.length,
         completedMatches: matches.length,
         winRate,
@@ -209,100 +206,66 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
 
   return (
     <div className="space-y-8">
-      {/* En-tête avec informations de l'équipe */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-cyan/10 to-violet/10 rounded-2xl border border-border/50">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        <div className="relative p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
-                {stats.teamInfo?.logo ? (
-                  <img src={stats.teamInfo.logo} alt="Team logo" className="w-12 h-12 rounded-xl object-cover" />
-                ) : (
-                  <GamepadIcon className="w-8 h-8 text-white" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-                  {stats.teamInfo?.nom || "Équipe"}
-                </h1>
-                <p className="text-lg text-muted-foreground flex items-center">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {getGameDisplayName(stats.teamInfo?.jeu || gameType || "")}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="flex items-center space-x-2 mb-2">
-                <Trophy className="w-5 h-5 text-yellow-500" />
-                <span className="text-2xl font-bold">{stats.winRate}%</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Taux de victoire</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Statistiques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200/50 hover:shadow-lg transition-all duration-300">
+        <Card className="border-l-4 border-l-blue-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Membres actifs</p>
-                <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">{stats.activeMembers}/{stats.totalMembers}</p>
+                <p className="text-sm font-medium text-muted-foreground">Joueurs actifs</p>
+                <p className="text-2xl font-bold">{stats.activeMembers}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
+              <div className="p-3 rounded-full bg-blue-500/10">
+                <Users className="h-6 w-6 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200/50 hover:shadow-lg transition-all duration-300">
+        <Card className="border-l-4 border-l-primary bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-green-700 dark:text-green-300">Événements à venir</p>
-                <p className="text-3xl font-bold text-green-900 dark:text-green-100">{stats.upcomingEvents}</p>
+                <p className="text-sm font-medium text-muted-foreground">Événements à venir</p>
+                <p className="text-2xl font-bold">{stats.upcomingEvents}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-white" />
+              <div className="p-3 rounded-full bg-primary/10">
+                <Calendar className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30 border-purple-200/50 hover:shadow-lg transition-all duration-300">
+        <Card className="border-l-4 border-l-purple-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Matchs joués</p>
-                <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{stats.completedMatches}</p>
+                <p className="text-sm font-medium text-muted-foreground">Matchs joués</p>
+                <p className="text-2xl font-bold">{stats.completedMatches}</p>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center">
-                <Trophy className="w-6 h-6 text-white" />
+              <div className="p-3 rounded-full bg-purple-500/10">
+                <Trophy className="h-6 w-6 text-purple-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200/50 hover:shadow-lg transition-all duration-300">
+        <Card className="border-l-4 border-l-green-500 bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Performance</p>
+                <p className="text-sm font-medium text-muted-foreground">Performance</p>
                 <div className="flex items-center space-x-2">
-                  <p className="text-3xl font-bold text-orange-900 dark:text-orange-100">{stats.winRate}%</p>
+                  <p className="text-2xl font-bold">{stats.winRate}%</p>
                   {stats.winRate >= 70 ? (
-                    <ArrowUpRight className="w-5 h-5 text-green-500" />
+                    <ArrowUpRight className="w-4 h-4 text-green-500" />
                   ) : (
-                    <ArrowDownRight className="w-5 h-5 text-red-500" />
+                    <ArrowDownRight className="w-4 h-4 text-red-500" />
                   )}
                 </div>
               </div>
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
+              <div className="p-3 rounded-full bg-green-500/10">
+                <TrendingUp className="h-6 w-6 text-green-500" />
               </div>
             </div>
           </CardContent>
@@ -420,45 +383,49 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Button 
           onClick={() => onViewChange("calendar")}
-          className="h-auto p-6 bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
+          variant="outline"
+          className="h-auto p-6 border-2 hover:bg-accent"
         >
           <div className="text-center">
-            <Calendar className="w-8 h-8 mx-auto mb-2" />
+            <Calendar className="w-8 h-8 mx-auto mb-2 text-primary" />
             <p className="font-semibold">Calendrier</p>
-            <p className="text-xs opacity-90">Gérer les événements</p>
+            <p className="text-xs text-muted-foreground">Gérer les événements</p>
           </div>
         </Button>
 
         <Button 
           onClick={() => onViewChange("players")}
-          className="h-auto p-6 bg-gradient-to-br from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg"
+          variant="outline"
+          className="h-auto p-6 border-2 hover:bg-accent"
         >
           <div className="text-center">
-            <Users className="w-8 h-8 mx-auto mb-2" />
+            <Users className="w-8 h-8 mx-auto mb-2 text-blue-500" />
             <p className="font-semibold">Équipe</p>
-            <p className="text-xs opacity-90">Gérer les membres</p>
+            <p className="text-xs text-muted-foreground">Gérer les membres</p>
           </div>
         </Button>
 
         <Button 
           onClick={() => onViewChange("coaching")}
-          className="h-auto p-6 bg-gradient-to-br from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 text-white shadow-lg"
+          variant="outline"
+          className="h-auto p-6 border-2 hover:bg-accent"
         >
           <div className="text-center">
-            <Video className="w-8 h-8 mx-auto mb-2" />
+            <Video className="w-8 h-8 mx-auto mb-2 text-purple-500" />
             <p className="font-semibold">Coaching</p>
-            <p className="text-xs opacity-90">Analyser les performances</p>
+            <p className="text-xs text-muted-foreground">Analyser les performances</p>
           </div>
         </Button>
 
         <Button 
           onClick={() => onViewChange("strategies")}
-          className="h-auto p-6 bg-gradient-to-br from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white shadow-lg"
+          variant="outline"
+          className="h-auto p-6 border-2 hover:bg-accent"
         >
           <div className="text-center">
-            <Target className="w-8 h-8 mx-auto mb-2" />
+            <Target className="w-8 h-8 mx-auto mb-2 text-orange-500" />
             <p className="font-semibold">Stratégies</p>
-            <p className="text-xs opacity-90">Créer des tactiques</p>
+            <p className="text-xs text-muted-foreground">Créer des tactiques</p>
           </div>
         </Button>
       </div>
