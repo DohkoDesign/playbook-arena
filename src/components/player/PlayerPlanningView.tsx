@@ -430,24 +430,24 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Mini calendrier */}
-              <div>
+            <div className="flex flex-col lg:flex-row gap-6">
+              {/* Mini calendrier - prend plus d'espace */}
+              <div className="flex-1">
                 <ShadcnCalendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => date && setSelectedDate(date)}
-                  className="rounded-md border"
+                  className="rounded-md border w-full"
                   locale={fr}
                 />
               </div>
 
               {/* Événements du jour sélectionné */}
-              <div>
+              <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-lg mb-4">
                   {format(selectedDate, "EEEE d MMMM", { locale: fr })}
                 </h3>
-                <ScrollArea className="h-[300px]">
+                <ScrollArea className="h-[350px]">
                   <div className="space-y-3">
                     {getEventsForDate(selectedDate).map((event, index) => (
                       <div key={event.id || index} className="p-3 border border-border rounded-lg">
