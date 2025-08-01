@@ -168,28 +168,52 @@ export const PlayerPerformanceView = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Performance {gameConfig?.name}</h1>
-        <Button onClick={refreshTrackerStats} disabled={refreshing} variant="outline">
+        <div className="flex items-center gap-3">
+          {gameConfig?.name === 'Apex Legends' && <span className="text-2xl">🎯</span>}
+          {gameConfig?.name === 'Valorant' && <span className="text-2xl">⚡</span>}
+          {gameConfig?.name === 'League of Legends' && <span className="text-2xl">⚔️</span>}
+          {gameConfig?.name === 'CS:GO / CS2' && <span className="text-2xl">🔫</span>}
+          {gameConfig?.name === 'Overwatch 2' && <span className="text-2xl">🛡️</span>}
+          {gameConfig?.name === 'Rocket League' && <span className="text-2xl">⚽</span>}
+          {gameConfig?.name?.includes('Call of Duty') && <span className="text-2xl">💥</span>}
+          <h1 className="text-2xl font-bold">Performance {gameConfig?.name}</h1>
+        </div>
+        <Button onClick={refreshTrackerStats} disabled={refreshing} variant="outline" className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700">
           <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
           Actualiser
         </Button>
       </div>
 
       {trackerStats?.player && (
-        <Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 border-purple-200 dark:border-purple-800">
           <CardHeader>
-            <CardTitle>Profil Joueur</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              Profil Joueur
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
+              <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">Pseudo</p>
-                <p className="font-bold">{trackerStats.player.username}</p>
+                <p className="font-bold text-lg">{trackerStats.player.username}</p>
               </div>
               {trackerStats.player.rank && (
-                <div className="text-center">
+                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Rang</p>
-                  <Badge>{trackerStats.player.rank}</Badge>
+                  <Badge className="text-lg px-4 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white">{trackerStats.player.rank}</Badge>
+                </div>
+              )}
+              {trackerStats.player.level && (
+                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">Level</p>
+                  <p className="font-bold text-xl text-blue-600">{trackerStats.player.level}</p>
+                </div>
+              )}
+              {trackerStats.player.rankScore && (
+                <div className="text-center p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">RP/Score</p>
+                  <p className="font-bold text-xl text-green-600">{trackerStats.player.rankScore}</p>
                 </div>
               )}
             </div>

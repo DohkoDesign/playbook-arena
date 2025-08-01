@@ -51,8 +51,12 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
   }, [teamId, playerId, userProfile]);
 
   const fetchPlayerData = async () => {
+    if (!playerId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
-      console.log('Fetching player data for:', playerId, 'teamId:', teamId);
       
       // Charger le profil du joueur
       const { data: profileData, error: profileError } = await supabase
