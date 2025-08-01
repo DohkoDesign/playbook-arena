@@ -82,26 +82,6 @@ export const FeaturesShowcase = () => {
             </div>
           ))}
         </div>
-
-        <div className="text-center mt-20">
-          <div className="bg-gradient-brand/10 rounded-2xl p-8 md:p-12">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Prêt à transformer votre équipe ?
-            </h3>
-            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
-              Rejoignez des milliers d'équipes qui font déjà confiance à Shadow Hub 
-              pour gérer leur succès dans l'esport compétitif.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="px-8">
-                Commencer gratuitement
-              </Button>
-              <Button variant="outline" size="lg" className="px-8">
-                Demander une démo
-              </Button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
