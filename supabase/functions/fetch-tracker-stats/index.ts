@@ -90,28 +90,127 @@ function generateUserHash(username: string): number {
   return username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 }
 
-// VALORANT - Utilise Tracker.gg API en fallback simulation
+// VALORANT - Utilise l'API réelle de Tracker.gg
 async function fetchValorantStatsReal(username: string): Promise<TrackerResponse> {
   try {
-    // Essayer l'API Tracker.gg (nécessite une clé API)
-    // En cas d'échec, utiliser des données simulées réalistes
-    return await fetchValorantStats(username);
+    const trackerApiKey = Deno.env.get('TRACKER_GG_API_KEY');
+    if (!trackerApiKey) {
+      console.log('No Tracker.gg API key found, using simulated data');
+      return await fetchValorantStats(username);
+    }
+
+    // Appel API réel vers Tracker.gg
+    const response = await fetch(`https://public-api.tracker.gg/v2/valorant/standard/profile/riot/${encodeURIComponent(username)}`, {
+      headers: {
+        'TRN-Api-Key': trackerApiKey
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`Tracker.gg API error: ${response.status}, falling back to simulated data`);
+      return await fetchValorantStats(username);
+    }
+
+    const data = await response.json();
+    
+    // Transformer les données Tracker.gg en format uniforme
+    const transformedData = {
+      player: {
+        username: data.data.platformInfo.platformUserHandle,
+        rank: data.data.segments[0].stats.rank?.displayValue || 'Unranked',
+        rr: data.data.segments[0].stats.rankedRating?.value || 0,
+        peakRank: data.data.segments[0].stats.peakRank?.displayValue || 'Unknown'
+      },
+      stats: {
+        matchesPlayed: data.data.segments[0].stats.matchesPlayed?.value || 0,
+        winRate: data.data.segments[0].stats.winRate?.value || 0,
+        kd: data.data.segments[0].stats.kDRatio?.value || 0,
+        adr: data.data.segments[0].stats.damagePerRound?.value || 0,
+        hs: data.data.segments[0].stats.headshotsPercentage?.value || 0,
+        acs: data.data.segments[0].stats.scorePerRound?.value || 0
+      },
+      agents: {
+        mostPlayed: data.data.segments[1]?.metadata.name || 'Unknown'
+      }
+    };
+
+    return {
+      success: true,
+      data: transformedData
+    };
   } catch (error) {
-    console.log('Fallback to simulated Valorant stats');
+    console.log('Fallback to simulated Valorant stats due to error:', error);
     return await fetchValorantStats(username);
   }
 }
 
-// APEX LEGENDS - Avec vraies APIs et données personnalisées
+// APEX LEGENDS - Utilise l'API réelle de Tracker.gg
 async function fetchApexStatsReal(username: string): Promise<TrackerResponse> {
   try {
-    // Essayer ApexLegendsStatus API ou Tracker.gg
-    // const response = await fetch(`https://api.mozambiquehe.re/bridge?auth=${API_KEY}&player=${username}&platform=PC`);
+    const trackerApiKey = Deno.env.get('TRACKER_GG_API_KEY');
+    if (!trackerApiKey) {
+      console.log('No Tracker.gg API key found, using simulated data');
+      return await fetchApexStats(username);
+    }
+
+    // Appel API réel vers Tracker.gg pour Apex
+    const response = await fetch(`https://public-api.tracker.gg/v2/apex/standard/profile/origin/${encodeURIComponent(username)}`, {
+      headers: {
+        'TRN-Api-Key': trackerApiKey
+      }
+    });
+
+    if (!response.ok) {
+      console.log(`Tracker.gg API error for Apex: ${response.status}, falling back to simulated data`);
+      return await fetchApexStats(username);
+    }
+
+    const data = await response.json();
     
-    // En cas d'échec, utiliser des données réalistes personnalisées
-    return await fetchApexStats(username);
+    // Transformer les données Apex de Tracker.gg
+    const overviewSegment = data.data.segments.find((s: any) => s.type === 'overview');
+    const legendSegment = data.data.segments.find((s: any) => s.type === 'legend');
+    
+    const transformedData = {
+      player: {
+        username: data.data.platformInfo.platformUserHandle,
+        level: overviewSegment?.stats.level?.value || 0,
+        rankScore: overviewSegment?.stats.rankScore?.value || 0,
+        rank: overviewSegment?.stats.rankScore?.metadata?.rankName || 'Unranked',
+        platform: data.data.platformInfo.platformSlug.toUpperCase()
+      },
+      stats: {
+        matchesPlayed: overviewSegment?.stats.matchesPlayed?.value || 0,
+        wins: overviewSegment?.stats.wins?.value || 0,
+        winRate: overviewSegment?.stats.wins?.value && overviewSegment?.stats.matchesPlayed?.value ? 
+          ((overviewSegment.stats.wins.value / overviewSegment.stats.matchesPlayed.value) * 100).toFixed(1) : '0.0',
+        kills: overviewSegment?.stats.kills?.value || 0,
+        deaths: overviewSegment?.stats.deaths?.value || 1,
+        damage: overviewSegment?.stats.damage?.value || 0,
+        kd: overviewSegment?.stats.kd?.value || 0,
+        avgDamage: overviewSegment?.stats.avgDamage?.value || 0,
+        revives: overviewSegment?.stats.revives?.value || 0,
+        top5Finishes: overviewSegment?.stats.top5?.value || 0,
+        top3Finishes: overviewSegment?.stats.top3?.value || 0
+      },
+      legends: {
+        mostPlayed: legendSegment?.metadata?.name || 'Unknown'
+      },
+      recent: {
+        last10Games: {
+          avgKills: overviewSegment?.stats.kills?.value && overviewSegment?.stats.matchesPlayed?.value ?
+            (overviewSegment.stats.kills.value / overviewSegment.stats.matchesPlayed.value).toFixed(1) : '0.0',
+          avgDamage: overviewSegment?.stats.avgDamage?.value || 0
+        }
+      }
+    };
+
+    return {
+      success: true,
+      data: transformedData
+    };
   } catch (error) {
-    console.log('Fallback to simulated Apex stats');
+    console.log('Fallback to simulated Apex stats due to error:', error);
     return await fetchApexStats(username);
   }
 }
