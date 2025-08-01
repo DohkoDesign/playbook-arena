@@ -55,10 +55,16 @@ export const PlayerPerformanceView = ({
   const gameIcon = gameIcons[teamData?.jeu as keyof typeof gameIcons] || '🎮';
 
   const refreshTrackerStats = async () => {
-    if (!teamData?.jeu || !userProfile?.tracker_usernames?.[teamData.jeu]) {
+    console.log('🔄 Manual refresh requested', {
+      teamGame: teamData?.jeu,
+      trackerUsernames: userProfile?.tracker_usernames,
+      hasUsername: !!userProfile?.tracker_usernames?.[teamData?.jeu]
+    });
+
+    if (!teamData?.jeu || !userProfile?.tracker_usernames?.[teamData?.jeu]) {
       toast({
         title: "Configuration requise",
-        description: "Configurez votre pseudo de tracker dans les paramètres",
+        description: "Configurez votre pseudo de tracker dans la section Fiche",
         variant: "destructive",
       });
       return;
@@ -104,10 +110,19 @@ export const PlayerPerformanceView = ({
 
   useEffect(() => {
     const initializeTrackerData = async () => {
+      console.log('🔍 Initializing tracker data...', {
+        userProfile: userProfile ? 'exists' : 'missing',
+        trackerUsernames: userProfile?.tracker_usernames,
+        teamGame: teamData?.jeu,
+        hasTrackerStats: userProfile?.tracker_stats ? Object.keys(userProfile.tracker_stats).length : 0
+      });
+
       if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
+        console.log('✅ Using cached tracker stats');
         setTrackerStats(userProfile.tracker_stats);
         setLoading(false);
       } else if (userProfile?.tracker_usernames?.[teamData?.jeu]) {
+        console.log('🚀 Fetching fresh tracker stats for:', userProfile.tracker_usernames[teamData.jeu]);
         try {
           setRefreshing(true);
           const { data, error } = await supabase.functions.invoke('fetch-tracker-stats', {
@@ -116,6 +131,8 @@ export const PlayerPerformanceView = ({
               username: userProfile.tracker_usernames[teamData.jeu]
             }
           });
+
+          console.log('📊 Tracker API response:', { data, error });
 
           if (error) throw error;
 
@@ -134,14 +151,32 @@ export const PlayerPerformanceView = ({
               title: "Statistiques récupérées",
               description: "Vos statistiques de tracker ont été récupérées automatiquement",
             });
+          } else {
+            console.log('❌ Tracker API returned unsuccessful response');
+            toast({
+              title: "Erreur",
+              description: data.error || "Impossible de récupérer les statistiques",
+              variant: "destructive",
+            });
           }
         } catch (error: any) {
-          console.error('Error auto-fetching tracker stats:', error);
+          console.error('❌ Error auto-fetching tracker stats:', error);
+          toast({
+            title: "Erreur",
+            description: "Impossible de récupérer les statistiques: " + error.message,
+            variant: "destructive",
+          });
         } finally {
           setRefreshing(false);
           setLoading(false);
         }
       } else {
+        console.log('⚠️ No tracker username configured for game:', teamData?.jeu);
+        toast({
+          title: "Configuration requise",
+          description: "Configurez votre pseudo de tracker dans la section Fiche",
+          variant: "destructive",
+        });
         setLoading(false);
       }
     };

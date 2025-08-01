@@ -6,6 +6,15 @@
 @tailwind utilities;
 
 @layer base {
+  /* Supprimer les contours blancs par défaut */
+  * {
+    outline: none !important;
+  }
+  
+  *:focus, *:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+  }
   :root {
     /* Gris plus doux */
     --background: 0 0% 98%; /* Blanc cassé */
