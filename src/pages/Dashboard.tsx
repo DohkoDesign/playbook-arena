@@ -5,18 +5,20 @@ import { useNavigate } from "react-router-dom";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { TeamSetupModal } from "@/components/dashboard/TeamSetupModal";
-import { SmartDashboard } from "@/components/dashboard/SmartDashboard";
+import { AdvancedDashboard } from "@/components/dashboard/AdvancedDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
+import { MatchAnalysisView } from "@/components/dashboard/MatchAnalysisView";
 import { TeamSettingsView } from "@/components/dashboard/TeamSettingsView";
 import { RecruitmentView } from "@/components/dashboard/RecruitmentView";
 import { StaffFeedbackView } from "@/components/dashboard/StaffFeedbackView";
 import { StaffAvailabilitiesView } from "@/components/dashboard/StaffAvailabilitiesView";
-import { useToast } from "@/hooks/use-toast";
 
-type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "settings" | "recruitment" | "feedbacks" | "availabilities";
+type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "match-analysis" | "settings" | "recruitment" | "feedbacks" | "availabilities";
+
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -119,7 +121,7 @@ const Dashboard = () => {
 
     switch (currentView) {
       case "dashboard":
-        return <SmartDashboard teamId={selectedTeam} gameType={gameType} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
+        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
       case "calendar":
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
       case "strategies":
@@ -128,6 +130,8 @@ const Dashboard = () => {
         return <PlayersView teamId={selectedTeam} />;
       case "coaching":
         return <CoachingView teamId={selectedTeam} gameType={gameType} />;
+      case "match-analysis":
+        return <MatchAnalysisView teamId={selectedTeam} gameType={gameType} />;
       case "settings":
         return <TeamSettingsView teamId={selectedTeam} gameType={gameType} teams={teams} onTeamUpdated={() => checkUserTeams(user?.id || "")} />;
       case "recruitment":
@@ -137,7 +141,7 @@ const Dashboard = () => {
       case "availabilities":
         return <StaffAvailabilitiesView teamId={selectedTeam} />;
       default:
-        return <SmartDashboard teamId={selectedTeam} gameType={gameType} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
+        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
     }
   };
 
