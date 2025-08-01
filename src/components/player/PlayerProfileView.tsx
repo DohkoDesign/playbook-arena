@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { User, Target, TrendingUp, TrendingDown, Edit, Save, X, Plus } from "lucide-react";
+import { User, Target, TrendingUp, TrendingDown, Edit, Save, X, Plus, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getGameConfig } from "@/data/gameConfigs";
 
 interface PlayerProfileViewProps {
   playerId: string;
   teamId: string;
+  teamData?: any;
 }
 
 interface PlayerProfile {
@@ -22,19 +24,45 @@ interface PlayerProfile {
   notes?: string;
 }
 
-export const PlayerProfileView = ({ playerId, teamId }: PlayerProfileViewProps) => {
+export const PlayerProfileView = ({ playerId, teamId, teamData }: PlayerProfileViewProps) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [newObjective, setNewObjective] = useState("");
   const [objectives, setObjectives] = useState<string[]>([]);
+  const [trackerUsername, setTrackerUsername] = useState("");
+  const [savingTracker, setSavingTracker] = useState(false);
   const { toast } = useToast();
+
+  const gameConfig = teamData?.jeu ? getGameConfig(teamData.jeu) : null;
 
   useEffect(() => {
     if (playerId && teamId) {
       fetchPlayerProfile();
+      fetchUserProfile();
     }
   }, [playerId, teamId]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", playerId)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+      
+      // Set current tracker username for this game
+      if (data.tracker_usernames && teamData?.jeu) {
+        setTrackerUsername(data.tracker_usernames[teamData.jeu] || "");
+      }
+    } catch (error: any) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   const fetchPlayerProfile = async () => {
     try {
@@ -136,6 +164,43 @@ export const PlayerProfileView = ({ playerId, teamId }: PlayerProfileViewProps) 
     }
   };
 
+  const saveTrackerUsername = async () => {
+    if (!userProfile || !teamData?.jeu) return;
+
+    setSavingTracker(true);
+    try {
+      const updatedTrackerUsernames = {
+        ...userProfile.tracker_usernames,
+        [teamData.jeu]: trackerUsername
+      };
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ tracker_usernames: updatedTrackerUsernames })
+        .eq("user_id", playerId);
+
+      if (error) throw error;
+
+      setUserProfile({
+        ...userProfile,
+        tracker_usernames: updatedTrackerUsernames
+      });
+
+      toast({
+        title: "Pseudo sauvegardé",
+        description: "Votre pseudo de tracker a été mis à jour",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder le pseudo",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingTracker(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -160,6 +225,42 @@ export const PlayerProfileView = ({ playerId, teamId }: PlayerProfileViewProps) 
           <h2 className="text-2xl font-bold">Ma Fiche Joueur</h2>
         </div>
       </div>
+
+      {/* Configuration Tracker */}
+      {gameConfig && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Settings className="w-4 h-4 text-primary" />
+              <span>Configuration Tracker</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="trackerUsername">
+                Votre pseudo {gameConfig.name}
+              </Label>
+              <div className="flex space-x-2">
+                <Input
+                  id="trackerUsername"
+                  placeholder={`Ex: VotreUsername#TAG`}
+                  value={trackerUsername}
+                  onChange={(e) => setTrackerUsername(e.target.value)}
+                />
+                <Button 
+                  onClick={saveTrackerUsername} 
+                  disabled={savingTracker || !trackerUsername.trim()}
+                >
+                  {savingTracker ? "..." : <Save className="w-4 h-4" />}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Configurez votre pseudo pour voir vos vraies statistiques de performance
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Points forts */}
