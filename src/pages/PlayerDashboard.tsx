@@ -185,18 +185,7 @@ const PlayerDashboard = () => {
       case "objectives":
         return <PlayerObjectivesView teamId={teamData.id} playerId={user?.id || ""} />;
       case "planning":
-        console.log("🚀 Rendering planning view with data:", { teamId: teamData.id, playerId: user?.id });
-        return (
-          <div className="p-8">
-            <h2 className="text-2xl font-bold mb-4">Planning Personnel - TEST</h2>
-            <p>TeamId: {teamData.id}</p>
-            <p>PlayerId: {user?.id}</p>
-            <div className="bg-blue-100 p-4 mt-4">
-              <p>Si vous voyez ce message, le routing fonctionne.</p>
-              <p>Le problème vient du composant PlayerPlanningView.</p>
-            </div>
-          </div>
-        );
+        return <PlayerPlanningView teamId={teamData.id} playerId={user?.id || ""} />;
       case "performance":
         return <PlayerPerformanceView teamId={teamData.id} playerId={user?.id || ""} userProfile={userProfile} teamData={teamData} />;
       
