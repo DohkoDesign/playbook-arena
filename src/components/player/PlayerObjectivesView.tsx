@@ -43,42 +43,34 @@ export const PlayerObjectivesView = ({ teamId, playerId }: PlayerObjectivesViewP
 
   const fetchObjectives = async () => {
     try {
-      // Pour l'instant, on simule les objectifs. Plus tard on pourra les stocker en base
-      const mockObjectives: Objective[] = [
-        {
-          id: '1',
-          title: 'Améliorer mon aim',
-          description: 'Atteindre 70% de précision en aim training',
-          target_value: 70,
-          current_value: 55,
-          status: 'en_cours',
-          deadline: '2024-03-15',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '2',
-          title: 'Maîtriser 5 agents',
-          description: 'Être compétent sur 5 agents différents',
-          target_value: 5,
-          current_value: 3,
-          status: 'en_cours',
-          deadline: '2024-04-01',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: '3',
-          title: 'Communication en match',
-          description: 'Améliorer ma communication pendant les matchs',
-          target_value: 100,
-          current_value: 85,
-          status: 'en_cours',
-          deadline: '2024-02-28',
-          created_at: new Date().toISOString()
-        }
-      ];
+      // Récupérer les objectifs depuis la fiche joueur créée par le staff
+      const { data: playerProfile, error } = await supabase
+        .from("player_profiles")
+        .select("objectifs_individuels")
+        .eq("team_id", teamId)
+        .eq("user_id", playerId)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      // Convertir les objectifs texte en format Objective avec des valeurs par défaut
+      const objectifsTexte = playerProfile?.objectifs_individuels || [];
+      const objectifsFormates: Objective[] = objectifsTexte.map((objectif: string, index: number) => ({
+        id: `staff-${index}`,
+        title: objectif,
+        description: `Objectif défini par le staff: ${objectif}`,
+        target_value: 100,
+        current_value: 0,
+        status: 'en_cours' as const,
+        deadline: '',
+        created_at: new Date().toISOString()
+      }));
       
-      setObjectives(mockObjectives);
+      setObjectives(objectifsFormates);
     } catch (error: any) {
+      console.error("Erreur lors du chargement des objectifs:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les objectifs",
@@ -163,65 +155,11 @@ export const PlayerObjectivesView = ({ teamId, playerId }: PlayerObjectivesViewP
         <div>
           <h1 className="text-2xl font-bold">Mes Objectifs</h1>
           <p className="text-muted-foreground">Objectifs définis par le staff - Suivez votre progression</p>
+          <p className="text-sm text-orange-600 mt-1">
+            💡 Les objectifs sont définis par votre staff. Vous ne pouvez pas en créer vous-même.
+          </p>
         </div>
       </div>
-
-      {/* Formulaire d'ajout */}
-      {showAddForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Target className="w-5 h-5 mr-2" />
-              Créer un nouvel objectif
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Titre *</label>
-              <Input
-                value={newObjective.title}
-                onChange={(e) => setNewObjective(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Ex: Améliorer mon aim"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Description *</label>
-              <Textarea
-                value={newObjective.description}
-                onChange={(e) => setNewObjective(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Décrivez votre objectif en détail"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Valeur cible</label>
-                <Input
-                  type="number"
-                  value={newObjective.target_value}
-                  onChange={(e) => setNewObjective(prev => ({ ...prev, target_value: parseInt(e.target.value) || 0 }))}
-                  placeholder="100"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Date limite</label>
-                <Input
-                  type="date"
-                  value={newObjective.deadline}
-                  onChange={(e) => setNewObjective(prev => ({ ...prev, deadline: e.target.value }))}
-                />
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button onClick={addObjective}>
-                Créer l'objectif
-              </Button>
-              <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                Annuler
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Liste des objectifs */}
       <div className="grid gap-4">
@@ -279,18 +217,15 @@ export const PlayerObjectivesView = ({ teamId, playerId }: PlayerObjectivesViewP
         })}
       </div>
 
-      {objectives.length === 0 && !showAddForm && (
+      {objectives.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
             <Target className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">Aucun objectif défini</h3>
             <p className="text-muted-foreground mb-4">
-              Créez vos premiers objectifs personnels pour suivre votre progression
+              Votre staff n'a pas encore défini d'objectifs pour vous. 
+              Ils pourront le faire depuis votre fiche joueur.
             </p>
-            <Button onClick={() => setShowAddForm(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Créer mon premier objectif
-            </Button>
           </CardContent>
         </Card>
       )}
