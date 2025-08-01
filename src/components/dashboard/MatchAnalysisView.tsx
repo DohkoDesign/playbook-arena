@@ -292,193 +292,311 @@ export const MatchAnalysisView = ({ teamId, gameType }: MatchAnalysisViewProps) 
         </Card>
       </div>
 
-      {/* Liste des matchs */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Trophy className="w-5 h-5 mr-2" />
-            Matchs récents
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {events.length === 0 ? (
-            <div className="text-center py-8 space-y-4">
-              <Trophy className="w-12 h-12 mx-auto text-muted-foreground" />
-              <div>
-                <p className="text-muted-foreground">Aucun match trouvé</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Les matchs terminés apparaîtront ici pour analyse
-                </p>
+      {/* Liste des matchs avec design amélioré */}
+      <div className="space-y-4">
+        {events.length === 0 ? (
+          <Card className="border-dashed">
+            <CardContent className="flex items-center justify-center py-16">
+              <div className="text-center space-y-4">
+                <div className="mx-auto w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                  <Trophy className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-lg">Aucun match analysé</h3>
+                  <p className="text-muted-foreground max-w-sm">
+                    Les matchs terminés et analysés apparaîtront ici. Créez vos premières analyses depuis la section événements.
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {events.map((event) => {
-                const analysis = getAnalysisForEvent(event.id);
-                const hasAnalysis = !!analysis;
-                
-                return (
-                  <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div>
-                          <h4 className="font-semibold">{event.titre}</h4>
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(event.date_debut).toLocaleDateString('fr-FR')}</span>
-                            <Badge variant="outline">{event.type}</Badge>
-                            {event.map_name && (
-                              <Badge variant="secondary">{event.map_name}</Badge>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {events.map((event) => {
+              const analysis = getAnalysisForEvent(event.id);
+              const hasAnalysis = !!analysis;
+              
+              return (
+                <Card key={event.id} className="group hover:shadow-md transition-all duration-200 border-l-4 border-l-primary/20 hover:border-l-primary">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 space-y-3">
+                        {/* En-tête du match */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center">
+                              <Trophy className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-lg">{event.titre}</h3>
+                              <div className="flex items-center space-x-3 text-sm text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{new Date(event.date_debut).toLocaleDateString('fr-FR', { 
+                                    weekday: 'short', 
+                                    day: 'numeric', 
+                                    month: 'short' 
+                                  })}</span>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  {event.type}
+                                </Badge>
+                                {event.map_name && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {event.map_name}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Résultat */}
+                          {analysis && analysis.resultat && (
+                            <div className="text-right">
+                              <Badge 
+                                variant={getResultBadgeVariant(analysis.resultat)}
+                                className="text-sm font-medium px-3 py-1"
+                              >
+                                {analysis.resultat}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Informations supplémentaires */}
+                        {analysis && (
+                          <div className="flex items-center space-x-6 text-sm text-muted-foreground bg-muted/30 rounded-lg p-3">
+                            {analysis.vods && analysis.vods.length > 0 && (
+                              <div className="flex items-center space-x-1">
+                                <Video className="w-4 h-4" />
+                                <span>{analysis.vods.length} VOD{analysis.vods.length > 1 ? 's' : ''}</span>
+                              </div>
                             )}
+                            {analysis.notes && (
+                              <div className="flex items-center space-x-1">
+                                <Edit className="w-4 h-4" />
+                                <span>Notes disponibles</span>
+                              </div>
+                            )}
+                            <div className="flex items-center space-x-1">
+                              <BarChart3 className="w-4 h-4" />
+                              <span>Analyse complète</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Actions */}
+                      <div className="ml-6 flex flex-col space-y-2">
+                        {hasAnalysis ? (
+                          <>
+                            <Button 
+                              variant="default"
+                              size="sm"
+                              onClick={() => openAnalysisModal(event, analysis)}
+                              className="w-full"
+                            >
+                              <Eye className="w-4 h-4 mr-2" />
+                              Consulter
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openAnalysisModal(event, analysis)}
+                              className="w-full"
+                            >
+                              <Edit className="w-4 h-4 mr-2" />
+                              Modifier
+                            </Button>
+                          </>
+                        ) : (
+                          <Button 
+                            onClick={() => openAnalysisModal(event)}
+                            size="sm"
+                            className="w-full"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Analyser
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Modal d'analyse redesigné */}
+      <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="border-b pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center">
+                  <Video className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-semibold">
+                    {currentAnalysis ? "Modifier l'analyse" : "Nouvelle analyse"}
+                  </DialogTitle>
+                  {selectedEvent && (
+                    <p className="text-sm text-muted-foreground">
+                      {selectedEvent.titre} • {new Date(selectedEvent.date_debut).toLocaleDateString('fr-FR')}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                Post-Match
+              </Badge>
+            </div>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto">
+            <Tabs defaultValue="result" className="h-full flex flex-col">
+              <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1 rounded-lg mx-6 mt-4">
+                <TabsTrigger value="result" className="flex items-center space-x-2">
+                  <Trophy className="w-4 h-4" />
+                  <span>Résultat</span>
+                </TabsTrigger>
+                <TabsTrigger value="vods" className="flex items-center space-x-2">
+                  <Video className="w-4 h-4" />
+                  <span>VODs</span>
+                </TabsTrigger>
+                <TabsTrigger value="compositions" className="flex items-center space-x-2">
+                  <Users className="w-4 h-4" />
+                  <span>Compositions</span>
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="flex items-center space-x-2">
+                  <Edit className="w-4 h-4" />
+                  <span>Notes</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="flex-1 p-6 space-y-6">
+                <TabsContent value="result" className="space-y-6">
+                  <Card className="border-dashed">
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-base font-medium">Résultat du match</Label>
+                          <Select value={formData.result} onValueChange={(value) => setFormData(prev => ({ ...prev, result: value }))}>
+                            <SelectTrigger className="h-12">
+                              <SelectValue placeholder="Sélectionner le résultat" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Victoire" className="text-green-600">
+                                🏆 Victoire
+                              </SelectItem>
+                              <SelectItem value="Défaite" className="text-red-600">
+                                ❌ Défaite
+                              </SelectItem>
+                              <SelectItem value="Nul" className="text-blue-600">
+                                🤝 Nul
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-base font-medium">Score final (optionnel)</Label>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex-1">
+                              <Input 
+                                placeholder="Notre équipe"
+                                value={formData.score_team}
+                                onChange={(e) => setFormData(prev => ({ ...prev, score_team: e.target.value }))}
+                                className="h-12 text-center text-lg font-semibold"
+                              />
+                            </div>
+                            <div className="flex items-center justify-center w-8 h-8 bg-muted rounded-full">
+                              <span className="text-sm font-medium">VS</span>
+                            </div>
+                            <div className="flex-1">
+                              <Input 
+                                placeholder="Adversaire"
+                                value={formData.score_opponent}
+                                onChange={(e) => setFormData(prev => ({ ...prev, score_opponent: e.target.value }))}
+                                className="h-12 text-center text-lg font-semibold"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                      {analysis && analysis.resultat && (
-                        <div className="mt-2">
-                          <Badge variant={getResultBadgeVariant(analysis.resultat)}>
-                            {analysis.resultat}
-                          </Badge>
-                        </div>
-                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="vods" className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">VODs et Replays</Label>
+                      <Button variant="outline" size="sm" onClick={addVodField} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Ajouter un lien
+                      </Button>
                     </div>
                     
-                    <div className="flex items-center space-x-2">
-                      {hasAnalysis ? (
-                        <>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openAnalysisModal(event, analysis)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Voir l'analyse
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => openAnalysisModal(event, analysis)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <Button 
-                          onClick={() => openAnalysisModal(event)}
-                          size="sm"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Créer l'analyse
-                        </Button>
-                      )}
+                    <Card className="bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
+                      <CardContent className="pt-4">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
+                            <PlayCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="space-y-2">
+                            <p className="font-medium text-sm">Formats supportés</p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                <span>YouTube (vidéos/playlists)</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <span>Twitch (VODs/clips)</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span>Fichiers directs (.mp4, .mov)</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span>Autres plateformes</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="space-y-3">
+                      {formData.vods.map((vod, index) => (
+                        <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/30 transition-colors">
+                          <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
+                            <Video className="w-4 h-4" />
+                          </div>
+                          <Input
+                            placeholder="https://youtube.com/watch?v=... ou https://youtube.com/playlist?list=..."
+                            value={vod}
+                            onChange={(e) => updateVod(index, e.target.value)}
+                            className="flex-1 border-0 bg-transparent focus-visible:ring-0"
+                          />
+                          {formData.vods.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removeVod(index)}
+                              className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Modal d'analyse */}
-      <Dialog open={showAnalysisModal} onOpenChange={setShowAnalysisModal}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <Video className="w-5 h-5 mr-2" />
-              {currentAnalysis ? "Modifier l'analyse" : "Créer une analyse"}
-              {selectedEvent && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  - {selectedEvent.titre}
-                </span>
-              )}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <Tabs defaultValue="result" className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="result">Résultat</TabsTrigger>
-                <TabsTrigger value="vods">VODs</TabsTrigger>
-                <TabsTrigger value="compositions">Compositions</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="result" className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Résultat du match</Label>
-                    <Select value={formData.result} onValueChange={(value) => setFormData(prev => ({ ...prev, result: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionner le résultat" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Victoire">Victoire</SelectItem>
-                        <SelectItem value="Défaite">Défaite</SelectItem>
-                        <SelectItem value="Nul">Nul</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Score (optionnel)</Label>
-                    <div className="flex items-center space-x-2">
-                      <Input 
-                        placeholder="Notre score"
-                        value={formData.score_team}
-                        onChange={(e) => setFormData(prev => ({ ...prev, score_team: e.target.value }))}
-                      />
-                      <span>-</span>
-                      <Input 
-                        placeholder="Score adverse"
-                        value={formData.score_opponent}
-                        onChange={(e) => setFormData(prev => ({ ...prev, score_opponent: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="vods" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>VODs et Replays</Label>
-                    <Button variant="outline" size="sm" onClick={addVodField}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Ajouter un lien
-                    </Button>
-                  </div>
-                  <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                    <p className="flex items-center mb-2">
-                      <PlayCircle className="w-4 h-4 mr-2" />
-                      <strong>Formats supportés :</strong>
-                    </p>
-                    <ul className="list-disc list-inside space-y-1 ml-6">
-                      <li>Lien YouTube (vidéo unique ou playlist)</li>
-                      <li>Lien Twitch (VOD ou clip)</li>
-                      <li>Fichier vidéo direct (.mp4, .mov, etc.)</li>
-                      <li>Autres plateformes de streaming</li>
-                    </ul>
-                  </div>
-                  {formData.vods.map((vod, index) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <Input
-                        placeholder="https://youtube.com/watch?v=... ou https://youtube.com/playlist?list=..."
-                        value={vod}
-                        onChange={(e) => updateVod(index, e.target.value)}
-                        className="flex-1"
-                      />
-                      {formData.vods.length > 1 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => removeVod(index)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
+                </TabsContent>
 
               <TabsContent value="compositions" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -541,16 +659,24 @@ export const MatchAnalysisView = ({ teamId, gameType }: MatchAnalysisViewProps) 
                   />
                 </div>
               </TabsContent>
+              </div>
             </Tabs>
+          </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowAnalysisModal(false)}>
-                Annuler
-              </Button>
-              <Button onClick={saveAnalysis}>
-                <Save className="w-4 h-4 mr-2" />
-                Sauvegarder l'analyse
-              </Button>
+          <div className="border-t p-6 bg-muted/20">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-muted-foreground">
+                {currentAnalysis ? "Dernière modification il y a quelques instants" : "Nouvelle analyse de match"}
+              </div>
+              <div className="flex space-x-3">
+                <Button variant="outline" onClick={() => setShowAnalysisModal(false)} className="px-6">
+                  Annuler
+                </Button>
+                <Button onClick={saveAnalysis} className="px-6 gap-2 bg-gradient-to-r from-primary to-primary/80">
+                  <Save className="w-4 h-4" />
+                  {currentAnalysis ? "Mettre à jour" : "Sauvegarder"}
+                </Button>
+              </div>
             </div>
           </div>
         </DialogContent>
