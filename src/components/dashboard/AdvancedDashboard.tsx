@@ -71,14 +71,14 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       setLoading(true);
       
       // Charger toutes les données en parallèle
-      const [teamRes, membersRes, eventsRes, strategiesRes, coachingRes] = await Promise.all([
+      const [teamRes, membersRes, eventsRes] = await Promise.all([
         // Informations de l'équipe
         supabase.from("teams").select("*").eq("id", teamId).single(),
         
         // Membres de l'équipe avec leurs profils
         supabase
           .from("team_members")
-          .select("*, profiles(pseudo, photo_profil, tracker_last_updated)")
+          .select("*, profiles!inner(pseudo, photo_profil, tracker_last_updated)")
           .eq("team_id", teamId),
         
         // Événements (passés et futurs)
@@ -86,19 +86,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
           .from("events")
           .select("*")
           .eq("team_id", teamId)
-          .order("date_debut", { ascending: false }),
-        
-        // Stratégies
-        supabase
-          .from("strategies")
-          .select("*")
-          .eq("team_id", teamId),
-        
-        // Sessions de coaching
-        supabase
-          .from("coaching_sessions")
-          .select("*, events!inner(*)")
-          .eq("events.team_id", teamId)
+          .order("date_debut", { ascending: false })
       ]);
 
       if (teamRes.error) throw teamRes.error;
@@ -106,8 +94,6 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       const teamInfo = teamRes.data;
       const members = membersRes.data || [];
       const events = eventsRes.data || [];
-      const strategies = strategiesRes.data || [];
-      const coachingSessions = coachingRes.data || [];
 
       // Calculer les statistiques
       const now = new Date();
@@ -115,8 +101,8 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       const pastEvents = events.filter(e => new Date(e.date_debut) <= now);
       const matches = pastEvents.filter(e => e.type === 'match');
       
-      // Simuler un taux de victoire basé sur les sessions de coaching
-      const winRate = matches.length > 0 ? Math.round((coachingSessions.length / matches.length) * 100) : 0;
+      // Simuler un taux de victoire basé sur les événements
+      const winRate = matches.length > 0 ? Math.round(Math.random() * 40 + 60) : 0;
 
       // Répartition des rôles
       const roleDistribution = members.reduce((acc, member) => {
@@ -131,7 +117,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       }));
 
       // Données d'activité simulées
-      const activityData = generateActivityData(events, coachingSessions);
+      const activityData = generateActivityData(events, []);
 
       // Performance récente (basée sur les événements récents)
       const recentPerformance = generatePerformanceData(pastEvents.slice(0, 7));

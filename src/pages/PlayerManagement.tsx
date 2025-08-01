@@ -382,11 +382,11 @@ export const PlayerManagement = () => {
           <TabsContent value="profile" className="space-y-8 animate-fade-in">
             <div className="grid gap-8 lg:grid-cols-2">
               {/* Points forts */}
-              <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200/50 dark:border-green-800/50 shadow-elegant hover:shadow-card transition-all duration-300">
+              <Card className="border hover:shadow-lg transition-all duration-300">
                 <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center space-x-3 text-green-800 dark:text-green-200">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <TrendingUp className="w-6 h-6 text-white" />
+                  <CardTitle className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-card border rounded-2xl flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-green-600" />
                     </div>
                     <span className="text-xl font-bold">Points forts</span>
                   </CardTitle>
@@ -398,12 +398,12 @@ export const PlayerManagement = () => {
                       value={newPointFort}
                       onChange={(e) => setNewPointFort(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && addPointFort()}
-                      className="bg-white/70 border-green-300 focus:border-green-500 dark:bg-green-950/50"
+                      className="bg-background border focus:border-primary"
                     />
                     <Button 
                       size="sm" 
                       onClick={addPointFort}
-                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg"
+                      className="bg-primary hover:bg-primary/90"
                     >
                       <Plus className="w-4 h-4" />
                     </Button>
