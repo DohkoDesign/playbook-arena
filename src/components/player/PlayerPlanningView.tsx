@@ -80,6 +80,8 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [showDayModal, setShowDayModal] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<string>('');
   const [weeklyAvailability, setWeeklyAvailability] = useState<WeeklyAvailability>({
     monday: { enabled: false, slots: [] },
     tuesday: { enabled: false, slots: [] },
@@ -576,61 +578,38 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                       </div>
                     </div>
                     
-                    <Switch
-                      checked={dayData.enabled}
-                      onCheckedChange={() => toggleDayEnabled(dayKey)}
-                    />
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={dayData.enabled}
+                        onCheckedChange={() => toggleDayEnabled(dayKey)}
+                      />
+                      {dayData.enabled && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedDay(dayKey);
+                            setShowDayModal(true);
+                          }}
+                          className="h-8 text-xs"
+                        >
+                          Configurer
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   
-                  {/* Créneaux compacts */}
-                  {dayData.enabled && (
-                    <div className="px-4 pb-4 space-y-2">
-                      {dayData.slots.map((slot, index) => (
-                        <div key={slot.id} className="bg-background/60 rounded-lg p-3 border border-border/20">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                                <Check className="w-3 h-3 text-green-600" />
-                              </div>
-                              <span className="text-xs font-medium">#{index + 1}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {minutesToTime(slot.start)} - {minutesToTime(slot.end)}
-                              </span>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeAvailabilitySlot(dayKey, slot.id)}
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
+                  {/* Aperçu des créneaux */}
+                  {dayData.enabled && dayData.slots.length > 0 && (
+                    <div className="px-4 pb-4">
+                      <div className="text-xs text-muted-foreground">
+                        {dayData.slots.map((slot, index) => (
+                          <div key={slot.id} className="flex items-center justify-between">
+                            <span>Créneau {index + 1}:</span>
+                            <span>{minutesToTime(slot.start)} - {minutesToTime(slot.end)}</span>
                           </div>
-                          
-                          <div className="grid grid-cols-2 gap-2">
-                            <AppleTimePicker
-                              value={slot.start}
-                              onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
-                              label="Début"
-                            />
-                            <AppleTimePicker
-                              value={slot.end}
-                              onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
-                              label="Fin"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addAvailabilitySlot(dayKey)}
-                        className="w-full h-8 border-dashed border-border/40 hover:border-primary/40 text-xs"
-                      >
-                        <Plus className="w-3 h-3 mr-1" />
-                        Ajouter
-                      </Button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -644,6 +623,79 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
               <Button onClick={saveAvailabilities} className="space-x-2">
                 <Check className="w-4 h-4" />
                 <span>Sauvegarder</span>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal dédiée pour configurer un jour spécifique */}
+      <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center space-x-2">
+              <Clock className="w-5 h-5" />
+              <span>Configurer {getDayName(selectedDay)}</span>
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <p className="text-muted-foreground text-sm">
+              Ajoutez et configurez vos créneaux de disponibilité pour {getDayName(selectedDay).toLowerCase()}.
+            </p>
+
+            <div className="space-y-3">
+              {weeklyAvailability[selectedDay]?.slots.map((slot, index) => (
+                <div key={slot.id} className="bg-background/60 rounded-lg p-4 border border-border/20">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-green-600" />
+                      </div>
+                      <span className="text-sm font-medium">Créneau {index + 1}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {minutesToTime(slot.start)} - {minutesToTime(slot.end)}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeAvailabilitySlot(selectedDay, slot.id)}
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <AppleTimePicker
+                      value={slot.start}
+                      onChange={(value) => updateSlotTime(selectedDay, slot.id, 'start', value)}
+                      label="Heure de début"
+                    />
+                    <AppleTimePicker
+                      value={slot.end}
+                      onChange={(value) => updateSlotTime(selectedDay, slot.id, 'end', value)}
+                      label="Heure de fin"
+                    />
+                  </div>
+                </div>
+              ))}
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => addAvailabilitySlot(selectedDay)}
+                className="w-full h-10 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/5"
+              >
+                <Plus className="w-4 h-4 mr-2 text-primary" />
+                <span className="text-primary font-medium">Ajouter un créneau</span>
+              </Button>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowDayModal(false)}>
+                Fermer
               </Button>
             </div>
           </div>
