@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, X, Check, CheckCheck, AlertTriangle, Info, AlertCircle } from "lucide-react";
+import { Bell, X, Check, CheckCheck, AlertTriangle, Info, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +87,35 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error: any) {
       console.error("Erreur lors du marquage comme lu:", error);
+    }
+  };
+
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .delete()
+        .eq("id", notificationId);
+
+      if (error) throw error;
+
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      setUnreadCount(prev => {
+        const notification = notifications.find(n => n.id === notificationId);
+        return notification && !notification.is_read ? Math.max(0, prev - 1) : prev;
+      });
+
+      toast({
+        title: "Notification supprimée",
+        description: "La notification a été supprimée avec succès.",
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la suppression:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la notification.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -244,49 +273,65 @@ export const NotificationCenter = ({ teamId, userId }: NotificationCenterProps) 
                 </div>
               ) : (
                 <div className="space-y-1">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-3 cursor-pointer hover:bg-muted/50 transition-colors ${
-                        !notification.is_read ? 'bg-primary/5' : ''
-                      } ${getPriorityColor(notification.priority)}`}
-                      onClick={() => handleAction(notification)}
-                    >
-                      <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getNotificationIcon(notification.type, notification.priority)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <p className={`text-sm font-medium truncate ${
-                              !notification.is_read ? 'text-foreground' : 'text-muted-foreground'
-                            }`}>
-                              {notification.title}
-                            </p>
-                            {!notification.is_read && (
-                              <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 ml-2" />
-                            )}
-                          </div>
-                          
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {notification.message}
-                          </p>
-                          
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(notification.created_at)}
-                            </span>
-                            
-                            {notification.action_label && (
-                              <Badge variant="outline" className="text-xs">
-                                {notification.action_label}
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                   {notifications.map((notification) => (
+                     <div
+                       key={notification.id}
+                       className={`group p-3 transition-colors ${
+                         !notification.is_read ? 'bg-primary/5' : ''
+                       } ${getPriorityColor(notification.priority)}`}
+                     >
+                       <div className="flex items-start space-x-3">
+                         <div className="flex-shrink-0 mt-1">
+                           {getNotificationIcon(notification.type, notification.priority)}
+                         </div>
+                         
+                         <div 
+                           className="flex-1 min-w-0 cursor-pointer" 
+                           onClick={() => handleAction(notification)}
+                         >
+                           <div className="flex items-center justify-between">
+                             <p className={`text-sm font-medium truncate ${
+                               !notification.is_read ? 'text-foreground' : 'text-muted-foreground'
+                             }`}>
+                               {notification.title}
+                             </p>
+                             {!notification.is_read && (
+                               <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 ml-2" />
+                             )}
+                           </div>
+                           
+                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                             {notification.message}
+                           </p>
+                           
+                           <div className="flex items-center justify-between mt-2">
+                             <span className="text-xs text-muted-foreground">
+                               {formatDate(notification.created_at)}
+                             </span>
+                             
+                             {notification.action_label && (
+                               <Badge variant="outline" className="text-xs">
+                                 {notification.action_label}
+                               </Badge>
+                             )}
+                           </div>
+                         </div>
+                         
+                         <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                           <Button
+                             variant="ghost"
+                             size="sm"
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               deleteNotification(notification.id);
+                             }}
+                             className="h-6 w-6 p-0 hover:bg-red-100 hover:text-red-600"
+                           >
+                             <Trash2 className="w-3 h-3" />
+                           </Button>
+                         </div>
+                       </div>
+                     </div>
                   ))}
                 </div>
               )}

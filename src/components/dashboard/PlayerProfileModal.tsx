@@ -182,14 +182,13 @@ export const PlayerProfileModal = ({
                 {pointsForts.map((point, index) => (
                   <Badge
                     key={index}
-                    variant="secondary"
-                    className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                    className="bg-black text-white border-2 border-white"
                   >
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent"
+                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
                       onClick={() => removePointFort(index)}
                     >
                       <X className="w-3 h-3" />
@@ -224,14 +223,13 @@ export const PlayerProfileModal = ({
                 {pointsFaibles.map((point, index) => (
                   <Badge
                     key={index}
-                    variant="secondary"
-                    className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                    className="bg-black text-white border-2 border-white"
                   >
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent"
+                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
                       onClick={() => removePointFaible(index)}
                     >
                       <X className="w-3 h-3" />
@@ -266,14 +264,13 @@ export const PlayerProfileModal = ({
                 {objectifs.map((objectif, index) => (
                   <Badge
                     key={index}
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    className="bg-black text-white border-2 border-white"
                   >
                     {objectif}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent"
+                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
                       onClick={() => removeObjectif(index)}
                     >
                       <X className="w-3 h-3" />
