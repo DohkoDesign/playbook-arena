@@ -52,22 +52,34 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
       // Récupérer tous les joueurs de l'équipe
       const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
-        .select(`
-          user_id,
-          profiles!inner(pseudo)
-        `)
+        .select("user_id, role")
         .eq("team_id", teamId)
-        .in("role", ["joueur", "remplacant", "capitaine"]);
+        .in("role", ["joueur", "remplacant", "capitaine", "owner"]);
 
       if (membersError) {
         console.error("❌ Error fetching team members:", membersError);
         throw membersError;
       }
 
-      const playersData = teamMembers?.map(member => ({
-        id: member.user_id,
-        pseudo: (member.profiles as any)?.pseudo || "Joueur inconnu"
-      })) || [];
+      // Récupérer les profils des joueurs séparément
+      const userIds = teamMembers?.map(m => m.user_id) || [];
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, pseudo")
+        .in("user_id", userIds);
+
+      if (profilesError) {
+        console.error("❌ Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
+
+      const playersData = teamMembers?.map(member => {
+        const profile = profiles?.find(p => p.user_id === member.user_id);
+        return {
+          id: member.user_id,
+          pseudo: profile?.pseudo || "Joueur inconnu"
+        };
+      }) || [];
 
       setPlayers(playersData);
       console.log("✅ Players loaded:", playersData.length);
