@@ -10,10 +10,15 @@ import {
   Sunset,
   Moon,
   Plus,
-  Minus
+  Minus,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { format, addWeeks, startOfWeek, endOfWeek } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface SimpleAvailabilityManagerProps {
   teamId: string;
@@ -48,16 +53,13 @@ const DAYS_CONFIG = [
   { id: 0, name: "Dimanche", short: "DIM" },
 ];
 
-const getWeekStart = () => {
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + mondayOffset);
+const getWeekStart = (date: Date = new Date()) => {
+  const monday = startOfWeek(date, { weekStartsOn: 1 });
   return monday.toISOString().split('T')[0];
 };
 
 export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabilityManagerProps) => {
+  const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
   const [weeklyAvailability, setWeeklyAvailability] = useState<Record<number, Record<string, boolean>>>({
     1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 0: {}
   });
@@ -70,14 +72,14 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
 
   useEffect(() => {
     fetchAvailabilities();
-  }, [teamId, playerId]);
+  }, [teamId, playerId, selectedWeek]);
 
   const fetchAvailabilities = async () => {
     try {
       setLoading(true);
       console.log("🔍 Fetching availabilities for player:", playerId);
 
-      const weekStart = getWeekStart();
+      const weekStart = getWeekStart(selectedWeek);
       const { data, error } = await supabase
         .from('player_availabilities')
         .select('*')
@@ -136,6 +138,16 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
     saveAvailabilities();
   };
 
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setSelectedWeek(prev => addWeeks(prev, direction === 'next' ? 1 : -1));
+  };
+
+  const getWeekRange = () => {
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+    return `${format(start, 'dd MMM', { locale: fr })} - ${format(end, 'dd MMM yyyy', { locale: fr })}`;
+  };
+
   const toggleSlot = (dayId: number, slotId: string) => {
     setWeeklyAvailability(prev => ({
       ...prev,
@@ -183,7 +195,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
       setSaving(true);
       console.log("💾 Saving availabilities for:", { teamId, playerId });
 
-      const weekStart = getWeekStart();
+      const weekStart = getWeekStart(selectedWeek);
       console.log("📅 Week start:", weekStart);
 
       // Supprimer les anciennes disponibilités
@@ -290,6 +302,37 @@ export const SimpleAvailabilityManager = ({ teamId, playerId }: SimpleAvailabili
         <Button onClick={handleSaveClick} disabled={saving}>
           <Save className="w-4 h-4 mr-2" />
           {saving ? "Sauvegarde..." : "Sauvegarder"}
+        </Button>
+      </div>
+
+      {/* Sélecteur de semaine */}
+      <div className="flex items-center justify-center space-x-4 p-4 bg-muted/30 rounded-lg">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('prev')}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        
+        <div className="text-center">
+          <div className="flex items-center space-x-2">
+            <CalendarIcon className="w-4 h-4" />
+            <span className="font-medium">Semaine du {getWeekRange()}</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {selectedWeek < new Date() ? 'Semaine passée' : 
+             format(selectedWeek, 'yyyy') === format(new Date(), 'yyyy') && 
+             format(selectedWeek, 'w') === format(new Date(), 'w') ? 'Semaine courante' : 'Semaine future'}
+          </p>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('next')}
+        >
+          <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
 
