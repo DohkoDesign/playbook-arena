@@ -6,10 +6,10 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-gradient-brand rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">S</span>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Shadow Hub Logo" className="w-8 h-8 object-contain" />
           </div>
-          <span className="text-xl font-semibold tracking-tight">Shadow Hub</span>
+          <span className="text-xl font-montserrat font-black tracking-tight uppercase">Shadow Hub</span>
         </div>
         
         <nav className="hidden md:flex items-center space-x-8">
