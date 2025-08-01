@@ -8,6 +8,8 @@ import { Calendar as ShadcnCalendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { 
   Calendar as CalendarIcon, 
   Clock, 
@@ -18,11 +20,11 @@ import {
   ChevronDown,
   ChevronRight,
   Settings,
-  PauseCircle,
-  XCircle,
-  CheckCircle,
   Users,
-  Lightbulb
+  Lightbulb,
+  Plus,
+  Check,
+  X
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -57,17 +59,19 @@ interface EventFolder {
 }
 
 interface TimeSlot {
-  start: string;
-  end: string;
-  type: 'available' | 'busy' | 'break' | 'unavailable';
-  title?: string;
+  id: string;
+  start: number; // Minutes depuis minuit (ex: 540 = 9h00)
+  end: number;   // Minutes depuis minuit (ex: 720 = 12h00)
+  available: boolean;
 }
 
-interface WeeklySchedule {
-  [key: string]: {
-    enabled: boolean;
-    slots: TimeSlot[];
-  }
+interface DayAvailability {
+  enabled: boolean;
+  slots: TimeSlot[];
+}
+
+interface WeeklyAvailability {
+  [key: string]: DayAvailability;
 }
 
 export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps) => {
@@ -76,8 +80,8 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   const [eventFolders, setEventFolders] = useState<EventFolder[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [weeklySchedule, setWeeklySchedule] = useState<WeeklySchedule>({
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
+  const [weeklyAvailability, setWeeklyAvailability] = useState<WeeklyAvailability>({
     monday: { enabled: false, slots: [] },
     tuesday: { enabled: false, slots: [] },
     wednesday: { enabled: false, slots: [] },
@@ -230,6 +234,13 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     return icons[iconName] || Target;
   };
 
+  // Utilitaires pour la gestion du temps
+  const minutesToTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  };
+
   const getDayName = (dayKey: string) => {
     const days = {
       monday: 'Lundi',
@@ -244,31 +255,37 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   };
 
   const toggleDayEnabled = (dayKey: string) => {
-    setWeeklySchedule(prev => ({
+    setWeeklyAvailability(prev => ({
       ...prev,
       [dayKey]: {
-        ...prev[dayKey],
         enabled: !prev[dayKey].enabled,
         slots: !prev[dayKey].enabled ? [
-          { start: '09:00', end: '12:00', type: 'available', title: 'Matinée disponible' },
-          { start: '12:00', end: '14:00', type: 'break', title: 'Pause déjeuner' },
-          { start: '14:00', end: '18:00', type: 'available', title: 'Après-midi disponible' }
+          {
+            id: '1',
+            start: 540, // 9h00
+            end: 720,   // 12h00
+            available: true
+          },
+          {
+            id: '2',
+            start: 840, // 14h00
+            end: 1080,  // 18h00
+            available: true
+          }
         ] : []
       }
     }));
   };
 
-  const addTimeSlot = (dayKey: string, slotType: 'available' | 'busy' | 'break' | 'unavailable') => {
+  const addAvailabilitySlot = (dayKey: string) => {
     const newSlot: TimeSlot = {
-      start: '09:00',
-      end: '10:00',
-      type: slotType,
-      title: slotType === 'available' ? 'Disponible' : 
-             slotType === 'break' ? 'Pause' :
-             slotType === 'busy' ? 'Occupé' : 'Indisponible'
+      id: Date.now().toString(),
+      start: 540, // 9h00 par défaut
+      end: 600,   // 10h00 par défaut
+      available: true
     };
 
-    setWeeklySchedule(prev => ({
+    setWeeklyAvailability(prev => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
@@ -277,73 +294,115 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
     }));
   };
 
-  const updateTimeSlot = (dayKey: string, index: number, field: 'start' | 'end' | 'title', value: string) => {
-    setWeeklySchedule(prev => ({
+  const removeAvailabilitySlot = (dayKey: string, slotId: string) => {
+    setWeeklyAvailability(prev => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
-        slots: prev[dayKey].slots.map((slot, i) => 
-          i === index ? { ...slot, [field]: value } : slot
+        slots: prev[dayKey].slots.filter(slot => slot.id !== slotId)
+      }
+    }));
+  };
+
+  const updateSlotTime = (dayKey: string, slotId: string, field: 'start' | 'end', minutes: number) => {
+    setWeeklyAvailability(prev => ({
+      ...prev,
+      [dayKey]: {
+        ...prev[dayKey],
+        slots: prev[dayKey].slots.map(slot => 
+          slot.id === slotId ? { ...slot, [field]: minutes } : slot
         )
       }
     }));
   };
 
-  const removeTimeSlot = (dayKey: string, index: number) => {
-    setWeeklySchedule(prev => ({
+  const toggleSlotAvailability = (dayKey: string, slotId: string) => {
+    setWeeklyAvailability(prev => ({
       ...prev,
       [dayKey]: {
         ...prev[dayKey],
-        slots: prev[dayKey].slots.filter((_, i) => i !== index)
+        slots: prev[dayKey].slots.map(slot => 
+          slot.id === slotId ? { ...slot, available: !slot.available } : slot
+        )
       }
     }));
   };
 
-  const getSlotTypeColor = (type: string) => {
-    switch (type) {
-      case 'available':
-        return 'bg-green-100 border-green-300 text-green-800';
-      case 'busy':
-        return 'bg-red-100 border-red-300 text-red-800';
-      case 'break':
-        return 'bg-yellow-100 border-yellow-300 text-yellow-800';
-      case 'unavailable':
-        return 'bg-gray-100 border-gray-300 text-gray-800';
-      default:
-        return 'bg-gray-100 border-gray-300 text-gray-800';
-    }
-  };
-
-  const getSlotTypeIcon = (type: string) => {
-    switch (type) {
-      case 'available':
-        return CheckCircle;
-      case 'busy':
-        return XCircle;
-      case 'break':
-        return PauseCircle;
-      case 'unavailable':
-        return XCircle;
-      default:
-        return Clock;
-    }
-  };
-
-  const saveSchedule = async () => {
+  const saveAvailabilities = async () => {
     try {
-      // Ici on sauvegarderait en base de données
+      // Ici on sauvegarderait en base
       toast({
-        title: "Planning sauvegardé",
-        description: "Votre planning personnalisé a été enregistré",
+        title: "Disponibilités sauvegardées",
+        description: "Vos créneaux ont été enregistrés avec succès",
       });
-      setShowScheduleModal(false);
+      setShowAvailabilityModal(false);
     } catch (error: any) {
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder le planning",
+        description: "Impossible de sauvegarder",
         variant: "destructive",
       });
     }
+  };
+
+  // Composant TimeSelector personnalisé pour remplacer la popup native
+  const TimeSelector = ({ value, onChange, label }: { value: number, onChange: (value: number) => void, label: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const hours = Math.floor(value / 60);
+    const minutes = value % 60;
+
+    return (
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="w-20 h-8 text-xs font-mono">
+            <Clock className="w-3 h-3 mr-1" />
+            {minutesToTime(value)}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64 p-4" align="start">
+          <div className="space-y-4">
+            <Label className="text-sm font-medium">{label}</Label>
+            
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Heures: {hours}h</Label>
+                <Slider
+                  value={[hours]}
+                  onValueChange={([newHours]) => {
+                    onChange(newHours * 60 + minutes);
+                  }}
+                  max={23}
+                  min={0}
+                  step={1}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label className="text-xs text-muted-foreground">Minutes: {minutes}min</Label>
+                <Slider
+                  value={[minutes]}
+                  onValueChange={([newMinutes]) => {
+                    onChange(hours * 60 + newMinutes);
+                  }}
+                  max={59}
+                  min={0}
+                  step={15}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <span className="text-lg font-mono">{minutesToTime(value)}</span>
+              <Button size="sm" onClick={() => setIsOpen(false)}>
+                <Check className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
   };
 
   const getEventsForDate = (date: Date) => {
@@ -367,9 +426,9 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
           <h2 className="text-2xl font-bold">Mon Planning</h2>
           <p className="text-muted-foreground">Organisez votre entraînement et vos disponibilités</p>
         </div>
-        <Button onClick={() => setShowScheduleModal(true)} className="space-x-2">
+        <Button onClick={() => setShowAvailabilityModal(true)} className="space-x-2">
           <Settings className="w-4 h-4" />
-          <span>Gérer mes disponibilités</span>
+          <span>Configurer mes disponibilités</span>
         </Button>
       </div>
 
@@ -497,27 +556,27 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
         </Card>
       </div>
 
-      {/* Modal de gestion des disponibilités */}
-      <Dialog open={showScheduleModal} onOpenChange={setShowScheduleModal}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      {/* Modal de configuration des disponibilités - NOUVEAU SYSTÈME */}
+      <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
-              <Settings className="w-5 h-5" />
-              <span>Gérer mes disponibilités</span>
+              <Clock className="w-5 h-5" />
+              <span>Mes Disponibilités</span>
             </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-6">
             <p className="text-muted-foreground">
-              Personnalisez votre planning hebdomadaire avec des créneaux disponibles, pauses et indisponibilités.
+              Définissez vos créneaux de disponibilité pour chaque jour de la semaine. Utilisez les curseurs pour ajuster précisément vos horaires.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {Object.entries(weeklySchedule).map(([dayKey, dayData]) => (
-                <Card key={dayKey} className="border-2">
-                  <CardHeader className="pb-2">
+            <div className="grid grid-cols-1 gap-4">
+              {Object.entries(weeklyAvailability).map(([dayKey, dayData]) => (
+                <Card key={dayKey} className={dayData.enabled ? "border-2 border-primary/20 bg-primary/5" : "border border-border"}>
+                  <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-base font-semibold">{getDayName(dayKey)}</Label>
+                      <Label className="text-lg font-semibold">{getDayName(dayKey)}</Label>
                       <Switch
                         checked={dayData.enabled}
                         onCheckedChange={() => toggleDayEnabled(dayKey)}
@@ -527,88 +586,95 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                   
                   {dayData.enabled && (
                     <CardContent className="space-y-3">
-                      {dayData.slots.map((slot, index) => {
-                        const SlotIcon = getSlotTypeIcon(slot.type);
-                        return (
-                          <div key={index} className={`p-3 rounded-lg border ${getSlotTypeColor(slot.type)}`}>
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center space-x-2">
-                                <SlotIcon className="w-4 h-4" />
-                                <Input
-                                  value={slot.title}
-                                  onChange={(e) => updateTimeSlot(dayKey, index, 'title', e.target.value)}
-                                  className="h-6 text-xs border-none p-0 bg-transparent"
-                                />
-                              </div>
+                      {dayData.slots.map((slot) => (
+                        <div key={slot.id} className={`p-4 rounded-lg border-2 transition-all ${
+                          slot.available 
+                            ? 'border-green-200 bg-green-50' 
+                            : 'border-red-200 bg-red-50'
+                        }`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center space-x-3">
                               <Button
-                                variant="ghost"
+                                variant={slot.available ? "default" : "secondary"}
                                 size="sm"
-                                onClick={() => removeTimeSlot(dayKey, index)}
-                                className="h-6 w-6 p-0"
+                                onClick={() => toggleSlotAvailability(dayKey, slot.id)}
+                                className="h-7"
                               >
-                                <XCircle className="w-3 h-3" />
+                                {slot.available ? (
+                                  <>
+                                    <Check className="w-3 h-3 mr-1" />
+                                    Disponible
+                                  </>
+                                ) : (
+                                  <>
+                                    <X className="w-3 h-3 mr-1" />
+                                    Indisponible
+                                  </>
+                                )}
                               </Button>
+                              
+                              <div className="text-sm text-muted-foreground">
+                                {minutesToTime(slot.start)} - {minutesToTime(slot.end)}
+                                <span className="ml-2">
+                                  ({Math.round((slot.end - slot.start) / 60 * 10) / 10}h)
+                                </span>
+                              </div>
                             </div>
+                            
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeAvailabilitySlot(dayKey, slot.id)}
+                              className="h-7 w-7 p-0 text-red-600 hover:text-red-800"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          
+                          <div className="flex items-center space-x-4">
                             <div className="flex items-center space-x-2">
-                              <Input
-                                type="time"
+                              <Label className="text-xs text-muted-foreground">Début:</Label>
+                              <TimeSelector
                                 value={slot.start}
-                                onChange={(e) => updateTimeSlot(dayKey, index, 'start', e.target.value)}
-                                className="h-6 text-xs"
+                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'start', value)}
+                                label="Heure de début"
                               />
-                              <span className="text-xs">à</span>
-                              <Input
-                                type="time"
+                            </div>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Label className="text-xs text-muted-foreground">Fin:</Label>
+                              <TimeSelector
                                 value={slot.end}
-                                onChange={(e) => updateTimeSlot(dayKey, index, 'end', e.target.value)}
-                                className="h-6 text-xs"
+                                onChange={(value) => updateSlotTime(dayKey, slot.id, 'end', value)}
+                                label="Heure de fin"
                               />
                             </div>
                           </div>
-                        );
-                      })}
+                        </div>
+                      ))}
                       
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addTimeSlot(dayKey, 'available')}
-                          className="h-6 text-xs"
-                        >
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Disponible
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addTimeSlot(dayKey, 'break')}
-                          className="h-6 text-xs"
-                        >
-                          <PauseCircle className="w-3 h-3 mr-1" />
-                          Pause
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => addTimeSlot(dayKey, 'unavailable')}
-                          className="h-6 text-xs"
-                        >
-                          <XCircle className="w-3 h-3 mr-1" />
-                          Indispo
-                        </Button>
-                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addAvailabilitySlot(dayKey)}
+                        className="w-full h-8 border-dashed"
+                      >
+                        <Plus className="w-3 h-3 mr-1" />
+                        Ajouter un créneau
+                      </Button>
                     </CardContent>
                   )}
                 </Card>
               ))}
             </div>
 
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setShowScheduleModal(false)}>
+            <div className="flex justify-end space-x-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowAvailabilityModal(false)}>
                 Annuler
               </Button>
-              <Button onClick={saveSchedule}>
-                Sauvegarder le planning
+              <Button onClick={saveAvailabilities} className="space-x-2">
+                <Check className="w-4 h-4" />
+                <span>Sauvegarder</span>
               </Button>
             </div>
           </div>
