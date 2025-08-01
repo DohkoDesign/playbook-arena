@@ -2,9 +2,16 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User } from "@supabase/supabase-js";
-import { LogOut, Settings, Bell } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { User } from "@supabase/supabase-js";
+import { LogOut, Settings } from "lucide-react";
 import { ProfileSettings } from "./ProfileSettings";
 import { NotificationCenter } from "./NotificationCenter";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,6 +57,7 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
 
   return (
     <header className="glass h-16 border-b border-border/50 flex items-center justify-between px-8 sticky top-0 z-40">
+      {/* Left section - Title and actions */}
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-3">
           <div className="w-1 h-6 bg-primary rounded-full"></div>
@@ -64,54 +72,55 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
             )}
           </div>
         </div>
+        
+        {/* Action buttons moved to left */}
+        <div className="flex items-center space-x-2">
+          <ThemeToggle />
+          
+          {user && currentTeam && (
+            <NotificationCenter 
+              teamId={currentTeam.id} 
+              userId={user.id} 
+            />
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center space-x-4">
-        <ThemeToggle />
-        
-        {user && currentTeam && (
-          <NotificationCenter 
-            teamId={currentTeam.id} 
-            userId={user.id} 
-          />
-        )}
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="rounded-full w-9 h-9 p-0 hover:bg-accent/60"
-          onClick={() => setShowProfileSettings(true)}
-        >
-          <Settings className="w-4 h-4" />
-        </Button>
-
-        <div className="flex items-center space-x-3">
-          <div className="text-right">
-            <p className="text-sm font-medium">{user?.user_metadata?.pseudo || "Utilisateur"}</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
-          </div>
-          
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={avatarUrl} />
-            <AvatarFallback className="bg-gradient-brand text-white font-medium text-sm">
-              {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onLogout}
-          className="rounded-xl hover:bg-destructive/10 hover:text-destructive"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Déconnexion
-        </Button>
+      {/* Right section - User avatar with dropdown */}
+      <div className="flex items-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="bg-gradient-brand text-white font-medium text-sm">
+                  {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 bg-background border-border shadow-lg z-50" align="end" forceMount>
+            <DropdownMenuItem 
+              onClick={() => setShowProfileSettings(true)}
+              className="cursor-pointer"
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Paramètres</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={onLogout}
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Déconnexion</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Dialog open={showProfileSettings} onOpenChange={setShowProfileSettings}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-background border-border">
           <DialogHeader>
             <DialogTitle>Paramètres du profil</DialogTitle>
           </DialogHeader>
