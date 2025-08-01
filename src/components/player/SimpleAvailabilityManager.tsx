@@ -141,6 +141,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
     console.log("🔘 Save button clicked");
     console.log("📊 Current weekly availability:", weeklyAvailability);
     console.log("📊 Current custom slots:", customSlots);
+    console.log("📊 TeamId:", teamId, "PlayerId:", playerId);
     saveAvailabilities();
   };
 
@@ -155,13 +156,18 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
   };
 
   const toggleSlot = (dayId: number, slotId: string) => {
-    setWeeklyAvailability(prev => ({
-      ...prev,
-      [dayId]: {
-        ...prev[dayId],
-        [slotId]: !prev[dayId][slotId]
-      }
-    }));
+    console.log("🔄 Toggling slot:", { dayId, slotId });
+    setWeeklyAvailability(prev => {
+      const updated = {
+        ...prev,
+        [dayId]: {
+          ...prev[dayId],
+          [slotId]: !prev[dayId][slotId]
+        }
+      };
+      console.log("📊 Updated availability:", updated);
+      return updated;
+    });
   };
 
   const addCustomSlot = (dayId: number) => {

@@ -72,7 +72,7 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
     try {
       setLoading(true);
       
-      console.log("🔍 Fetching staff availabilities data");
+      console.log("🔍 Fetching staff availabilities data for team:", teamId);
       
       // Récupérer tous les joueurs de l'équipe
       const { data: teamMembers, error: membersError } = await supabase
@@ -98,10 +98,14 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         throw profilesError;
       }
 
-      // Récupérer les disponibilités de la semaine courante
-      const startOfWeek = new Date();
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-      const weekStart = startOfWeek.toISOString().split('T')[0];
+      // Récupérer la semaine courante correctement
+      const today = new Date();
+      const mondayOfWeek = new Date(today);
+      mondayOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+      const weekStart = mondayOfWeek.toISOString().split('T')[0];
+      
+      console.log("📅 Week start calculated:", weekStart);
+      console.log("📅 Today:", today.toISOString().split('T')[0]);
 
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
         .from("player_availabilities")
@@ -109,7 +113,13 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         .eq("team_id", teamId)
         .eq("week_start", weekStart);
 
-      if (availabilitiesError) throw availabilitiesError;
+      if (availabilitiesError) {
+        console.error("❌ Availabilities error:", availabilitiesError);
+        throw availabilitiesError;
+      }
+
+      console.log("📊 Raw availabilities data:", availabilitiesData);
+      console.log("📊 Availabilities count:", availabilitiesData?.length || 0);
 
       // Créer le résumé par joueur
       const playerSummaries: PlayerSummary[] = teamMembers?.map(member => {
