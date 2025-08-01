@@ -152,6 +152,54 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          action_label: string | null
+          action_url: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          priority: string
+          team_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          priority?: string
+          team_id: string
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          action_label?: string | null
+          action_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          priority?: string
+          team_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_availabilities: {
         Row: {
           created_at: string
@@ -433,6 +481,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_intelligent_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_admin_role: {
         Args: { team_uuid: string; user_uuid?: string }
         Returns: boolean
