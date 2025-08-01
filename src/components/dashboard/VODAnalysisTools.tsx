@@ -371,15 +371,46 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
       </div>
 
       <Tabs value={currentTool} onValueChange={setCurrentTool} className="w-full">
-        <TabsList className="grid w-full grid-cols-1">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="vod-management" className="flex items-center space-x-2">
             <Plus className="w-4 h-4" />
             <span>Gestion VODs</span>
+          </TabsTrigger>
+          <TabsTrigger value="vod-analysis" className="flex items-center space-x-2">
+            <PlayCircle className="w-4 h-4" />
+            <span>Analyse VOD</span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="vod-management" className="mt-6">
           {renderVODManagement()}
+        </TabsContent>
+
+        <TabsContent value="vod-analysis" className="mt-6">
+          <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-lg border border-primary/20">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="p-3 rounded-full bg-primary/10">
+                <PlayCircle className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold">Analyse VOD Avancée</h3>
+                <p className="text-muted-foreground">
+                  Accédez aux outils d'analyse professionnels pour vos VODs
+                </p>
+              </div>
+            </div>
+            <p className="text-muted-foreground mb-4">
+              L'analyse VOD vous permet de créer des marqueurs temporels, d'ajouter des notes stratégiques 
+              et de partager vos analyses avec votre équipe.
+            </p>
+            <Button 
+              onClick={() => window.open('/dashboard?view=vod-review', '_blank')}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <PlayCircle className="w-4 h-4 mr-2" />
+              Ouvrir l'Analyse VOD
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

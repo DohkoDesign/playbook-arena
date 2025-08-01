@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   PlayCircle, 
   Clock, 
@@ -15,7 +16,15 @@ import {
   Tag,
   Video,
   FileText,
-  MessageSquare
+  MessageSquare,
+  ChevronDown,
+  Maximize,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  Settings
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -56,6 +65,7 @@ interface ReviewSession {
 export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   const [vodSessions, setVodSessions] = useState<VODSession[]>([]);
   const [selectedVOD, setSelectedVOD] = useState<VODSession | null>(null);
+  const [selectedVODIndex, setSelectedVODIndex] = useState<number>(0);
   const [currentReview, setCurrentReview] = useState<ReviewSession | null>(null);
   const [filters, setFilters] = useState({
     type: "all",
@@ -65,6 +75,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   });
   const [loading, setLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -197,14 +208,133 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     return true;
   });
 
+  const getCurrentVOD = () => {
+    if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
+    return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
+  };
+
+  if (isFullscreen && selectedVOD && getCurrentVOD()) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black flex flex-col">
+        {/* Header pleine page */}
+        <div className="bg-gradient-to-r from-background/95 to-background/80 backdrop-blur-sm border-b p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsFullscreen(false)}
+              className="text-white hover:bg-white/10"
+            >
+              <ChevronDown className="w-4 h-4 mr-2" />
+              Retour
+            </Button>
+            <div>
+              <h2 className="text-lg font-semibold text-white">{selectedVOD.events?.titre}</h2>
+              <p className="text-sm text-white/70">{getCurrentVOD()?.title || getCurrentVOD()?.player || 'VOD'}</p>
+            </div>
+          </div>
+          
+          {selectedVOD.vods.length > 1 && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-white/70">VOD:</span>
+              <Select 
+                value={selectedVODIndex.toString()} 
+                onValueChange={(value) => setSelectedVODIndex(parseInt(value))}
+              >
+                <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectedVOD.vods.map((vod, index) => (
+                    <SelectItem key={index} value={index.toString()}>
+                      {vod.title || vod.player || `VOD ${index + 1}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        {/* Lecteur pleine page */}
+        <div className="flex-1 flex">
+          <div className="flex-1 bg-black">
+            <div className="w-full h-full">
+              <YouTubePlayer 
+                videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
+                onTimeUpdate={(time) => {
+                  // Callback pour mise à jour du timestamp
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Panel d'annotations latéral */}
+          <div className="w-96 bg-background border-l flex flex-col max-h-screen">
+            <div className="p-4 border-b">
+              <h3 className="font-semibold">Annotations en Direct</h3>
+            </div>
+            <div className="flex-1 overflow-auto p-4">
+              <Tabs defaultValue="timestamps" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="timestamps" className="text-xs">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Timestamps
+                  </TabsTrigger>
+                  <TabsTrigger value="notes" className="text-xs">
+                    <FileText className="w-3 h-3 mr-1" />
+                    Notes
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="timestamps" className="mt-4">
+                  <div className="space-y-2">
+                    <TimestampManager 
+                      timestamps={currentReview?.timestamps || []}
+                      onTimestampsChange={(timestamps) => {
+                        if (currentReview) {
+                          const updated = { ...currentReview, timestamps };
+                          setCurrentReview(updated);
+                          saveReviewSession({ timestamps });
+                        }
+                      }}
+                      teamId={teamId}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="notes" className="mt-4">
+                  <div className="space-y-2">
+                    <CoachingNotes 
+                      notes={currentReview?.notes || ""}
+                      onNotesChange={(notes) => {
+                        if (currentReview) {
+                          const updated = { ...currentReview, notes };
+                          setCurrentReview(updated);
+                          saveReviewSession({ notes });
+                        }
+                      }}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">Review VOD</h2>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            Analyse VOD
+          </h2>
           <p className="text-muted-foreground">
-            Analysez et annotez les VODs de votre équipe
+            Analysez et annotez les VODs de votre équipe avec des outils professionnels
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -245,147 +375,179 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
         </div>
       </div>
 
-      {/* Filtres */}
-      <VODFilters 
-        filters={filters} 
-        onFiltersChange={setFilters}
-        teamId={teamId}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Liste des VODs */}
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Video className="w-5 h-5" />
-                <span>VODs Disponibles ({filteredVODs.length})</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-20 bg-gray-200 rounded"></div>
-                    </div>
-                  ))}
+      {/* Sélecteur de match avec dropdown */}
+      {filteredVODs.length > 0 && (
+        <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-primary/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="p-3 rounded-full bg-primary/10">
+                  <Video className="w-6 h-6 text-primary" />
                 </div>
-              ) : filteredVODs.length === 0 ? (
-                <div className="text-center py-8">
-                  <Video className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">Aucune VOD disponible</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Les VODs apparaîtront après validation des matchs
+                <div>
+                  <h3 className="font-semibold text-lg">Sélection de Match</h3>
+                  <p className="text-muted-foreground">
+                    Choisissez un match pour commencer l'analyse VOD
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredVODs.map((vod) => (
-                    <Card 
-                      key={vod.id} 
-                      className={`cursor-pointer transition-colors hover:bg-accent ${
-                        selectedVOD?.id === vod.id ? 'bg-accent border-primary' : ''
-                      }`}
-                      onClick={() => {
-                        setSelectedVOD(vod);
-                        loadReviewSession(vod.id);
-                      }}
-                    >
-                      <CardContent className="p-4">
-                        <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0">
-                            <PlayCircle className="w-8 h-8 text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm truncate">
-                              {vod.events?.titre}
-                            </h4>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <Badge variant="outline" className="text-xs">
-                                {vod.events?.type}
-                              </Badge>
-                              {vod.events?.map_name && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {vod.events.map_name}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-1 mt-2 text-xs text-muted-foreground">
-                              <Calendar className="w-3 h-3" />
-                              <span>
-                                {new Date(vod.events?.date_debut).toLocaleDateString("fr-FR")}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1 mt-1 text-xs text-muted-foreground">
-                              <Eye className="w-3 h-3" />
-                              <span>{vod.vods?.length || 0} VOD(s)</span>
-                            </div>
-                          </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <Select 
+                  value={selectedVOD?.id || ""} 
+                  onValueChange={(value) => {
+                    const vod = filteredVODs.find(v => v.id === value);
+                    if (vod) {
+                      setSelectedVOD(vod);
+                      setSelectedVODIndex(0);
+                      loadReviewSession(vod.id);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-80 bg-background/50 backdrop-blur-sm">
+                    <SelectValue placeholder="Sélectionner un match à analyser" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredVODs.map((vod) => (
+                      <SelectItem key={vod.id} value={vod.id}>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{vod.events?.titre}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {vod.events?.type}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {vod.vods?.length || 0} VOD(s)
+                          </Badge>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  VODs Disponibles ({filteredVODs.length})
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Zone principale */}
+      {selectedVOD ? (
+        <div className="space-y-6">
+          {/* Sélecteur de VOD et lecteur */}
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 rounded-full bg-primary/20">
+                    <PlayCircle className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-lg">{selectedVOD.events?.titre}</span>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {new Date(selectedVOD.events?.date_debut).toLocaleDateString("fr-FR")}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  {selectedVOD.vods && selectedVOD.vods.length > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-muted-foreground">VOD:</span>
+                      <Select 
+                        value={selectedVODIndex.toString()} 
+                        onValueChange={(value) => setSelectedVODIndex(parseInt(value))}
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {selectedVOD.vods.map((vod, index) => (
+                            <SelectItem key={index} value={index.toString()}>
+                              {vod.title || vod.player || `VOD ${index + 1}`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsFullscreen(true)}
+                    className="flex items-center space-x-2"
+                  >
+                    <Maximize className="w-4 h-4" />
+                    <span>Plein Écran</span>
+                  </Button>
+                  
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">
+                      {selectedVOD.events?.type}
+                    </Badge>
+                    {selectedVOD.events?.map_name && (
+                      <Badge variant="secondary">
+                        {selectedVOD.events.map_name}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              {getCurrentVOD() && (
+                <div className="relative">
+                  <YouTubePlayer 
+                    videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
+                    onTimeUpdate={(time) => {
+                      // Callback pour mise à jour du timestamp
+                    }}
+                  />
                 </div>
               )}
             </CardContent>
           </Card>
-        </div>
 
-        {/* Zone principale */}
-        <div className="lg:col-span-2">
-          {selectedVOD ? (
-            <div className="space-y-6">
-              {/* Lecteur YouTube */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <PlayCircle className="w-5 h-5" />
-                      <span>{selectedVOD.events?.titre}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">
-                        {selectedVOD.events?.type}
-                      </Badge>
-                      {selectedVOD.events?.map_name && (
-                        <Badge variant="secondary">
-                          {selectedVOD.events.map_name}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {selectedVOD.vods && selectedVOD.vods.length > 0 && (
-                    <YouTubePlayer 
-                      videoId={getYouTubeVideoId(selectedVOD.vods[0].url) || ""}
-                      onTimeUpdate={(time) => {
-                        // Optionnel : callback pour mise à jour du timestamp
-                      }}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Outils de coaching */}
+          {/* Outils d'analyse améliorés */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Settings className="w-5 h-5" />
+                <span>Outils d'Analyse Avancés</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <Tabs defaultValue="timestamps" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="timestamps" className="flex items-center space-x-2">
+                <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+                  <TabsTrigger value="timestamps" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <Clock className="w-4 h-4" />
-                    <span>Timestamps</span>
+                    <span>Marqueurs Temporels</span>
                   </TabsTrigger>
-                  <TabsTrigger value="notes" className="flex items-center space-x-2">
+                  <TabsTrigger value="notes" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <FileText className="w-4 h-4" />
-                    <span>Notes Coach</span>
+                    <span>Notes Stratégiques</span>
                   </TabsTrigger>
-                  <TabsTrigger value="feedback" className="flex items-center space-x-2">
+                  <TabsTrigger value="feedback" className="flex items-center space-x-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                     <MessageSquare className="w-4 h-4" />
-                    <span>Feedback</span>
+                    <span>Feedback Collaboratif</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="timestamps" className="mt-6">
+                  <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-4 rounded-lg mb-4">
+                    <h4 className="font-semibold mb-2">Marqueurs Temporels Intelligents</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Créez des marqueurs précis avec catégorisation automatique et annotations contextuelles
+                    </p>
+                  </div>
                   <TimestampManager 
                     timestamps={currentReview?.timestamps || []}
                     onTimestampsChange={(timestamps) => {
@@ -400,6 +562,12 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                 </TabsContent>
 
                 <TabsContent value="notes" className="mt-6">
+                  <div className="bg-gradient-to-r from-secondary/5 to-primary/5 p-4 rounded-lg mb-4">
+                    <h4 className="font-semibold mb-2">Notes Stratégiques Avancées</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Analysez les décisions tactiques, positioning et synergies d'équipe
+                    </p>
+                  </div>
                   <CoachingNotes 
                     notes={currentReview?.notes || ""}
                     onNotesChange={(notes) => {
@@ -413,34 +581,42 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                 </TabsContent>
 
                 <TabsContent value="feedback" className="mt-6">
+                  <div className="bg-gradient-to-r from-accent/5 to-primary/5 p-4 rounded-lg mb-4">
+                    <h4 className="font-semibold mb-2">Feedback Collaboratif</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Partagez et collectez les retours de l'équipe en temps réel
+                    </p>
+                  </div>
                   <Card>
-                    <CardHeader>
-                      <CardTitle>Feedback Équipe</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6 text-center">
+                      <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <h4 className="font-medium mb-2">Feedback Collaboratif</h4>
                       <p className="text-muted-foreground">
-                        Fonctionnalité de feedback collaborative à venir...
+                        Système de feedback en temps réel avec notifications et suivi des améliorations à venir...
                       </p>
                     </CardContent>
                   </Card>
                 </TabsContent>
               </Tabs>
-            </div>
-          ) : (
-            <Card className="h-96 flex items-center justify-center">
-              <div className="text-center">
-                <Video className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  Sélectionnez une VOD
-                </h3>
-                <p className="text-muted-foreground">
-                  Choisissez une VOD dans la liste pour commencer l'analyse
-                </p>
-              </div>
-            </Card>
-          )}
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      ) : (
+        <Card className="h-96 flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
+          <div className="text-center">
+            <div className="p-6 rounded-full bg-primary/10 mx-auto mb-6 w-fit">
+              <Video className="w-16 h-16 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold mb-3">
+              Prêt pour l'Analyse VOD
+            </h3>
+            <p className="text-muted-foreground max-w-md mx-auto">
+              Sélectionnez un match dans le menu déroulant ci-dessus pour commencer l'analyse 
+              avec nos outils professionnels de coaching
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Modal de partage */}
       {showShare && selectedVOD && currentReview && (
