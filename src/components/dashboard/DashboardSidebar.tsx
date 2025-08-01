@@ -39,8 +39,8 @@ export const DashboardSidebar = ({
     {
       title: "Coaching & Analyse",
       items: [
-        { id: "coaching-analysis", label: "Analyses VOD", icon: Video },
         { id: "match-analysis", label: "Post-Match", icon: BarChart3 },
+        { id: "coaching-analysis", label: "Analyse VOD", icon: Video },
       ]
     },
     {

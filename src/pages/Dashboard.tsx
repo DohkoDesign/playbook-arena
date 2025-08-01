@@ -132,9 +132,9 @@ const Dashboard = () => {
       case "coaching":
         return <CoachingView teamId={selectedTeam} gameType={gameType} />;
       case "match-analysis":
-        return <MatchAnalysisView teamId={selectedTeam} gameType={gameType} />;
-      case "coaching-analysis":
         return <VODAnalysisTools teamId={selectedTeam} />;
+      case "coaching-analysis":
+        return <MatchAnalysisView teamId={selectedTeam} gameType={gameType} />;
       case "settings":
         return <TeamSettingsView teamId={selectedTeam} gameType={gameType} teams={teams} onTeamUpdated={() => checkUserTeams(user?.id || "")} />;
       case "recruitment":

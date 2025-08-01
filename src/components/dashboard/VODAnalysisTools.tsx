@@ -21,24 +21,29 @@ import {
   PlayCircle,
   CheckCircle,
   Calendar,
-  Trophy
+  Trophy,
+  Plus,
+  FileText
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PostMatchVODManager } from "./PostMatchVODManager";
 
 interface VODAnalysisToolsProps {
   teamId: string;
 }
 
 export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
-  const [currentTool, setCurrentTool] = useState("vod-review");
+  const [currentTool, setCurrentTool] = useState("vod-management");
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [completedMatches, setCompletedMatches] = useState<any[]>([]);
+  const [matchesWithResults, setMatchesWithResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchCompletedMatches();
+    fetchMatchesWithResults();
   }, [teamId]);
 
   const fetchCompletedMatches = async () => {
@@ -63,6 +68,156 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
       setLoading(false);
     }
   };
+
+  const fetchMatchesWithResults = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*, coaching_sessions(*)")
+        .eq("team_id", teamId)
+        .order("date_debut", { ascending: false });
+
+      if (error) throw error;
+
+      setMatchesWithResults(data || []);
+    } catch (error) {
+      console.error("Erreur chargement événements:", error);
+    }
+  };
+
+  const renderVODManagement = () => (
+    <div className="space-y-6">
+      {/* Sélection du match pour ajouter des VODs */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Video className="w-5 h-5 mr-2" />
+            Gestion des VODs Post-Match
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-4">
+              <p className="text-muted-foreground">Chargement des matchs...</p>
+            </div>
+          ) : matchesWithResults.length === 0 ? (
+            <div className="text-center py-8">
+              <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Aucun match disponible</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Créez des événements dans le calendrier pour ajouter des VODs
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Label>Sélectionner un match pour ajouter des VODs</Label>
+              <Select value={selectedMatch?.id || ""} onValueChange={(value) => {
+                const match = matchesWithResults.find(m => m.id === value);
+                setSelectedMatch(match);
+              }}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choisir un match" />
+                </SelectTrigger>
+                <SelectContent>
+                  {matchesWithResults.map((match) => (
+                    <SelectItem key={match.id} value={match.id}>
+                      <div className="flex items-center space-x-2">
+                        <span>{match.titre}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {new Date(match.date_debut).toLocaleDateString('fr-FR')}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {match.type}
+                        </Badge>
+                        {match.coaching_sessions?.length > 0 && match.coaching_sessions[0]?.vods && (
+                          <Badge variant="default" className="text-xs">
+                            {Array.isArray(match.coaching_sessions[0].vods) 
+                              ? match.coaching_sessions[0].vods.length 
+                              : 0} VOD(s)
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Gestionnaire de VODs pour le match sélectionné */}
+      {selectedMatch && (
+        <PostMatchVODManager 
+          eventId={selectedMatch.id}
+          teamId={teamId}
+          onVODsUpdated={fetchMatchesWithResults}
+        />
+      )}
+
+      {/* Résumé des VODs existantes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <FileText className="w-5 h-5 mr-2" />
+            Résumé des VODs par Match
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {matchesWithResults
+              .filter(match => 
+                match.coaching_sessions?.length > 0 && 
+                match.coaching_sessions[0]?.vods &&
+                Array.isArray(match.coaching_sessions[0].vods) &&
+                match.coaching_sessions[0].vods.length > 0
+              )
+              .map((match) => {
+                const vodCount = Array.isArray(match.coaching_sessions[0]?.vods) 
+                  ? match.coaching_sessions[0].vods.length 
+                  : 0;
+                const validatedCount = Array.isArray(match.coaching_sessions[0]?.vods)
+                  ? match.coaching_sessions[0].vods.filter((vod: any) => vod.validated).length
+                  : 0;
+
+                return (
+                  <div key={match.id} className="border rounded-lg p-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium">{match.titre}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(match.date_debut).toLocaleDateString('fr-FR')} - {match.type}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline">
+                          {vodCount} VOD(s)
+                        </Badge>
+                        <Badge variant={validatedCount > 0 ? "default" : "secondary"}>
+                          {validatedCount} validée(s)
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            
+            {matchesWithResults
+              .filter(match => 
+                !match.coaching_sessions?.length ||
+                !match.coaching_sessions[0]?.vods ||
+                !Array.isArray(match.coaching_sessions[0].vods) ||
+                match.coaching_sessions[0].vods.length === 0
+              ).length === matchesWithResults.length && (
+              <div className="text-center py-4 text-muted-foreground">
+                Aucune VOD ajoutée pour le moment
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   const renderVODReview = () => (
     <div className="space-y-6">
@@ -330,180 +485,45 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
     </div>
   );
 
-  const renderTeamSynergy = () => (
-    <div className="space-y-6">
-      {selectedMatch ? (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                Analyse de Synergie
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Duo/Trio analysé</Label>
-                  <Input placeholder="ex: Joueur A + Joueur B" />
-                </div>
-                <div>
-                  <Label>Type d'interaction</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="combo">Combo/Synchronisation</SelectItem>
-                      <SelectItem value="covering">Couverture mutuelle</SelectItem>
-                      <SelectItem value="communication">Communication</SelectItem>
-                      <SelectItem value="positioning">Positionnement coordonné</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <Label>Qualité de la synergie</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Évaluation" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="perfect">Parfaite synchronisation</SelectItem>
-                    <SelectItem value="good">Bonne coordination</SelectItem>
-                    <SelectItem value="average">Coordination moyenne</SelectItem>
-                    <SelectItem value="poor">Manque de coordination</SelectItem>
-                    <SelectItem value="conflict">Conflictuelle</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Moments clés observés</Label>
-                <Textarea placeholder="Décrivez les moments où la synergie est particulièrement visible..." />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MessageSquare className="w-5 h-5 mr-2" />
-                Communication d'Équipe
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Clarté des appels</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Évaluation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="very-clear">Très claire</SelectItem>
-                      <SelectItem value="clear">Claire</SelectItem>
-                      <SelectItem value="average">Moyenne</SelectItem>
-                      <SelectItem value="unclear">Peu claire</SelectItem>
-                      <SelectItem value="chaotic">Chaotique</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Réactivité aux appels</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Évaluation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="immediate">Immédiate</SelectItem>
-                      <SelectItem value="quick">Rapide</SelectItem>
-                      <SelectItem value="delayed">Retardée</SelectItem>
-                      <SelectItem value="poor">Mauvaise</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <Label>Points d'amélioration communication</Label>
-                <Textarea placeholder="- Appels plus précis&#10;- Meilleur timing des informations&#10;- Réduction du bruit..." />
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      ) : (
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">
-              Sélectionnez un match dans l'onglet "Revue VOD" pour analyser la synergie d'équipe
-            </p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-
   return (
     <div className="space-y-6">
-      {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center">
-            <Brain className="w-6 h-6 mr-2" />
-            Outils d'Analyse VOD
-          </h2>
+          <h2 className="text-3xl font-bold">Post-Match</h2>
           <p className="text-muted-foreground">
-            Outils avancés pour analyser vos matchs terminés et améliorer vos performances
+            Ajout et gestion des VODs de match
           </p>
         </div>
-        <Badge variant="outline" className="text-sm">
-          {completedMatches.length} match(s) disponible(s)
-        </Badge>
       </div>
 
-      {/* Navigation des outils */}
-      <Tabs value={currentTool} onValueChange={setCurrentTool}>
+      <Tabs value={currentTool} onValueChange={setCurrentTool} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="vod-review" className="flex items-center">
-            <Video className="w-4 h-4 mr-2" />
-            Revue VOD
+          <TabsTrigger value="vod-management" className="flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>Gestion VODs</span>
           </TabsTrigger>
-          <TabsTrigger value="pattern-analysis" className="flex items-center">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Analyse Patterns
+          <TabsTrigger value="vod-review" className="flex items-center space-x-2">
+            <PlayCircle className="w-4 h-4" />
+            <span>Revue VOD</span>
           </TabsTrigger>
-          <TabsTrigger value="team-synergy" className="flex items-center">
-            <Users className="w-4 h-4 mr-2" />
-            Synergie Équipe
+          <TabsTrigger value="pattern-analysis" className="flex items-center space-x-2">
+            <TrendingUp className="w-4 h-4" />
+            <span>Patterns</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="vod-review">
+        <TabsContent value="vod-management" className="mt-6">
+          {renderVODManagement()}
+        </TabsContent>
+
+        <TabsContent value="vod-review" className="mt-6">
           {renderVODReview()}
         </TabsContent>
 
-        <TabsContent value="pattern-analysis">
+        <TabsContent value="pattern-analysis" className="mt-6">
           {renderPatternAnalysis()}
         </TabsContent>
-
-        <TabsContent value="team-synergy">
-          {renderTeamSynergy()}
-        </TabsContent>
       </Tabs>
-
-      {/* Actions */}
-      {selectedMatch && (
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline">
-            <Eye className="w-4 h-4 mr-2" />
-            Prévisualiser l'analyse
-          </Button>
-          <Button>
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Sauvegarder l'analyse
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
