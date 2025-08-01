@@ -188,6 +188,35 @@ export const gameConfigs: Record<string, GameConfig> = {
       performance: ["Kills", "Assists", "Damage", "Revives", "Survie"],
       objective: ["Placement", "Ring damage", "Zone rotations"]
     }
+  },
+
+  fortnite: {
+    id: "fortnite",
+    name: "Fortnite",
+    trackerName: "Fortnite Tracker",
+    trackerUrl: "https://fortnitetracker.com",
+    trackerApiEndpoint: "fortnite",
+    characters: [
+      // Skins populaires de Fortnite
+      "Default", "Renegade Raider", "Black Knight", "John Wick", "Omega", "Drift",
+      "Ragnarok", "Calamity", "Dire", "Lynx", "Ice King", "Peely", "Fishstick",
+      "Skull Trooper", "Ghoul Trooper", "Midas", "Jules", "Kit", "Fade", "Ocean",
+      "Thor", "Iron Man", "Wolverine", "Storm", "Mystique", "Doctor Doom",
+      "Mandalorian", "Kratos", "Master Chief", "Aloy", "Lara Croft", "Superman",
+      "Ariana Grande", "Naruto", "Goku", "Spider-Man", "Green Goblin", "The Rock"
+    ],
+    maps: [
+      "Apollo", "Athena", "Artemis", "Asteria", "Chapter 1 Map", "Chapter 2 Map", 
+      "Chapter 3 Map", "Chapter 4 Map", "Chapter 5 Map", "The End", "Zero Point",
+      "Tilted Towers", "Pleasant Park", "Retail Row", "Salty Springs", "Dusty Depot"
+    ],
+    roles: ["IGL (In-Game Leader)", "Fragger", "Support", "Builder", "Rotator"],
+    strategyTypes: ["Early Game", "Mid Game", "Late Game", "Box Fighting", "Build Fighting", "Zone Rotation", "Third Partying"],
+    analyticsFields: {
+      composition: ["Skin", "Back Bling", "Pickaxe", "Glider", "Contrail"],
+      performance: ["Eliminations", "Assists", "Damage Dealt", "Materials Farmed", "Accuracy"],
+      objective: ["Placement", "Zone Damage", "Builds Destroyed", "Distance Traveled"]
+    }
   }
 };
 

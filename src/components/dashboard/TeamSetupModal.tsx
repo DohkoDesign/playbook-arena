@@ -22,6 +22,7 @@ const GAMES = [
   { value: "cod_warzone", label: "Call of Duty Warzone", players: 4 },
   { value: "cod_multiplayer", label: "Call of Duty Multiplayer", players: 6 },
   { value: "apex_legends", label: "Apex Legends", players: 3 },
+  { value: "fortnite", label: "Fortnite", players: 4 },
 ];
 
 export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModalProps) => {

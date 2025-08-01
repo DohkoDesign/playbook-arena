@@ -6,7 +6,8 @@ const POPULAR_GAMES = [
   { name: "Overwatch 2", image: "/lovable-uploads/4d4d44fd-dbbf-4695-9dca-b11e3816cbdc.png" },
   { name: "Apex Legends", image: "/lovable-uploads/e63c3e0d-75c5-42eb-b7c7-616ddb5284cd.png" },
   { name: "Call of Duty Warzone", image: "/lovable-uploads/2c9d630c-6669-4ece-b281-af8ea89a0fc4.png" },
-  { name: "Call of Duty Multiplayer", image: "/lovable-uploads/faeae144-09dc-4896-923f-0cafd5148939.png" }
+  { name: "Call of Duty Multiplayer", image: "/lovable-uploads/faeae144-09dc-4896-923f-0cafd5148939.png" },
+  { name: "Fortnite", image: "/lovable-uploads/453f8e9c-cefc-4b82-8682-20ff96bcb444.png" }
 ];
 
 export const GamesList = () => {
@@ -15,7 +16,7 @@ export const GamesList = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            8 jeux compétitifs supportés
+            9 jeux compétitifs supportés
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Gérez vos équipes sur tous les jeux eSport majeurs avec des configurations 
