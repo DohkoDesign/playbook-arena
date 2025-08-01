@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 interface PlayerFicheViewProps {
   teamId: string;
   playerId: string;
+  userProfile?: any;
+  teamData?: any;
 }
 
 interface PlayerProfile {
@@ -36,7 +38,7 @@ interface PlayerStats {
   rank_actuel: string;
 }
 
-export const PlayerFicheView = ({ teamId, playerId }: PlayerFicheViewProps) => {
+export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: PlayerFicheViewProps) => {
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ export const PlayerFicheView = ({ teamId, playerId }: PlayerFicheViewProps) => {
 
   useEffect(() => {
     fetchPlayerData();
-  }, [teamId, playerId]);
+  }, [teamId, playerId, userProfile]);
 
   const fetchPlayerData = async () => {
     try {
@@ -82,17 +84,30 @@ export const PlayerFicheView = ({ teamId, playerId }: PlayerFicheViewProps) => {
 
       setProfile(playerProfile);
 
-      // Simuler des statistiques
-      const mockStats: PlayerStats = {
-        matchs_joues: 127,
-        victoires: 78,
-        defaites: 49,
-        kda_moyen: "1.42",
-        temps_jeu: "156h",
-        rank_actuel: "Diamant 2"
-      };
-
-      setStats(mockStats);
+      // Utiliser les vraies statistiques du tracker si disponibles
+      if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
+        const trackerStats = userProfile.tracker_stats;
+        const realStats: PlayerStats = {
+          matchs_joues: trackerStats.stats?.matchesPlayed || trackerStats.stats?.gamesPlayed || 0,
+          victoires: trackerStats.stats?.wins || (trackerStats.stats?.winRate ? Math.round((trackerStats.stats.winRate / 100) * (trackerStats.stats.matchesPlayed || trackerStats.stats.gamesPlayed || 0)) : 0),
+          defaites: (trackerStats.stats?.matchesPlayed || trackerStats.stats?.gamesPlayed || 0) - (trackerStats.stats?.wins || 0),
+          kda_moyen: trackerStats.stats?.kd?.toFixed(2) || trackerStats.stats?.kda?.toFixed(2) || "0.00",
+          temps_jeu: "N/A", // Pas toujours disponible dans les trackers
+          rank_actuel: trackerStats.player?.rank || "Non classé"
+        };
+        setStats(realStats);
+      } else {
+        // Fallback vers des données simulées si pas de tracker configuré
+        const mockStats: PlayerStats = {
+          matchs_joues: 0,
+          victoires: 0,
+          defaites: 0,
+          kda_moyen: "0.00",
+          temps_jeu: "0h",
+          rank_actuel: "Non classé"
+        };
+        setStats(mockStats);
+      }
     } catch (error: any) {
       toast({
         title: "Erreur",

@@ -23,7 +23,7 @@ const PlayerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [currentView, setCurrentView] = useState<PlayerView>("calendar");
   const [teamData, setTeamData] = useState<any>(null);
-  const [playerProfile, setPlayerProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -65,10 +65,10 @@ const PlayerDashboard = () => {
     try {
       console.log("📊 Loading player data for:", user.id);
 
-      // 1. Charger le profil utilisateur
+      // 1. Charger le profil utilisateur complet
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, pseudo, role")
+        .select("*")
         .eq("user_id", user.id)
         .single();
 
@@ -86,7 +86,7 @@ const PlayerDashboard = () => {
         return;
       }
 
-      setPlayerProfile(profile);
+      setUserProfile(profile);
 
       // 2. Charger les données de l'équipe (requête simplifiée)
       console.log("🔍 Recherche des équipes...");
@@ -181,13 +181,13 @@ const PlayerDashboard = () => {
       
       // Mon Espace personnel
       case "fiche":
-        return <PlayerFicheView teamId={teamData.id} playerId={user?.id || ""} />;
+        return <PlayerFicheView teamId={teamData.id} playerId={user?.id || ""} userProfile={userProfile} teamData={teamData} />;
       case "objectives":
         return <PlayerObjectivesView teamId={teamData.id} playerId={user?.id || ""} />;
       case "planning":
         return <PlayerPlanningView teamId={teamData.id} playerId={user?.id || ""} />;
       case "performance":
-        return <PlayerPerformanceView teamId={teamData.id} playerId={user?.id || ""} />;
+        return <PlayerPerformanceView teamId={teamData.id} playerId={user?.id || ""} userProfile={userProfile} teamData={teamData} />;
       
       // Équipe (lecture seule)
       case "team-strategies":

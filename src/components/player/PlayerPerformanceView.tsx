@@ -87,11 +87,45 @@ export const PlayerPerformanceView = ({
     const initializeTrackerData = async () => {
       if (userProfile?.tracker_stats && Object.keys(userProfile.tracker_stats).length > 0) {
         setTrackerStats(userProfile.tracker_stats);
-      } else if (userProfile?.tracker_usernames?.[teamData?.jeu] && !userProfile?.tracker_stats) {
+        setLoading(false);
+      } else if (userProfile?.tracker_usernames?.[teamData?.jeu]) {
         // Auto-fetch stats if tracker username is configured but no stats exist
-        await refreshTrackerStats();
+        try {
+          setRefreshing(true);
+          const { data, error } = await supabase.functions.invoke('fetch-tracker-stats', {
+            body: {
+              game: teamData.jeu,
+              username: userProfile.tracker_usernames[teamData.jeu]
+            }
+          });
+
+          if (error) throw error;
+
+          if (data.success) {
+            setTrackerStats(data.data);
+            
+            await supabase
+              .from("profiles")
+              .update({ 
+                tracker_stats: data.data,
+                tracker_last_updated: new Date().toISOString()
+              })
+              .eq("user_id", playerId);
+
+            toast({
+              title: "Statistiques récupérées",
+              description: "Vos statistiques de tracker ont été récupérées automatiquement",
+            });
+          }
+        } catch (error: any) {
+          console.error('Error auto-fetching tracker stats:', error);
+        } finally {
+          setRefreshing(false);
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     if (userProfile && teamData) {
@@ -99,7 +133,7 @@ export const PlayerPerformanceView = ({
     } else {
       setLoading(false);
     }
-  }, [userProfile, teamData]);
+  }, [userProfile?.user_id, teamData?.jeu]);
 
   if (loading) {
     return (
