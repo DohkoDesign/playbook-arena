@@ -260,9 +260,11 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
                         <Badge variant="outline" className="text-xs">
                           {new Date(match.date_debut).toLocaleDateString('fr-FR')}
                         </Badge>
-                        <Badge variant={match.analysis_data.resultat?.toLowerCase().includes('victoire') ? 'default' : 'destructive'} className="text-xs">
-                          {match.analysis_data.resultat}
-                        </Badge>
+                        {match.analysis_data?.resultat && (
+                          <Badge variant={match.analysis_data.resultat.toLowerCase().includes('victoire') ? 'default' : 'destructive'} className="text-xs">
+                            {match.analysis_data.resultat}
+                          </Badge>
+                        )}
                       </div>
                     </SelectItem>
                   ))}
@@ -274,8 +276,10 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
                   <h4 className="font-semibold mb-2">{selectedMatch.titre}</h4>
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>Date: {new Date(selectedMatch.date_debut).toLocaleDateString('fr-FR')}</p>
-                    <p>Résultat: {selectedMatch.analysis_data.resultat}</p>
-                    {selectedMatch.analysis_data.vods && selectedMatch.analysis_data.vods.length > 0 && (
+                    {selectedMatch.analysis_data?.resultat && (
+                      <p>Résultat: {selectedMatch.analysis_data.resultat}</p>
+                    )}
+                    {selectedMatch.analysis_data?.vods && selectedMatch.analysis_data.vods.length > 0 && (
                       <p>VODs: {selectedMatch.analysis_data.vods.length} disponible(s)</p>
                     )}
                   </div>
