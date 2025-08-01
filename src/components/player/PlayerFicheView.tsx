@@ -360,7 +360,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
                 <div className="space-y-2">
                   {(editForm.points_forts || []).map((point, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-green-50">{point}</Badge>
+                      <Badge className="bg-black text-white border-2 border-white">{point}</Badge>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -383,7 +383,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
               ) : (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {profile.points_forts.map((point, index) => (
-                    <Badge key={index} variant="outline" className="bg-green-50">
+                    <Badge key={index} className="bg-black text-white border-2 border-white">
                       {point}
                     </Badge>
                   ))}
@@ -397,7 +397,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
                 <div className="space-y-2">
                   {(editForm.points_faibles || []).map((point, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-orange-50">{point}</Badge>
+                      <Badge className="bg-black text-white border-2 border-white">{point}</Badge>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -420,7 +420,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
               ) : (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {profile.points_faibles.map((point, index) => (
-                    <Badge key={index} variant="outline" className="bg-orange-50">
+                    <Badge key={index} className="bg-black text-white border-2 border-white">
                       {point}
                     </Badge>
                   ))}
@@ -434,7 +434,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
                 <div className="space-y-2">
                   {(editForm.objectifs_individuels || []).map((objectif, index) => (
                     <div key={index} className="flex items-center space-x-2">
-                      <Badge variant="outline" className="bg-blue-50">{objectif}</Badge>
+                      <Badge className="bg-black text-white border-2 border-white">{objectif}</Badge>
                       <Button
                         size="sm"
                         variant="ghost"
@@ -457,7 +457,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
               ) : (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {profile.objectifs_individuels.map((objectif, index) => (
-                    <Badge key={index} variant="outline" className="bg-blue-50">
+                    <Badge key={index} className="bg-black text-white border-2 border-white">
                       {objectif}
                     </Badge>
                   ))}
