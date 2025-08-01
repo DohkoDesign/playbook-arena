@@ -42,6 +42,15 @@ const DAYS_CONFIG = {
   0: { name: "Dimanche", key: "sunday" },
 };
 
+const getWeekStart = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Dimanche = 0, donc -6 pour aller au lundi
+  const monday = new Date(now);
+  monday.setDate(now.getDate() + mondayOffset);
+  return monday.toISOString().split('T')[0];
+};
+
 export const PlayerAvailabilityManager = ({ teamId, playerId }: PlayerAvailabilityManagerProps) => {
   const [weeklyAvailability, setWeeklyAvailability] = useState<Record<number, DayAvailability>>({
     1: { enabled: false, slots: [] },
@@ -207,7 +216,7 @@ export const PlayerAvailabilityManager = ({ teamId, playerId }: PlayerAvailabili
                 day_of_week: parseInt(dayOfWeek),
                 start_time: slot.start + ':00', // Ajouter les secondes
                 end_time: slot.end + ':00',     // Ajouter les secondes
-                week_start: new Date().toISOString().split('T')[0] // Date actuelle
+                week_start: getWeekStart() // Utiliser le début de la semaine
               });
             }
           });

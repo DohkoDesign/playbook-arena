@@ -104,8 +104,12 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       // Simuler un taux de victoire basé sur les événements
       const winRate = matches.length > 0 ? Math.round(Math.random() * 40 + 60) : 0;
 
-      // Répartition des rôles
-      const roleDistribution = members.reduce((acc, member) => {
+      // Répartition des rôles (seulement les joueurs)
+      const playerMembers = members.filter(member => 
+        member.role && ['joueur', 'remplacant', 'capitaine'].includes(member.role)
+      );
+      
+      const roleDistribution = playerMembers.reduce((acc, member) => {
         const role = member.role || 'joueur';
         acc[role] = (acc[role] || 0) + 1;
         return acc;

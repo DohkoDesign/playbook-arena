@@ -15,10 +15,10 @@ import { PlayerObjectivesView } from "@/components/player/PlayerObjectivesView";
 import { PlayerPlanningView } from "@/components/player/PlayerPlanningView";
 import { PlayerPerformanceView } from "@/components/player/PlayerPerformanceView";
 import { PlayerFeedbackView } from "@/components/player/PlayerFeedbackView";
-import { PlayerAvailabilityManager } from "@/components/player/PlayerAvailabilityManager";
+import { PlayerTeamAvailabilities } from "@/components/player/PlayerTeamAvailabilities";
 import { useToast } from "@/hooks/use-toast";
 
-type PlayerView = "dashboard" | "calendar" | "fiche" | "objectives" | "planning" | "performance" | "feedback" | "team-strategies" | "team-coaching";
+type PlayerView = "dashboard" | "calendar" | "fiche" | "objectives" | "planning" | "performance" | "feedback" | "team-availabilities" | "team-strategies" | "team-coaching";
 
 const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -197,6 +197,8 @@ const PlayerDashboard = () => {
         return <PlayerFeedbackView teamId={teamData.id} playerId={user?.id || ""} />;
       
       // Équipe (lecture seule)
+      case "team-availabilities":
+        return <PlayerTeamAvailabilities teamId={teamData.id} playerId={user?.id || ""} />;
       case "team-strategies":
         return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       case "team-coaching":
