@@ -205,7 +205,7 @@ export const IntelligentEventCreator = ({ teamId, gameType, onEventCreated }: In
   if (!isCreating) {
     return (
       <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
-        <CardContent className="p-8">
+        <CardContent className="">
           <div className="text-center space-y-6">
             {/* Header */}
             <div className="space-y-2">
