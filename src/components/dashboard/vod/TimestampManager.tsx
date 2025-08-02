@@ -34,17 +34,18 @@ interface TimestampManagerProps {
   timestamps: Timestamp[];
   onTimestampsChange: (timestamps: Timestamp[]) => void;
   teamId: string;
+  onJumpToTime?: (time: number) => void;
 }
 
 const timestampTypes = {
-  important: { icon: Clock, color: "bg-blue-100 text-blue-800", label: "Important" },
+  important: { icon: Clock, color: "bg-gray-100 text-gray-800", label: "Important" },
   error: { icon: AlertTriangle, color: "bg-red-100 text-red-800", label: "Erreur" },
   success: { icon: CheckCircle, color: "bg-green-100 text-green-800", label: "Bon play" },
-  strategy: { icon: Target, color: "bg-purple-100 text-purple-800", label: "Stratégie" },
-  "player-specific": { icon: User, color: "bg-orange-100 text-orange-800", label: "Joueur spécifique" }
+  strategy: { icon: Target, color: "bg-gray-100 text-gray-800", label: "Stratégie" },
+  "player-specific": { icon: User, color: "bg-gray-100 text-gray-800", label: "Joueur spécifique" }
 };
 
-export const TimestampManager = ({ timestamps, onTimestampsChange, teamId }: TimestampManagerProps) => {
+export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJumpToTime }: TimestampManagerProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newTimestamp, setNewTimestamp] = useState({
@@ -133,8 +134,8 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId }: Tim
   };
 
   const jumpToTime = (time: number) => {
-    // Cette fonction sera connectée au lecteur YouTube
-    console.log("Jump to time:", time);
+    // Appeler la fonction du parent pour naviguer dans le lecteur
+    onJumpToTime?.(time);
     toast({
       title: "Navigation",
       description: `Saut à ${formatTime(time)}`,

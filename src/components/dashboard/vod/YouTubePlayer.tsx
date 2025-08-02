@@ -18,9 +18,10 @@ interface YouTubePlayerProps {
   onTimeUpdate?: (time: number) => void;
   onReady?: () => void;
   onAddTimestamp?: (time: number) => void;
+  onSeekTo?: (time: number) => void;
 }
 
-export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp }: YouTubePlayerProps) => {
+export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, onSeekTo }: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -93,6 +94,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp }
     if (player) {
       player.seekTo(time, true);
       setCurrentTime(time);
+      onSeekTo?.(time); // Informer le parent du changement de position
     }
   };
 

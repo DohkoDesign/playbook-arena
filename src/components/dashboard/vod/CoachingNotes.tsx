@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 interface CoachingNotesProps {
   notes: string;
   onNotesChange: (notes: string) => void;
+  onSave?: () => void;
 }
 
 interface NoteTemplate {
@@ -132,13 +133,13 @@ const noteTemplates: NoteTemplate[] = [
 ];
 
 const templateCategories = {
-  individual: { icon: User, color: "bg-blue-100 text-blue-800", label: "Individuel" },
-  team: { icon: Users, color: "bg-green-100 text-green-800", label: "Équipe" },
-  strategy: { icon: Target, color: "bg-purple-100 text-purple-800", label: "Stratégie" },
+  individual: { icon: User, color: "bg-gray-100 text-gray-800", label: "Individuel" },
+  team: { icon: Users, color: "bg-gray-100 text-gray-800", label: "Équipe" },
+  strategy: { icon: Target, color: "bg-gray-100 text-gray-800", label: "Stratégie" },
   general: { icon: FileText, color: "bg-gray-100 text-gray-800", label: "Général" }
 };
 
-export const CoachingNotes = ({ notes, onNotesChange }: CoachingNotesProps) => {
+export const CoachingNotes = ({ notes, onNotesChange, onSave }: CoachingNotesProps) => {
   const [activeTab, setActiveTab] = useState("editor");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isUnsaved, setIsUnsaved] = useState(false);
@@ -151,6 +152,7 @@ export const CoachingNotes = ({ notes, onNotesChange }: CoachingNotesProps) => {
   const saveNotes = () => {
     setLastSaved(new Date());
     setIsUnsaved(false);
+    onSave?.(); // Appeler la fonction de sauvegarde du parent
     toast({
       title: "Notes sauvegardées",
       description: "Vos notes ont été enregistrées avec succès",
@@ -382,10 +384,10 @@ Vous pouvez utiliser le Markdown pour formater vos notes :
       </Tabs>
 
       {/* Aide rapide */}
-      <Card className="bg-blue-50 border-blue-200">
+      <Card className="bg-muted border">
         <CardContent className="p-4">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Conseils pour des notes efficaces</h4>
-          <ul className="text-sm text-blue-800 space-y-1">
+          <h4 className="font-medium text-foreground mb-2">💡 Conseils pour des notes efficaces</h4>
+          <ul className="text-sm text-muted-foreground space-y-1">
             <li>• Structurez vos observations avec les modèles fournis</li>
             <li>• Liez vos commentaires aux timestamps pour référencer des moments précis</li>
             <li>• Soyez spécifique dans vos recommandations</li>

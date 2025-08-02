@@ -76,6 +76,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   const [loading, setLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -208,6 +209,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     return true;
   });
 
+  const [playerRef, setPlayerRef] = useState<any>(null);
   const getCurrentVOD = () => {
     if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
     return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
@@ -508,7 +510,10 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                   <YouTubePlayer 
                     videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
                     onTimeUpdate={(time) => {
-                      // Callback pour mise à jour du timestamp
+                      setCurrentPlayerTime(time);
+                    }}
+                    onSeekTo={(time) => {
+                      setCurrentPlayerTime(time);
                     }}
                     onAddTimestamp={(time) => {
                       // Ajouter un marqueur automatiquement quand on clique sur "Marquer"
@@ -570,6 +575,13 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                       }
                     }}
                     teamId={teamId}
+                    onJumpToTime={(time) => {
+                      // Naviguer vers le timestamp dans le lecteur
+                      if (playerRef && playerRef.seekTo) {
+                        playerRef.seekTo(time, true);
+                        setCurrentPlayerTime(time);
+                      }
+                    }}
                   />
                 </TabsContent>
 
@@ -586,7 +598,13 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                       if (currentReview) {
                         const updated = { ...currentReview, notes };
                         setCurrentReview(updated);
-                        saveReviewSession({ notes });
+                        // Ne plus sauvegarder automatiquement ici
+                      }
+                    }}
+                    onSave={() => {
+                      // Sauvegarder seulement quand on clique sur le bouton
+                      if (currentReview) {
+                        saveReviewSession({ notes: currentReview.notes });
                       }
                     }}
                   />
