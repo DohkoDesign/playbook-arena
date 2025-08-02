@@ -59,6 +59,25 @@ export const AuthModals = ({
       return;
     }
 
+    // Client-side password validation
+    if (password.length < 8) {
+      toast({
+        title: "Mot de passe faible",
+        description: "Le mot de passe doit contenir au moins 8 caractères",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+      toast({
+        title: "Mot de passe faible",
+        description: "Le mot de passe doit contenir au moins une lettre et un chiffre",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
