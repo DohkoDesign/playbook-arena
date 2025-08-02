@@ -30,6 +30,13 @@ const Index = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Vérifier automatiquement l'état de l'équipe après connexion
+        if (session?.user && event === 'SIGNED_IN') {
+          setTimeout(() => {
+            checkUserTeamsAndRedirect(session.user);
+          }, 100);
+        }
       }
     );
 
@@ -37,6 +44,11 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Vérifier l'état de l'équipe si l'utilisateur est déjà connecté
+      if (session?.user) {
+        checkUserTeamsAndRedirect(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -58,30 +70,28 @@ const Index = () => {
     }
   };
 
-  const handleLoginSuccess = async () => {
-    setIsLoginOpen(false);
-    
-    if (!user) return;
-
+  const checkUserTeamsAndRedirect = async (currentUser: User) => {
     try {
       // Vérifier le rôle de l'utilisateur après connexion
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
-        .eq("user_id", user.id)
+        .eq("user_id", currentUser.id)
         .single();
 
       // Vérifier si l'utilisateur est membre d'une équipe
       const { data: teamMembers } = await supabase
         .from("team_members")
         .select("role, team_id")
-        .eq("user_id", user.id);
+        .eq("user_id", currentUser.id);
 
       // Vérifier si l'utilisateur a créé des équipes
       const { data: createdTeams } = await supabase
         .from("teams")
         .select("*")
-        .eq("created_by", user.id);
+        .eq("created_by", currentUser.id);
+
+      console.log("📊 Teams query result:", { data: createdTeams, error: null });
 
       // Redirection selon le statut de l'utilisateur
       if (createdTeams && createdTeams.length > 0) {
@@ -91,12 +101,19 @@ const Index = () => {
       } else if (teamMembers && teamMembers.length > 0) {
         navigate("/dashboard");
       } else {
-        // Nouvel utilisateur sans équipe
+        // Nouvel utilisateur sans équipe - ouvrir la modal de création d'équipe
         setIsTeamSetupOpen(true);
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du profil:", error);
+      // En cas d'erreur, ouvrir quand même la modal de création d'équipe
+      setIsTeamSetupOpen(true);
     }
+  };
+
+  const handleLoginSuccess = async () => {
+    setIsLoginOpen(false);
+    // La redirection sera gérée par checkUserTeamsAndRedirect dans onAuthStateChange
   };
 
   const handleTeamCreated = () => {

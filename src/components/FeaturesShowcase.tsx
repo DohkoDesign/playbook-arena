@@ -1,32 +1,32 @@
-import dashboardImg from '../assets/dashboard-preview.jpg';
-import coachingImg from '../assets/coaching-preview.jpg';
-import analyticsImg from '../assets/analytics-preview.jpg';
-import calendarImg from '../assets/calendar-preview.jpg';
+import image1 from '../assets/image-1.jpg';
+import image2 from '../assets/image-2.jpg';
+import image3 from '../assets/image-3.jpg';
+import image4 from '../assets/image-4.jpg';
 import { Button } from './ui/button';
 
 const features = [
   {
     title: "Dashboard de gestion d'équipe",
     description: "Visualisez en temps réel les performances de votre équipe, gérez les rosters et suivez la progression de chaque joueur avec des tableaux de bord intuitifs.",
-    image: dashboardImg,
+    image: image1,
     highlights: ["Gestion des rosters", "Statistiques en temps réel", "Vue d'ensemble complète"]
   },
   {
     title: "Système de coaching avancé",
     description: "Analysez les replays, planifiez vos stratégies et communiquez efficacement avec vos joueurs grâce à nos outils de coaching professionnels.",
-    image: coachingImg,
+    image: image2,
     highlights: ["Analyse de replays", "Plans stratégiques", "Feedback détaillé"]
   },
   {
     title: "Analytics et performances",
     description: "Découvrez les forces et faiblesses de votre équipe avec des analyses approfondies et des métriques détaillées pour chaque joueur et match.",
-    image: analyticsImg,
+    image: image3,
     highlights: ["Métriques détaillées", "Comparaisons", "Rapports personnalisés"]
   },
   {
-    title: "Planification et calendrier",
+    title: "Système de coaching avancé",
     description: "Organisez vos entraînements, matchs et événements avec un système de planification intelligent adapté au rythme de l'esport compétitif.",
-    image: calendarImg,
+    image: image4,
     highlights: ["Calendrier partagé", "Notifications automatiques", "Gestion des disponibilités"]
   }
 ];
