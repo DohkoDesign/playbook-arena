@@ -48,6 +48,13 @@ const timestampTypes = {
 export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJumpToTime }: TimestampManagerProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingTimestamp, setEditingTimestamp] = useState({
+    time: 0,
+    comment: "",
+    type: "important" as keyof typeof timestampTypes,
+    player: "",
+    category: ""
+  });
   const [newTimestamp, setNewTimestamp] = useState({
     time: 0,
     comment: "",
@@ -120,6 +127,40 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
     toast({
       title: "Timestamp mis à jour",
       description: "Les modifications ont été sauvegardées",
+    });
+  };
+
+  const startEditing = (timestamp: Timestamp) => {
+    setEditingTimestamp({
+      time: timestamp.time,
+      comment: timestamp.comment,
+      type: timestamp.type,
+      player: timestamp.player || "",
+      category: timestamp.category || ""
+    });
+    setEditingId(timestamp.id);
+  };
+
+  const saveEdit = () => {
+    if (!editingId) return;
+    
+    updateTimestamp(editingId, {
+      time: editingTimestamp.time,
+      comment: editingTimestamp.comment,
+      type: editingTimestamp.type,
+      player: editingTimestamp.player || undefined,
+      category: editingTimestamp.category || undefined
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingTimestamp({
+      time: 0,
+      comment: "",
+      type: "important",
+      player: "",
+      category: ""
     });
   };
 
@@ -266,7 +307,95 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
             const typeConfig = timestampTypes[timestamp.type];
             const IconComponent = typeConfig.icon;
 
-            return (
+            return editingId === timestamp.id ? (
+              // Mode édition
+              <Card key={timestamp.id} className="border-primary/50 bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="text-lg">Modifier le Timestamp</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-time">Temps (mm:ss)</Label>
+                      <Input
+                        id="edit-time"
+                        placeholder="1:30"
+                        value={`${Math.floor(editingTimestamp.time / 60)}:${Math.floor(editingTimestamp.time % 60).toString().padStart(2, '0')}`}
+                        onChange={(e) => setEditingTimestamp({
+                          ...editingTimestamp,
+                          time: parseTimeInput(e.target.value)
+                        })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-type">Type</Label>
+                      <Select 
+                        value={editingTimestamp.type}
+                        onValueChange={(value: keyof typeof timestampTypes) => 
+                          setEditingTimestamp({ ...editingTimestamp, type: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.entries(timestampTypes).map(([key, config]) => (
+                            <SelectItem key={key} value={key}>
+                              <div className="flex items-center space-x-2">
+                                <config.icon className="w-4 h-4" />
+                                <span>{config.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {editingTimestamp.type === "player-specific" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-player">Joueur concerné</Label>
+                      <Input
+                        id="edit-player"
+                        placeholder="Nom du joueur"
+                        value={editingTimestamp.player}
+                        onChange={(e) => setEditingTimestamp({
+                          ...editingTimestamp,
+                          player: e.target.value
+                        })}
+                      />
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-comment">Commentaire</Label>
+                    <Textarea
+                      id="edit-comment"
+                      placeholder="Décrivez ce qui se passe à ce moment..."
+                      value={editingTimestamp.comment}
+                      onChange={(e) => setEditingTimestamp({
+                        ...editingTimestamp,
+                        comment: e.target.value
+                      })}
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={cancelEdit}
+                    >
+                      Annuler
+                    </Button>
+                    <Button onClick={saveEdit}>
+                      Sauvegarder
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              // Mode affichage normal
               <Card key={timestamp.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
@@ -321,7 +450,7 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditingId(timestamp.id)}
+                        onClick={() => startEditing(timestamp)}
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
