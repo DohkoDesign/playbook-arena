@@ -578,6 +578,22 @@ export type Database = {
         Args: { team_uuid: string; user_uuid?: string }
         Returns: boolean
       }
+      log_security_event: {
+        Args: { event_type: string; user_id?: string; metadata?: Json }
+        Returns: undefined
+      }
+      validate_password: {
+        Args: { password: string }
+        Returns: boolean
+      }
+      validate_role_change: {
+        Args: {
+          target_user_id: string
+          target_team_id: string
+          new_role: Database["public"]["Enums"]["player_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       event_type:
