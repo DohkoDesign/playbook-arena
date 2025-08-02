@@ -174,7 +174,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
       </div>
 
       {/* Contrôles personnalisés */}
-      <div className="space-y-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
+      <div className="space-y-4 p-4 bg-black rounded-lg border border-gray-700">
         {/* Timeline */}
         <div className="space-y-2">
           <Slider
@@ -197,7 +197,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="secondary"
               size="sm"
               onClick={skipBackward}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               <SkipBack className="w-4 h-4" />
             </Button>
@@ -206,7 +206,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="secondary"
               size="sm"
               onClick={togglePlayPause}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
@@ -215,7 +215,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="secondary"
               size="sm"
               onClick={skipForward}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               <SkipForward className="w-4 h-4" />
             </Button>
@@ -281,7 +281,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 5))}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               -5s
             </Button>
@@ -289,7 +289,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 15))}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               -15s
             </Button>
@@ -297,7 +297,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.min(duration, currentTime + 15))}
-              className="bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               +15s
             </Button>

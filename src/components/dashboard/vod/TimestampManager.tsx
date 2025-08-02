@@ -473,7 +473,7 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
 
       {/* Résumé rapide */}
       {timestamps.length > 0 && (
-        <Card className="bg-gray-900 border-gray-700">
+        <Card className="bg-black border-gray-700">
           <CardContent className="p-4">
             <h4 className="font-medium mb-2 text-white">Résumé de l'analyse</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">

@@ -1,7 +1,12 @@
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 
-export const Header = () => {
+interface HeaderProps {
+  onOpenSignup: () => void;
+  onOpenLogin: () => void;
+}
+
+export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -26,10 +31,10 @@ export const Header = () => {
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <Button variant="ghost" className="hidden sm:inline-flex" onClick={() => window.location.href = '/auth'}>
+          <Button variant="ghost" className="hidden sm:inline-flex" onClick={onOpenLogin}>
             Connexion
           </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => window.location.href = '/auth'}>
+          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenSignup}>
             Créer un compte
           </Button>
         </div>
