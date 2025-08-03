@@ -71,13 +71,23 @@ const Index = () => {
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
+    let profile = null;
+    
     try {
-      // Vérifier le rôle de l'utilisateur après connexion
-      const { data: profile } = await supabase
+      // Vérifier le profil de l'utilisateur
+      const { data: profileData } = await supabase
         .from("profiles")
         .select("role")
         .eq("user_id", currentUser.id)
         .single();
+      
+      profile = profileData;
+
+      // Vérifier si l'utilisateur a créé des équipes (propriétaire/staff)
+      const { data: createdTeams } = await supabase
+        .from("teams")
+        .select("*")
+        .eq("created_by", currentUser.id);
 
       // Vérifier si l'utilisateur est membre d'une équipe
       const { data: teamMembers } = await supabase
@@ -85,29 +95,42 @@ const Index = () => {
         .select("role, team_id")
         .eq("user_id", currentUser.id);
 
-      // Vérifier si l'utilisateur a créé des équipes
-      const { data: createdTeams } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("created_by", currentUser.id);
+      console.log("📊 Redirection info:", { 
+        profile: profile?.role, 
+        createdTeams: createdTeams?.length, 
+        teamMembers: teamMembers?.length 
+      });
 
-      console.log("📊 Teams query result:", { data: createdTeams, error: null });
-
-      // Redirection selon le statut de l'utilisateur
-      if (createdTeams && createdTeams.length > 0) {
+      // Redirection selon le rôle et le statut
+      if (profile?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
+        // Utilisateur staff ou propriétaire d'équipe -> Dashboard de gestion
         navigate("/dashboard");
       } else if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
+        // Joueur membre d'une équipe -> Interface joueur
         navigate("/player");
       } else if (teamMembers && teamMembers.length > 0) {
-        navigate("/dashboard");
+        // Membre d'équipe avec rôle de gestion -> Dashboard
+        const hasManagementRole = teamMembers.some(tm => 
+          ['owner', 'manager', 'coach'].includes(tm.role)
+        );
+        if (hasManagementRole) {
+          navigate("/dashboard");
+        } else {
+          navigate("/player");
+        }
       } else {
         // Nouvel utilisateur sans équipe - ouvrir la modal de création d'équipe
         setIsTeamSetupOpen(true);
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du profil:", error);
-      // En cas d'erreur, ouvrir quand même la modal de création d'équipe
-      setIsTeamSetupOpen(true);
+      // En cas d'erreur, ouvrir la modal de création d'équipe pour les staff
+      if (profile?.role === "staff") {
+        setIsTeamSetupOpen(true);
+      } else {
+        // Pour les autres, on les laisse sur la page d'accueil
+        console.log("Utilisateur non configuré, reste sur la page d'accueil");
+      }
     }
   };
 
