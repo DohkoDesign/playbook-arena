@@ -570,6 +570,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_valid_invitation: {
+        Args: { team_uuid: string }
+        Returns: boolean
+      }
+      is_staff_of_team_with_player: {
+        Args: { player_user_id: string }
+        Returns: boolean
+      }
       is_staff_user: {
         Args: { check_user_id?: string }
         Returns: boolean
