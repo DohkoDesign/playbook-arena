@@ -16,98 +16,99 @@
     box-shadow: none !important;
   }
   :root {
-    /* Gris plus doux */
-    --background: 0 0% 98%; /* Blanc cassé */
-    --foreground: 0 0% 15%; /* Gris foncé au lieu de noir */
+    /* Thème bleu - mode clair */
+    --background: 210 40% 98%; /* Bleu très clair */
+    --foreground: 215 25% 27%; /* Bleu foncé pour le texte */
     
-    --card: 0 0% 100%; /* Blanc pur */
-    --card-foreground: 0 0% 15%;
+    --card: 210 40% 100%; /* Blanc avec nuance bleue */
+    --card-foreground: 215 25% 27%;
     
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 15%;
+    --popover: 210 40% 100%;
+    --popover-foreground: 215 25% 27%;
     
-    --primary: 0 0% 20%; /* Gris foncé au lieu de noir */
-    --primary-foreground: 0 0% 100%;
+    --primary: 215 84% 50%; /* Bleu vif principal */
+    --primary-foreground: 210 40% 98%;
     
-    --secondary: 0 0% 94%; /* Gris très clair */
-    --secondary-foreground: 0 0% 15%;
+    --secondary: 210 40% 92%; /* Bleu très clair pour secondary */
+    --secondary-foreground: 215 25% 27%;
     
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 16% 47%;
     
-    --accent: 0 0% 94%;
-    --accent-foreground: 0 0% 15%;
+    --accent: 212 50% 85%; /* Bleu clair accent */
+    --accent-foreground: 215 25% 27%;
     
     --destructive: 0 84% 60%; /* Rouge pour erreurs */
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 210 40% 98%;
     
-    --border: 0 0% 88%; /* Gris clair */
-    --input: 0 0% 88%;
-    --ring: 0 0% 20%;
+    --border: 214 32% 91%; /* Bordure bleu clair */
+    --input: 214 32% 91%;
+    --ring: 215 84% 50%;
     
     --radius: 12px;
     
-    /* Gradients simples */
-    --gradient-brand: linear-gradient(135deg, hsl(0 0% 20%), hsl(0 0% 35%));
-    --gradient-subtle: linear-gradient(135deg, hsl(0 0% 98%), hsl(0 0% 94%));
+    /* Gradients bleus */
+    --gradient-brand: linear-gradient(135deg, hsl(215 84% 50%), hsl(212 100% 65%));
+    --gradient-subtle: linear-gradient(135deg, hsl(210 40% 98%), hsl(210 40% 94%));
     
-    /* Ombres douces */
-    --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* Ombres bleues */
+    --shadow-elegant: 0 4px 20px -2px rgba(59, 130, 246, 0.12);
+    --shadow-card: 0 1px 3px 0 rgba(59, 130, 246, 0.08);
+    --shadow-dropdown: 0 10px 25px -3px rgba(59, 130, 246, 0.15), 0 4px 6px -2px rgba(59, 130, 246, 0.08);
 
     /* Sidebar variables */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 0 0% 20%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 0%;
+    --sidebar-background: 210 40% 100%;
+    --sidebar-foreground: 215 25% 27%;
+    --sidebar-primary: 215 84% 50%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 92%;
+    --sidebar-accent-foreground: 215 25% 27%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 215 84% 50%;
   }
 
   .dark {
-    --background: 0 0% 8%; /* Gris très foncé au lieu de noir pur */
-    --foreground: 0 0% 92%; /* Blanc cassé */
+    /* Thème bleu - mode sombre */
+    --background: 215 30% 8%; /* Bleu très foncé */
+    --foreground: 210 40% 92%; /* Bleu très clair pour le texte */
     
-    --card: 0 0% 12%; /* Gris foncé au lieu de très foncé */
-    --card-foreground: 0 0% 92%;
+    --card: 215 28% 12%; /* Bleu foncé pour les cartes */
+    --card-foreground: 210 40% 92%;
     
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 92%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 40% 92%;
     
-    --primary: 0 0% 85%; /* Gris clair pour le mode sombre */
-    --primary-foreground: 0 0% 15%;
+    --primary: 212 100% 65%; /* Bleu clair vif pour primary en mode sombre */
+    --primary-foreground: 215 30% 8%;
     
-    --secondary: 0 0% 18%; /* Gris moins foncé */
-    --secondary-foreground: 0 0% 92%;
+    --secondary: 215 25% 18%; /* Bleu foncé pour secondary */
+    --secondary-foreground: 210 40% 92%;
     
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 215 15% 60%;
     
-    --accent: 0 0% 18%;
-    --accent-foreground: 0 0% 92%;
+    --accent: 215 25% 20%; /* Bleu foncé accent */
+    --accent-foreground: 210 40% 92%;
     
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 92%;
+    --destructive-foreground: 210 40% 92%;
     
-    --border: 0 0% 22%; /* Bordures moins foncées */
-    --input: 0 0% 22%;
-    --ring: 0 0% 85%;
+    --border: 215 20% 22%; /* Bordures bleues foncées */
+    --input: 215 20% 22%;
+    --ring: 212 100% 65%;
     
-    --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
-    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
-    --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    --shadow-elegant: 0 4px 20px -2px rgba(29, 78, 216, 0.25);
+    --shadow-card: 0 1px 3px 0 rgba(29, 78, 216, 0.15);
+    --shadow-dropdown: 0 10px 25px -3px rgba(29, 78, 216, 0.3), 0 4px 6px -2px rgba(29, 78, 216, 0.15);
 
-    --sidebar-background: 0 0% 12%;
-    --sidebar-foreground: 0 0% 92%;
-    --sidebar-primary: 0 0% 85%;
-    --sidebar-primary-foreground: 0 0% 15%;
-    --sidebar-accent: 0 0% 18%;
-    --sidebar-accent-foreground: 0 0% 92%;
-    --sidebar-border: 0 0% 22%;
-    --sidebar-ring: 0 0% 85%;
+    --sidebar-background: 215 28% 12%;
+    --sidebar-foreground: 210 40% 92%;
+    --sidebar-primary: 212 100% 65%;
+    --sidebar-primary-foreground: 215 30% 8%;
+    --sidebar-accent: 215 25% 18%;
+    --sidebar-accent-foreground: 210 40% 92%;
+    --sidebar-border: 215 20% 22%;
+    --sidebar-ring: 212 100% 65%;
   }
 }
 
