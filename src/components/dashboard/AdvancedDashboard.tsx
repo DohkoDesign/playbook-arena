@@ -24,7 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { 
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
+  PieChart, Pie, Cell, AreaChart, Area, ComposedChart
 } from "recharts";
 
 interface AdvancedDashboardProps {
@@ -73,102 +73,67 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
     try {
       setLoading(true);
       
-      // Charger toutes les données en parallèle
-      const [teamRes, membersRes, eventsRes, coachingRes] = await Promise.all([
-        // Informations de l'équipe
-        supabase.from("teams").select("*").eq("id", teamId).single(),
-        
-        // Membres de l'équipe avec leurs profils
-        supabase
-          .from("team_members")
-          .select("*, profiles!inner(pseudo, photo_profil, tracker_last_updated)")
-          .eq("team_id", teamId),
-        
-        // Événements (passés et futurs)
-        supabase
-          .from("events")
-          .select("*")
-          .eq("team_id", teamId)
-          .order("date_debut", { ascending: false }),
-        
-        // Sessions de coaching avec résultats
-        supabase
-          .from("coaching_sessions")
-          .select(`
-            *,
-            events!inner(titre, date_debut, team_id)
-          `)
-          .eq("events.team_id", teamId)
-          .not("resultat", "is", null)
-          .order("created_at", { ascending: false })
-          .limit(10)
-      ]);
+      // DONNÉES FICTIVES - À remplacer plus tard
+      const fakeMembers = [
+        { role: 'joueur', pseudo: 'ProPlayer1' },
+        { role: 'joueur', pseudo: 'FragMaster' },
+        { role: 'capitaine', pseudo: 'TeamLeader' },
+        { role: 'remplacant', pseudo: 'SubPlayer' },
+        { role: 'joueur', pseudo: 'AimBot2000' },
+        { role: 'joueur', pseudo: 'ClutchKing' },
+        { role: 'coach', pseudo: 'MasterCoach' },
+        { role: 'analyste', pseudo: 'DataWizard' }
+      ];
 
-      if (teamRes.error) throw teamRes.error;
+      const fakeEvents = 12; // événements à venir
+      const fakeMatches = 24; // matchs joués
+      const fakeWinRate = 78; // 78% de victoires
 
-      const teamInfo = teamRes.data;
-      const members = membersRes.data || [];
-      const events = eventsRes.data || [];
-      const coachingSessions = coachingRes.data || [];
+      // Répartition des rôles fictive
+      const fakeRoleDistribution = {
+        'joueur': 5,
+        'capitaine': 1,
+        'remplacant': 1,
+        'coach': 1
+      };
 
-      // Calculer les statistiques
-      const now = new Date();
-      const upcomingEvents = events.filter(e => new Date(e.date_debut) > now);
-      const pastEvents = events.filter(e => new Date(e.date_debut) <= now);
-      const matches = pastEvents.filter(e => e.type === 'match');
-      
-      // Calculer le taux de victoire réel basé sur les résultats de coaching_sessions
-      let wins = 0, losses = 0, draws = 0;
-      coachingSessions.forEach(session => {
-        if (session.resultat) {
-          const result = session.resultat.toLowerCase();
-          if (result.includes('victoire') || result.includes('win') || result === 'v') {
-            wins++;
-          } else if (result.includes('défaite') || result.includes('lose') || result.includes('loss') || result === 'd') {
-            losses++;
-          } else if (result.includes('égalité') || result.includes('draw') || result.includes('nul') || result === 'n') {
-            draws++;
-          }
-        }
-      });
-      
-      const totalMatches = wins + losses + draws;
-      const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
-
-      // Répartition des rôles (seulement les joueurs)
-      const playerMembers = members.filter(member => 
-        member.role && ['joueur', 'remplacant', 'capitaine'].includes(member.role)
-      );
-      
-      const roleDistribution = playerMembers.reduce((acc, member) => {
-        const role = member.role || 'joueur';
-        acc[role] = (acc[role] || 0) + 1;
-        return acc;
-      }, {});
-
-      const memberRoles = Object.entries(roleDistribution).map(([role, count]) => ({
+      const memberRoles = Object.entries(fakeRoleDistribution).map(([role, count]) => ({
         name: role,
         value: count as number
       }));
 
-      // Données de performance des 7 derniers matchs
-      const performanceData = generateMatchPerformanceData(coachingSessions.slice(0, 7));
+      // Données de performance fictives (plus impressionnantes)
+      const performanceData = [
+        { match: "Finale ESL", victoires: 3, defaites: 1, egalites: 0, score: 92 },
+        { match: "Semi DreamHack", victoires: 2, defaites: 0, egalites: 1, score: 87 },
+        { match: "Quart IEM", victoires: 2, defaites: 1, egalites: 0, score: 84 },
+        { match: "8e BLAST", victoires: 3, defaites: 0, egalites: 0, score: 95 },
+        { match: "16e Major", victoires: 2, defaites: 2, egalites: 0, score: 76 },
+        { match: "Groupe A", victoires: 2, defaites: 0, egalites: 1, score: 89 },
+        { match: "Qualif", victoires: 3, defaites: 1, egalites: 0, score: 91 }
+      ];
 
-      // Performance récente (basée sur les événements récents)
-      const recentPerformance = generatePerformanceData(pastEvents.slice(0, 7));
+      // Performance récente fictive avec tendance positive
+      const recentPerformance = [
+        { match: "Semaine 1", performance: 72, kills: 89, deaths: 67, assists: 124 },
+        { match: "Semaine 2", performance: 76, kills: 94, deaths: 61, assists: 138 },
+        { match: "Semaine 3", performance: 81, kills: 102, deaths: 58, assists: 145 },
+        { match: "Semaine 4", performance: 78, kills: 87, deaths: 72, assists: 132 },
+        { match: "Semaine 5", performance: 85, kills: 118, deaths: 54, assists: 156 },
+        { match: "Semaine 6", performance: 88, kills: 124, deaths: 49, assists: 167 },
+        { match: "Semaine 7", performance: 92, kills: 134, deaths: 45, assists: 178 }
+      ];
 
       setStats({
-        totalMembers: members.length,
-        activeMembers: members.filter(m => 
-          m.role && ['joueur', 'remplacant', 'capitaine'].includes(m.role)
-        ).length,
-        upcomingEvents: upcomingEvents.length,
-        completedMatches: totalMatches,
-        winRate,
+        totalMembers: fakeMembers.length,
+        activeMembers: 6, // joueurs actifs
+        upcomingEvents: fakeEvents,
+        completedMatches: fakeMatches,
+        winRate: fakeWinRate,
         recentPerformance,
         memberRoles,
         performanceData,
-        teamInfo
+        teamInfo: { nom: "Team Champions", jeu: gameType }
       });
     } catch (error) {
       console.error("Erreur lors du chargement des statistiques avancées:", error);
@@ -318,32 +283,56 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
 
       {/* Graphiques et analyses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Graphique de performances */}
-        <Card className="shadow-elegant">
+        {/* Graphique de performances moderne */}
+        <Card className="shadow-elegant bg-gradient-to-br from-card to-card/50">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5" />
-              <span>Performances des derniers matchs</span>
+              <Trophy className="w-5 h-5 text-yellow-500" />
+              <span>Score de Performance par Match</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64">
+            <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.performanceData}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="match" className="text-sm" />
-                  <YAxis className="text-sm" />
+                <ComposedChart data={stats.performanceData}>
+                  <defs>
+                    <linearGradient id="performanceGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                  <XAxis 
+                    dataKey="match" 
+                    className="text-xs" 
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis domain={[60, 100]} className="text-sm" />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                      backgroundColor: 'hsl(var(--popover))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 30px -10px rgba(0,0,0,0.3)'
                     }}
+                    formatter={(value, name) => [
+                      `${value}${name === 'score' ? '%' : ''}`, 
+                      name === 'score' ? 'Score Performance' : name
+                    ]}
                   />
-                  <Bar dataKey="victoires" fill="hsl(142 76% 36%)" name="Victoires" />
-                  <Bar dataKey="defaites" fill="hsl(0 84% 60%)" name="Défaites" />
-                  <Bar dataKey="egalites" fill="hsl(48 96% 53%)" name="Égalités" />
-                </BarChart>
+                  <Area
+                    type="monotone"
+                    dataKey="score"
+                    stroke="hsl(var(--primary))"
+                    fillOpacity={1}
+                    fill="url(#performanceGradient)"
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6 }}
+                    activeDot={{ r: 8, fill: 'hsl(var(--primary))' }}
+                  />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
@@ -382,42 +371,85 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
         </Card>
       </div>
 
-      {/* Performance récente */}
-      {stats.recentPerformance.length > 0 && (
-        <Card className="shadow-elegant">
+      {/* Statistiques détaillées avec plusieurs métriques */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="shadow-elegant bg-gradient-to-br from-card to-card/50">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5" />
-              <span>Performance récente</span>
+              <Activity className="w-5 h-5 text-green-500" />
+              <span>Évolution Hebdomadaire</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.recentPerformance}>
-                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <AreaChart data={stats.recentPerformance}>
+                  <defs>
+                    <linearGradient id="weeklyGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(142 76% 36%)" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(142 76% 36%)" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
                   <XAxis dataKey="match" className="text-sm" />
-                  <YAxis domain={[0, 100]} className="text-sm" />
+                  <YAxis domain={[60, 100]} className="text-sm" />
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))', 
+                      backgroundColor: 'hsl(var(--popover))', 
                       border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
+                      borderRadius: '12px'
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="performance" 
-                    stroke="hsl(var(--cyan))" 
+                  <Area
+                    type="monotone"
+                    dataKey="performance"
+                    stroke="hsl(142 76% 36%)"
+                    fillOpacity={1}
+                    fill="url(#weeklyGradient)"
                     strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--cyan))', strokeWidth: 2, r: 5 }}
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
-      )}
+
+        <Card className="shadow-elegant">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="w-5 h-5 text-cyan-500" />
+              <span>K/D/A Analysis</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={stats.recentPerformance}>
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
+                  <XAxis dataKey="match" className="text-sm" />
+                  <YAxis className="text-sm" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '12px'
+                    }}
+                  />
+                  <Bar dataKey="kills" fill="hsl(142 76% 36%)" name="Kills" />
+                  <Bar dataKey="deaths" fill="hsl(0 84% 60%)" name="Deaths" />
+                  <Line 
+                    type="monotone" 
+                    dataKey="assists" 
+                    stroke="hsl(48 96% 53%)" 
+                    strokeWidth={3}
+                    name="Assists"
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Actions rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
