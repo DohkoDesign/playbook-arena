@@ -224,12 +224,21 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   });
 
   const handleAddTimestamp = (time: number) => {
-    // Mettre en pause la vidéo
+    // Mettre en pause la vidéo si elle joue encore
     if (youtubePlayer) {
-      youtubePlayer.pauseVideo();
+      const playerState = youtubePlayer.getPlayerState();
+      if (playerState === 1) { // 1 = playing
+        youtubePlayer.pauseVideo();
+      }
+      // Récupérer le temps exact du lecteur au moment du clic
+      const exactTime = youtubePlayer.getCurrentTime();
+      setCurrentPlayerTime(exactTime);
+      setShowMarkerModal(true);
+    } else {
+      // Fallback si le player n'est pas disponible
+      setCurrentPlayerTime(time);
+      setShowMarkerModal(true);
     }
-    setCurrentPlayerTime(time);
-    setShowMarkerModal(true);
   };
 
   const handleSaveMarker = (markerData: any) => {

@@ -335,12 +335,16 @@ export const YouTubePlayer = ({
             </Button>
             <Button
               onClick={() => {
+                // Récupérer le temps actuel exact du lecteur
+                const exactTime = player ? player.getCurrentTime() : currentTime;
+                
                 // Mettre en pause avant d'ouvrir le modal
                 if (player && isPlaying) {
                   player.pauseVideo();
                 }
-                // Utiliser la fonction callback pour ajouter un marqueur
-                onAddTimestamp?.(currentTime);
+                
+                // Utiliser la fonction callback pour ajouter un marqueur avec le temps exact
+                onAddTimestamp?.(exactTime);
               }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
