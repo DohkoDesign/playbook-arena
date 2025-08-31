@@ -147,14 +147,12 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   };
 
   const updateOrganizationLogo = () => {
-    if (organizationLogo) {
-      localStorage.setItem("organization_logo", organizationLogo);
-      
-      toast({
-        title: "Logo mis à jour",
-        description: "Le logo de l'organisation a été modifié",
-      });
-    }
+    localStorage.setItem("organization_logo", organizationLogo);
+    
+    toast({
+      title: "Logo mis à jour",
+      description: organizationLogo ? "Le logo de l'organisation a été modifié" : "Le logo a été supprimé",
+    });
   };
 
   const updateOrganizationName = () => {
