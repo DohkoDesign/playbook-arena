@@ -119,17 +119,23 @@ const Index = () => {
           navigate("/player");
         }
       } else {
-        // Nouvel utilisateur sans équipe - ouvrir la modal de création d'équipe
-        setIsTeamSetupOpen(true);
+        // Nouvel utilisateur sans équipe
+        if (profile?.role === "staff") {
+          // Staff sans équipe -> ouvrir la modal de création d'équipe
+          setIsTeamSetupOpen(true);
+        } else {
+          // Joueur sans équipe -> rester sur la page d'accueil pour rejoindre une équipe
+          console.log("Joueur sans équipe, reste sur la page d'accueil pour rejoindre une équipe");
+        }
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du profil:", error);
-      // En cas d'erreur, ouvrir la modal de création d'équipe pour les staff
+      // En cas d'erreur, ouvrir la modal de création d'équipe pour les staff seulement
       if (profile?.role === "staff") {
         setIsTeamSetupOpen(true);
       } else {
-        // Pour les autres, on les laisse sur la page d'accueil
-        console.log("Utilisateur non configuré, reste sur la page d'accueil");
+        // Pour les joueurs, on les laisse sur la page d'accueil
+        console.log("Utilisateur joueur non configuré, reste sur la page d'accueil pour rejoindre une équipe");
       }
     }
   };
