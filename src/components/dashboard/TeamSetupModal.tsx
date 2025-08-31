@@ -77,20 +77,8 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
 
       console.log("✅ Team created successfully:", data);
 
-      // Ajouter le créateur comme membre de l'équipe avec le rôle de manager
-      console.log("👑 Adding creator as team manager");
-      const { error: memberError } = await supabase
-        .from("team_members")
-        .insert({
-          team_id: data.id,
-          user_id: user.id,
-          role: "manager",
-        });
-
-      if (memberError) {
-        console.error("❌ Error adding team member:", memberError);
-        throw memberError;
-      }
+      // Le créateur est automatiquement ajouté comme propriétaire via un trigger côté base de données
+      console.log("👑 Creator will be added as team owner by DB trigger");
 
       console.log("🎉 Team setup completed successfully");
 
