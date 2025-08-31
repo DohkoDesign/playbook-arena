@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,6 +105,7 @@ export const TeamSetupModal = ({ isOpen, onClose, onTeamCreated }: TeamSetupModa
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Créer votre première équipe</DialogTitle>
+          <DialogDescription>Renseignez le nom et le jeu pour créer votre équipe.</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
