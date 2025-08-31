@@ -5,11 +5,34 @@ import heroBackground from "@/assets/hero-background.jpg";
 export const HeroSection = () => {
   return (
     <section 
-      className="pt-32 pb-20 px-6 relative"
+      className="pt-32 pb-20 px-6 relative overflow-hidden"
       style={{
-        backgroundImage: `linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(59, 130, 246, 0.3) 100%)`,
+        background: `
+          radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(147, 197, 253, 0.2) 0%, transparent 50%),
+          radial-gradient(circle at 40% 60%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
+          linear-gradient(135deg, #0f172a 0%, #1e293b 100%)
+        `,
+        animation: 'pulse 4s ease-in-out infinite alternate'
       }}
     >
+      <div className="absolute inset-0 opacity-30">
+        <div 
+          className="absolute top-10 left-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl animate-pulse"
+        ></div>
+        <div 
+          className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400 rounded-full blur-3xl animate-pulse"
+          style={{
+            animationDelay: '1s'
+          }}
+        ></div>
+        <div 
+          className="absolute top-1/2 left-1/3 w-24 h-24 bg-cyan-500 rounded-full blur-2xl animate-pulse"
+          style={{
+            animationDelay: '2s'
+          }}
+        ></div>
+      </div>
       <div className="container mx-auto text-center max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
