@@ -1,4 +1,3 @@
-import image1 from '../assets/image-1.jpg';
 import image2 from '../assets/image-2.jpg';
 import image4 from '../assets/image-4.jpg';
 import { Button } from './ui/button';
@@ -7,7 +6,7 @@ const features = [
   {
     title: "Dashboard de gestion d'équipe",
     description: "Visualisez en temps réel les performances de votre équipe, gérez les rosters et suivez la progression de chaque joueur avec des tableaux de bord intuitifs.",
-    image: image1,
+    image: "/lovable-uploads/f21d6fe0-f841-4a0d-bbf0-b0e784c907ed.png",
     highlights: ["Gestion des rosters", "Statistiques en temps réel", "Vue d'ensemble complète"]
   },
   {
