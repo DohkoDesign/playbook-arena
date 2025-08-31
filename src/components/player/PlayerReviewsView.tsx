@@ -48,11 +48,12 @@ export const PlayerReviewsView = ({ teamId, playerId }: PlayerReviewsViewProps) 
         .from("coaching_sessions")
         .select(`
           *,
-          events (
+          events!inner (
             titre,
             date_debut,
             type,
-            map_name
+            map_name,
+            team_id
           )
         `)
         .eq("events.team_id", teamId)

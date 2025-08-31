@@ -105,11 +105,12 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
           event_id,
           vods,
           created_at,
-          events:event_id (
+          events!inner (
             titre,
             type,
             date_debut,
-            map_name
+            map_name,
+            team_id
           )
         `)
         .eq("events.team_id", teamId)
