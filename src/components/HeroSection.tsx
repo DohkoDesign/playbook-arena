@@ -7,32 +7,48 @@ export const HeroSection = () => {
     <section 
       className="pt-32 pb-20 px-6 relative overflow-hidden"
       style={{
-        background: `
-          radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 80% 80%, rgba(147, 197, 253, 0.2) 0%, transparent 50%),
-          radial-gradient(circle at 40% 60%, rgba(29, 78, 216, 0.15) 0%, transparent 50%),
-          linear-gradient(135deg, #0f172a 0%, #1e293b 100%)
-        `,
-        animation: 'pulse 4s ease-in-out infinite alternate'
+        background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`
       }}
     >
-      <div className="absolute inset-0 opacity-30">
+      <div className="absolute inset-0">
         <div 
-          className="absolute top-10 left-10 w-32 h-32 bg-blue-500 rounded-full blur-3xl animate-pulse"
-        ></div>
-        <div 
-          className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400 rounded-full blur-3xl animate-pulse"
+          className="absolute top-10 left-10 w-32 h-32 bg-blue-500/30 rounded-full blur-3xl"
           style={{
-            animationDelay: '1s'
+            animation: 'moveFloat1 12s ease-in-out infinite'
           }}
         ></div>
         <div 
-          className="absolute top-1/2 left-1/3 w-24 h-24 bg-cyan-500 rounded-full blur-2xl animate-pulse"
+          className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400/20 rounded-full blur-3xl"
           style={{
-            animationDelay: '2s'
+            animation: 'moveFloat2 15s ease-in-out infinite'
+          }}
+        ></div>
+        <div 
+          className="absolute top-1/2 left-1/3 w-24 h-24 bg-cyan-500/25 rounded-full blur-2xl"
+          style={{
+            animation: 'moveFloat3 10s ease-in-out infinite'
           }}
         ></div>
       </div>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes moveFloat1 {
+            0%, 100% { transform: translate(0px, 0px); }
+            25% { transform: translate(30px, -20px); }
+            50% { transform: translate(-15px, -40px); }
+            75% { transform: translate(20px, -10px); }
+          }
+          @keyframes moveFloat2 {
+            0%, 100% { transform: translate(0px, 0px); }
+            33% { transform: translate(-25px, 15px); }
+            66% { transform: translate(10px, -25px); }
+          }
+          @keyframes moveFloat3 {
+            0%, 100% { transform: translate(0px, 0px); }
+            50% { transform: translate(40px, 30px); }
+          }
+        `
+      }} />
       <div className="container mx-auto text-center max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
