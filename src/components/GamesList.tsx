@@ -28,14 +28,15 @@ export const GamesList = () => {
           {POPULAR_GAMES.map((game, index) => (
             <div 
               key={game.name}
-              className="relative h-80 rounded-lg overflow-hidden cursor-pointer group transition-transform hover:scale-105"
+              className="relative h-80 rounded-lg overflow-hidden cursor-pointer group transition-all duration-300 hover:scale-105"
               style={{ 
-                backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6)), url(${game.image})`,
+                backgroundImage: `url(${game.image})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 animationDelay: `${index * 50}ms`
               }}
             >
+              <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60 group-hover:from-black/20 group-hover:to-black/40 transition-all duration-300" />
               <div className="absolute inset-0 flex items-end p-4">
                 <h3 className="font-semibold text-white text-sm leading-tight">{game.name}</h3>
               </div>
