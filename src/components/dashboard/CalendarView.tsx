@@ -100,6 +100,7 @@ export const CalendarView = ({ teamId, gameType, isPlayerView = false }: Calenda
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
+  const [selectedDateForEvent, setSelectedDateForEvent] = useState<Date | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -132,6 +133,13 @@ export const CalendarView = ({ teamId, gameType, isPlayerView = false }: Calenda
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
     setShowEventDetails(true);
+  };
+
+  const handleDayClick = (date: Date) => {
+    if (!isPlayerView && teamId) {
+      setSelectedDateForEvent(date);
+      setShowEventModal(true);
+    }
   };
 
   const generateCalendarDays = () => {
@@ -269,13 +277,15 @@ export const CalendarView = ({ teamId, gameType, isPlayerView = false }: Calenda
                 <div
                   key={index}
                   className={`
-                    min-h-[100px] p-2 rounded-lg border transition-all duration-200 hover:bg-accent/50
+                    min-h-[100px] p-2 rounded-lg border transition-all duration-200 hover:bg-accent/50 cursor-pointer
                     ${isCurrentDay 
                       ? 'bg-primary/10 border-primary/30' 
                       : 'border-border/30 hover:border-border/60'
                     }
                     ${!isInCurrentMonth ? 'opacity-30' : ''}
+                    ${!isPlayerView && isInCurrentMonth ? 'hover:shadow-sm' : ''}
                   `}
+                  onClick={() => handleDayClick(date)}
                 >
                   <div className={`
                     text-sm font-medium mb-1
@@ -289,11 +299,14 @@ export const CalendarView = ({ teamId, gameType, isPlayerView = false }: Calenda
                       <div
                         key={event.id}
                         className={`
-                          text-xs px-2 py-1 rounded-md border truncate cursor-pointer hover:opacity-80 transition-opacity
+                          text-xs px-2 py-1 rounded-md border truncate cursor-pointer hover:opacity-80 transition-opacity z-10 relative
                           ${getEventTypeColor(event.type)}
                         `}
                         title={`${event.titre} - ${event.type}${event.map_name ? ` - ${event.map_name}` : ''}`}
-                        onClick={() => handleEventClick(event)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEventClick(event);
+                        }}
                       >
                         <div className="flex items-center space-x-1">
                           <span className="text-xs">
@@ -332,12 +345,17 @@ export const CalendarView = ({ teamId, gameType, isPlayerView = false }: Calenda
       {showEventModal && teamId && (
         <EventModal
           isOpen={showEventModal}
-          onClose={() => setShowEventModal(false)}
+          onClose={() => {
+            setShowEventModal(false);
+            setSelectedDateForEvent(null);
+          }}
           teamId={teamId}
           gameType={gameType}
+          selectedDate={selectedDateForEvent}
           onEventCreated={() => {
             fetchEvents();
             setShowEventModal(false);
+            setSelectedDateForEvent(null);
           }}
         />
       )}

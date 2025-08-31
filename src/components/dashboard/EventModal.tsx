@@ -20,16 +20,17 @@ interface EventModalProps {
   onClose: () => void;
   teamId: string;
   gameType?: string;
+  selectedDate?: Date | null;
   onEventCreated: () => void;
 }
 
 const QUICK_TEMPLATES = [
   {
-    id: "match_ranked",
-    name: "Match Ranked",
-    type: "match",
+    id: "tournament",
+    name: "Tournoi",
+    type: "tournoi",
     duration: 90,
-    description: "Match en équipe classé",
+    description: "Participation à un tournoi",
     icon: Trophy,
     color: "bg-green-500"
   },
@@ -53,13 +54,13 @@ const QUICK_TEMPLATES = [
   },
 ];
 
-export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }: EventModalProps) => {
+export const EventModal = ({ isOpen, onClose, teamId, gameType, selectedDate: initialSelectedDate, onEventCreated }: EventModalProps) => {
   const [showTemplates, setShowTemplates] = useState(true);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
   const [mapName, setMapName] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialSelectedDate || new Date());
   const [startTime, setStartTime] = useState("");
   const [duration, setDuration] = useState(60);
   const [loading, setLoading] = useState(false);
@@ -92,21 +93,27 @@ export const EventModal = ({ isOpen, onClose, teamId, gameType, onEventCreated }
   };
 
   const handleTemplateSelect = (template: typeof QUICK_TEMPLATES[0]) => {
-    const now = new Date();
-    const startTime = new Date(now);
+    // Utiliser la date sélectionnée depuis le calendrier ou une suggestion intelligente
+    const targetDate = initialSelectedDate ? new Date(initialSelectedDate) : new Date();
     
-    // Si c'est avant 18h, proposer ce soir à 20h, sinon demain soir
-    if (now.getHours() < 18) {
-      startTime.setHours(20, 0, 0, 0);
+    // Si pas de date initiale, appliquer la logique intelligente
+    if (!initialSelectedDate) {
+      const now = new Date();
+      if (now.getHours() < 18) {
+        targetDate.setHours(20, 0, 0, 0);
+      } else {
+        targetDate.setDate(targetDate.getDate() + 1);
+        targetDate.setHours(20, 0, 0, 0);
+      }
     } else {
-      startTime.setDate(startTime.getDate() + 1);
-      startTime.setHours(20, 0, 0, 0);
+      // Si date fournie depuis le calendrier, proposer 20h sur cette date
+      targetDate.setHours(20, 0, 0, 0);
     }
     
     setTitle(template.name);
     setType(template.type);
     setDescription(template.description);
-    setSelectedDate(startTime);
+    setSelectedDate(targetDate);
     setStartTime("20:00");
     setDuration(template.duration);
     setShowTemplates(false);
