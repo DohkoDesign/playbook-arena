@@ -12,7 +12,7 @@ const features = [
   {
     title: "Système de coaching avancé",
     description: "Analysez les replays, planifiez vos stratégies et communiquez efficacement avec vos joueurs grâce à nos outils de coaching professionnels.",
-    image: image2,
+    image: "/lovable-uploads/4009f6f4-ef29-44d5-822c-191a4d88642b.png",
     highlights: ["Analyse de replays", "Plans stratégiques", "Feedback détaillé"]
   },
   {
