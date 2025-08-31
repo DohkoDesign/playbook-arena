@@ -272,10 +272,9 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
       </div>
 
       <Tabs defaultValue="teams" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="teams">Équipes</TabsTrigger>
           <TabsTrigger value="members">Membres</TabsTrigger>
-          <TabsTrigger value="appearance">Apparence</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
           <TabsTrigger value="danger">Zone de danger</TabsTrigger>
         </TabsList>
@@ -453,99 +452,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
           />
         </TabsContent>
 
-        <TabsContent value="appearance" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Paintbrush className="w-5 h-5" />
-                <span>Couleurs du site</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="primary-color">Couleur principale</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="color"
-                      id="primary-color"
-                      value={hslToHex(colors.primary)}
-                      onChange={(e) => setColors({...colors, primary: hexToHsl(e.target.value)})}
-                      className="w-12 h-10 rounded border"
-                    />
-                    <Input
-                      value={colors.primary}
-                      onChange={(e) => setColors({...colors, primary: e.target.value})}
-                      placeholder="220 38% 57%"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="secondary-color">Couleur secondaire</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="color"
-                      id="secondary-color"
-                      value={hslToHex(colors.secondary)}
-                      onChange={(e) => setColors({...colors, secondary: hexToHsl(e.target.value)})}
-                      className="w-12 h-10 rounded border"
-                    />
-                    <Input
-                      value={colors.secondary}
-                      onChange={(e) => setColors({...colors, secondary: e.target.value})}
-                      placeholder="142 76% 36%"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="accent-color">Couleur d'accent</Label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="color"
-                      id="accent-color"
-                      value={hslToHex(colors.accent)}
-                      onChange={(e) => setColors({...colors, accent: hexToHsl(e.target.value)})}
-                      className="w-12 h-10 rounded border"
-                    />
-                    <Input
-                      value={colors.accent}
-                      onChange={(e) => setColors({...colors, accent: e.target.value})}
-                      placeholder="262 83% 58%"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6 p-4 border rounded-lg">
-                <h4 className="font-medium mb-2">Aperçu des couleurs:</h4>
-                <div className="flex space-x-4">
-                  <div 
-                    className="w-12 h-12 rounded border-2 border-border"
-                    style={{ backgroundColor: `hsl(${colors.primary})` }}
-                    title="Couleur principale"
-                  ></div>
-                  <div 
-                    className="w-12 h-12 rounded border-2 border-border"
-                    style={{ backgroundColor: `hsl(${colors.secondary})` }}
-                    title="Couleur secondaire"
-                  ></div>
-                  <div 
-                    className="w-12 h-12 rounded border-2 border-border"
-                    style={{ backgroundColor: `hsl(${colors.accent})` }}
-                    title="Couleur d'accent"
-                  ></div>
-                </div>
-              </div>
-              
-              <Button onClick={saveColors} className="w-full">
-                <Palette className="w-4 h-4 mr-2" />
-                Appliquer les couleurs
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
 
         <TabsContent value="advanced" className="space-y-6 mt-6">
