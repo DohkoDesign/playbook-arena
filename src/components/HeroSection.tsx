@@ -1,9 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
+import heroBackground from "@/assets/hero-background.jpg";
 
 export const HeroSection = () => {
   return (
-    <section className="pt-32 pb-20 px-6">
+    <section 
+      className="pt-32 pb-20 px-6 relative"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url(${heroBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="container mx-auto text-center max-w-4xl">
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
