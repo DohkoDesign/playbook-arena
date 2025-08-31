@@ -482,6 +482,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          team_id: string | null
           timestamps: Json | null
           updated_at: string
           vod_id: string
@@ -491,6 +492,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          team_id?: string | null
           timestamps?: Json | null
           updated_at?: string
           vod_id: string
@@ -500,6 +502,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
+          team_id?: string | null
           timestamps?: Json | null
           updated_at?: string
           vod_id?: string

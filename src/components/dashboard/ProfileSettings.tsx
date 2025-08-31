@@ -5,10 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { User as SupabaseUser } from "@supabase/supabase-js";
-import { Loader2, Upload, User, Mail, Lock, BarChart3 } from "lucide-react";
+import { Loader2, User, Mail, Lock, BarChart3 } from "lucide-react";
 import { TrackerSettings } from "../player/TrackerSettings";
 
 interface ProfileSettingsProps {
@@ -25,7 +25,6 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
   const [userProfile, setUserProfile] = useState<any>(null);
   const [teamData, setTeamData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -88,51 +87,29 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
     }
   };
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!event.target.files || event.target.files.length === 0 || !user) {
-      return;
-    }
 
-    const file = event.target.files[0];
-    setUploading(true);
+  const handleAvatarChange = async (imageData: string) => {
+    if (!user) return;
+    
+    setAvatarUrl(imageData);
 
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const result = e.target?.result as string;
-        setAvatarUrl(result); // Image en base64 pour usage local
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ photo_profil: imageData })
+        .eq("user_id", user.id);
 
-        // Mettre à jour le profil avec la nouvelle photo (base64)
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({ photo_profil: result })
-          .eq("user_id", user.id);
+      if (updateError) throw updateError;
 
-        if (updateError) throw updateError;
+      toast({
+        title: "Photo mise à jour",
+        description: "Votre photo de profil a été mise à jour",
+      });
 
-        setUploading(false);
-        toast({
-          title: "Photo mise à jour",
-          description: "Votre photo de profil a été mise à jour localement",
-        });
-
-        if (onProfileUpdate) {
-          onProfileUpdate();
-        }
-      };
-      
-      reader.onerror = () => {
-        setUploading(false);
-        toast({
-          title: "Erreur",
-          description: "Erreur lors de la lecture du fichier",
-          variant: "destructive",
-        });
-      };
-      
-      reader.readAsDataURL(file);
+      if (onProfileUpdate) {
+        onProfileUpdate();
+      }
     } catch (error: any) {
-      setUploading(false);
       toast({
         title: "Erreur",
         description: error.message,
@@ -308,38 +285,13 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
               <CardTitle className="text-lg">Photo de profil</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center space-x-6">
-                <Avatar className="w-20 h-20">
-                  <AvatarImage src={avatarUrl} />
-                  <AvatarFallback className="text-lg">
-                    {(user?.user_metadata?.pseudo || user?.email)?.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Label htmlFor="avatar-upload" className="cursor-pointer">
-                    <Button variant="outline" disabled={uploading} asChild>
-                      <span>
-                        {uploading ? (
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                          <Upload className="w-4 h-4 mr-2" />
-                        )}
-                        Changer
-                      </span>
-                    </Button>
-                  </Label>
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    className="hidden"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    JPG, PNG jusqu'à 2MB
-                  </p>
-                </div>
-              </div>
+              <ImageUpload
+                onImageSelect={handleAvatarChange}
+                currentImage={avatarUrl}
+                variant="avatar"
+                size="lg"
+                placeholder="Photo de profil"
+              />
             </CardContent>
           </Card>
 
