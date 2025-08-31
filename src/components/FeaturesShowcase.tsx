@@ -1,6 +1,5 @@
 import image1 from '../assets/image-1.jpg';
 import image2 from '../assets/image-2.jpg';
-import image3 from '../assets/image-3.jpg';
 import image4 from '../assets/image-4.jpg';
 import { Button } from './ui/button';
 
@@ -16,12 +15,6 @@ const features = [
     description: "Analysez les replays, planifiez vos stratégies et communiquez efficacement avec vos joueurs grâce à nos outils de coaching professionnels.",
     image: image2,
     highlights: ["Analyse de replays", "Plans stratégiques", "Feedback détaillé"]
-  },
-  {
-    title: "Analytics et performances",
-    description: "Découvrez les forces et faiblesses de votre équipe avec des analyses approfondies et des métriques détaillées pour chaque joueur et match.",
-    image: image3,
-    highlights: ["Métriques détaillées", "Comparaisons", "Rapports personnalisés"]
   },
   {
     title: "Système de coaching avancé",
