@@ -33,9 +33,12 @@ const Index = () => {
         
         // Vérifier automatiquement l'état de l'équipe après connexion
         if (session?.user && event === 'SIGNED_IN') {
-          setTimeout(() => {
-            checkUserTeamsAndRedirect(session.user);
-          }, 100);
+          // Si il y a un token d'invitation, laisser handleInvitationJoin gérer
+          if (!token) {
+            setTimeout(() => {
+              checkUserTeamsAndRedirect(session.user);
+            }, 100);
+          }
         }
       }
     );
@@ -46,7 +49,7 @@ const Index = () => {
       setUser(session?.user ?? null);
       
       // Vérifier l'état de l'équipe si l'utilisateur est déjà connecté
-      if (session?.user) {
+      if (session?.user && !token) {
         checkUserTeamsAndRedirect(session.user);
       }
     });
@@ -59,8 +62,78 @@ const Index = () => {
     if (token && !user) {
       // Ouvrir la modal d'inscription joueur si il y a un token et pas d'utilisateur connecté
       setIsPlayerInviteOpen(true);
+    } else if (token && user) {
+      // Utilisateur connecté avec un token - traiter l'invitation automatiquement
+      handleInvitationJoin(token, user);
     }
   }, [token, user]);
+
+  const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
+    try {
+      console.log("🔗 Traitement invitation automatique pour:", currentUser.id);
+      
+      // Vérifier l'invitation
+      const { data: invitation, error: inviteError } = await supabase
+        .from("invitations")
+        .select("team_id, role, expires_at")
+        .eq("token", inviteToken)
+        .is("used_at", null)
+        .single();
+
+      if (inviteError || !invitation) {
+        throw new Error("Invitation invalide ou expirée");
+      }
+
+      // Vérifier si l'invitation n'est pas expirée
+      if (new Date(invitation.expires_at) < new Date()) {
+        throw new Error("Cette invitation a expiré");
+      }
+
+      // Vérifier si l'utilisateur n'est pas déjà membre de l'équipe
+      const { data: existingMember } = await supabase
+        .from("team_members")
+        .select("id")
+        .eq("team_id", invitation.team_id)
+        .eq("user_id", currentUser.id)
+        .single();
+
+      if (existingMember) {
+        console.log("✅ Utilisateur déjà membre, redirection vers player");
+        navigate("/player");
+        return;
+      }
+
+      // Ajouter le membre à l'équipe
+      const { error: memberError } = await supabase
+        .from("team_members")
+        .insert({
+          team_id: invitation.team_id,
+          user_id: currentUser.id,
+          role: invitation.role,
+        });
+
+      if (memberError) throw memberError;
+
+      // Marquer l'invitation comme utilisée
+      await supabase
+        .from("invitations")
+        .update({
+          used_at: new Date().toISOString(),
+          used_by: currentUser.id,
+        })
+        .eq("token", inviteToken);
+
+      console.log("✅ Invitation traitée avec succès");
+      
+      // Rediriger vers l'interface joueur
+      navigate("/player");
+      
+    } catch (error: any) {
+      console.error("Erreur lors du traitement de l'invitation:", error);
+      // En cas d'erreur, rediriger selon le rôle de l'utilisateur
+      checkUserTeamsAndRedirect(currentUser);
+    }
+  };
 
   const handleSignupSuccess = () => {
     setIsSignupOpen(false);

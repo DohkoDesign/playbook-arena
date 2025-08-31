@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,37 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
   const [waitingForVerification, setWaitingForVerification] = useState(false);
   const { toast } = useToast();
   const { token } = useParams();
+
+  // Écouter les changements d'état d'authentification
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        // Si l'utilisateur se connecte avec succès après validation email
+        if (event === 'SIGNED_IN' && session?.user && waitingForVerification) {
+          console.log("✅ Email validé, utilisateur connecté");
+          
+          // Vérifier si l'utilisateur a maintenant un profil player
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .single();
+            
+          if (profile?.role === "player") {
+            // Fermer la modal et rediriger
+            setWaitingForVerification(false);
+            toast({
+              title: "Compte validé !",
+              description: "Bienvenue dans l'équipe !",
+            });
+            onPlayerAdded();
+          }
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [waitingForVerification, onPlayerAdded, toast]);
 
   const handlePlayerSignup = async (e: React.FormEvent) => {
     e.preventDefault();
