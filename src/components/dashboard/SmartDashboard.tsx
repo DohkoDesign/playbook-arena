@@ -47,7 +47,7 @@ export const SmartDashboard = ({ teamId, gameType, isStaff = true, onViewChange 
           .from("events")
           .select("*")
           .eq("team_id", teamId)
-          .gte("date", new Date().toISOString())
+          .gte("date_debut", new Date().toISOString())
           .limit(5),
         
         // Membres de l'équipe (seulement les joueurs actifs)

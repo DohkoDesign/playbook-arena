@@ -56,7 +56,7 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
 
       // Récupérer les données pour personnaliser le menu
       const [eventsRes, membersRes, strategiesRes] = await Promise.all([
-        supabase.from("events").select("*").eq("team_id", teamId).gte("date", new Date().toISOString()),
+        supabase.from("events").select("*").eq("team_id", teamId).gte("date_debut", new Date().toISOString()),
         supabase.from("team_members").select("*").eq("team_id", teamId),
         supabase.from("strategies").select("*").eq("team_id", teamId)
       ]);
