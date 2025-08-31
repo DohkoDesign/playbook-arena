@@ -6,13 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Settings, Upload, Palette, Trash2, Save, Plus, Edit,
-  Building, Users, Trophy, Paintbrush, UserCog
+  Building, Users, Trophy, Paintbrush, UserCog, Link
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getGameConfig } from "@/data/gameConfigs";
 import { DeleteTeamModal } from "./DeleteTeamModal";
 import { TeamMembersManager } from "./TeamMembersManager";
+import { ImageUploadLocal } from "@/components/ui/image-upload-local";
 
 interface TeamSettingsViewProps {
   teamId: string;
@@ -146,12 +147,14 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   };
 
   const updateOrganizationLogo = () => {
-    localStorage.setItem("organization_logo", organizationLogo);
-    
-    toast({
-      title: "Logo mis à jour",
-      description: "Le logo de l'organisation a été modifié",
-    });
+    if (organizationLogo) {
+      localStorage.setItem("organization_logo", organizationLogo);
+      
+      toast({
+        title: "Logo mis à jour",
+        description: "Le logo de l'organisation a été modifié",
+      });
+    }
   };
 
   const updateOrganizationName = () => {
@@ -308,36 +311,68 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
               </div>
               
               {/* Logo de l'organisation */}
-              <div className="flex items-center space-x-4">
-                {organizationLogo ? (
-                  <img 
-                    src={organizationLogo} 
-                    alt="Logo de l'organisation" 
-                    className="w-16 h-16 rounded-lg object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center text-primary-foreground font-bold text-xl">
-                    {organizationName.charAt(0).toUpperCase()}
-                  </div>
-                )}
+              <div className="space-y-4">
+                <Label>Logo de l'organisation</Label>
                 
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="orgLogo">URL du logo de l'organisation</Label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="orgLogo"
-                      type="url"
-                      placeholder="https://example.com/logo.png"
-                      value={organizationLogo}
-                      onChange={(e) => setOrganizationLogo(e.target.value)}
+                <div className="flex items-start space-x-4">
+                  {organizationLogo ? (
+                    <img 
+                      src={organizationLogo} 
+                      alt="Logo de l'organisation" 
+                      className="w-16 h-16 rounded-lg object-cover border"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
-                    <Button onClick={updateOrganizationLogo}>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Sauvegarder
-                    </Button>
+                  ) : (
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary-glow rounded-lg flex items-center justify-center text-primary-foreground font-bold text-xl border">
+                      {organizationName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  
+                  <div className="flex-1 space-y-3">
+                    {/* URL Input */}
+                    <div className="space-y-2">
+                      <Label htmlFor="orgLogo" className="flex items-center gap-2">
+                        <Link className="w-4 h-4" />
+                        URL du logo
+                      </Label>
+                      <div className="flex space-x-2">
+                        <Input
+                          id="orgLogo"
+                          type="url"
+                          placeholder="https://example.com/logo.png"
+                          value={organizationLogo}
+                          onChange={(e) => setOrganizationLogo(e.target.value)}
+                        />
+                        <Button onClick={updateOrganizationLogo} variant="outline">
+                          <Save className="w-4 h-4 mr-2" />
+                          Appliquer
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Séparateur */}
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-1 border-t border-border"></div>
+                      <span className="text-xs text-muted-foreground">OU</span>
+                      <div className="flex-1 border-t border-border"></div>
+                    </div>
+                    
+                    {/* Upload Local */}
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        Upload depuis votre ordinateur
+                      </Label>
+                      <ImageUploadLocal
+                        onImageUploaded={(url) => {
+                          setOrganizationLogo(url);
+                          updateOrganizationLogo();
+                        }}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
