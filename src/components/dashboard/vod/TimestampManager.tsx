@@ -38,11 +38,11 @@ interface TimestampManagerProps {
 }
 
 const timestampTypes = {
-  important: { icon: Clock, color: "bg-gray-100 text-gray-800", label: "Important" },
+  important: { icon: Clock, color: "bg-blue-100 text-blue-800", label: "Important" },
   error: { icon: AlertTriangle, color: "bg-red-100 text-red-800", label: "Erreur" },
   success: { icon: CheckCircle, color: "bg-green-100 text-green-800", label: "Bon play" },
-  strategy: { icon: Target, color: "bg-gray-100 text-gray-800", label: "Stratégie" },
-  "player-specific": { icon: User, color: "bg-gray-100 text-gray-800", label: "Joueur spécifique" }
+  strategy: { icon: Target, color: "bg-purple-100 text-purple-800", label: "Stratégie" },
+  "player-specific": { icon: User, color: "bg-orange-100 text-orange-800", label: "Joueur spécifique" }
 };
 
 export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJumpToTime }: TimestampManagerProps) => {
@@ -401,7 +401,7 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
                   <div className="flex items-start space-x-4">
                     {/* Timeline marker */}
                     <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center border-2 border-primary/20">
                         <IconComponent className="w-5 h-5 text-primary" />
                       </div>
                     </div>
@@ -434,7 +434,7 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
                         )}
                       </div>
 
-                      <p className="text-sm text-gray-700 mb-2">
+                      <p className="text-sm text-foreground mb-2">
                         {timestamp.comment}
                       </p>
 
@@ -473,14 +473,14 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
 
       {/* Résumé rapide */}
       {timestamps.length > 0 && (
-        <Card className="bg-black border-gray-700">
+        <Card className="bg-primary/5 border-primary/20">
           <CardContent className="p-4">
-            <h4 className="font-medium mb-2 text-white">Résumé de l'analyse</h4>
+            <h4 className="font-medium mb-2 text-foreground">Résumé de l'analyse</h4>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
               {Object.entries(timestampTypes).map(([type, config]) => {
                 const count = timestamps.filter(ts => ts.type === type).length;
                 return (
-                  <div key={type} className="flex items-center space-x-2 text-gray-300">
+                  <div key={type} className="flex items-center space-x-2 text-muted-foreground">
                     <config.icon className="w-4 h-4" />
                     <span>{config.label}: {count}</span>
                   </div>

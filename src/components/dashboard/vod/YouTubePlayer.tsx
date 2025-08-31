@@ -13,15 +13,33 @@ import {
   Settings
 } from "lucide-react";
 
+interface Timestamp {
+  id: string;
+  time: number;
+  comment: string;
+  type: "important" | "error" | "success" | "strategy" | "player-specific";
+  player?: string;
+  category?: string;
+  created_at: string;
+}
+
 interface YouTubePlayerProps {
   videoId: string;
   onTimeUpdate?: (time: number) => void;
   onReady?: () => void;
   onAddTimestamp?: (time: number) => void;
   onSeekTo?: (time: number) => void;
+  timestamps?: Timestamp[];
 }
 
-export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, onSeekTo }: YouTubePlayerProps) => {
+export const YouTubePlayer = ({ 
+  videoId, 
+  onTimeUpdate, 
+  onReady, 
+  onAddTimestamp, 
+  onSeekTo,
+  timestamps = []
+}: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -154,7 +172,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
 
   if (!videoId) {
     return (
-      <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
+      <div className="w-full h-96 bg-muted rounded-lg flex items-center justify-center">
         <p className="text-muted-foreground">Aucune vidéo sélectionnée</p>
       </div>
     );
@@ -174,17 +192,40 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
       </div>
 
       {/* Contrôles personnalisés */}
-      <div className="space-y-4 p-4 bg-black rounded-lg border border-gray-700">
-        {/* Timeline */}
+      <div className="space-y-4 p-4 bg-card rounded-lg border">
+        {/* Timeline avec markers */}
         <div className="space-y-2">
-          <Slider
-            value={[currentTime]}
-            max={duration}
-            step={1}
-            onValueChange={(value) => seekTo(value[0])}
-            className="w-full"
-          />
-          <div className="flex justify-between text-sm text-gray-300">
+          <div className="relative">
+            <Slider
+              value={[currentTime]}
+              max={duration}
+              step={1}
+              onValueChange={(value) => seekTo(value[0])}
+              className="w-full"
+            />
+            {/* Markers dans la timeline */}
+            {timestamps.map((timestamp) => {
+              const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
+              const markerColors = {
+                important: "bg-blue-500",
+                error: "bg-red-500", 
+                success: "bg-green-500",
+                strategy: "bg-purple-500",
+                "player-specific": "bg-orange-500"
+              };
+              
+              return (
+                <div
+                  key={timestamp.id}
+                  className={`absolute top-1/2 transform -translate-y-1/2 w-1 h-6 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-110 transition-transform z-10 shadow-lg`}
+                  style={{ left: `${position}%` }}
+                  onClick={() => seekTo(timestamp.time)}
+                  title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
+                />
+              );
+            })}
+          </div>
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -194,28 +235,25 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={skipBackward}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               <SkipBack className="w-4 h-4" />
             </Button>
             
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={togglePlayPause}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
 
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={skipForward}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               <SkipForward className="w-4 h-4" />
             </Button>
@@ -227,7 +265,6 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="ghost"
               size="sm"
               onClick={toggleMute}
-              className="text-gray-300 hover:text-white hover:bg-gray-700"
             >
               {isMuted || volume === 0 ? 
                 <VolumeX className="w-4 h-4" /> : 
@@ -251,11 +288,7 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
                 variant={playbackRate === rate ? "default" : "ghost"}
                 size="sm"
                 onClick={() => changePlaybackRate(rate)}
-                className={`text-xs px-2 ${
-                  playbackRate === rate 
-                    ? "bg-primary text-primary-foreground" 
-                    : "text-gray-300 hover:text-white hover:bg-gray-700"
-                }`}
+                className="text-xs px-2"
               >
                 {rate}x
               </Button>
@@ -267,21 +300,19 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
             variant="ghost"
             size="sm"
             onClick={toggleFullscreen}
-            className="text-gray-300 hover:text-white hover:bg-gray-700"
           >
             <Maximize className="w-4 h-4" />
           </Button>
         </div>
 
         {/* Actions rapides pour le coaching */}
-        <div className="border-t border-gray-700 pt-4">
+        <div className="border-t pt-4">
           <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-300">Actions rapides:</span>
+            <span className="text-sm font-medium text-muted-foreground">Actions rapides:</span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 5))}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               -5s
             </Button>
@@ -289,7 +320,6 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.max(0, currentTime - 15))}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               -15s
             </Button>
@@ -297,20 +327,17 @@ export const YouTubePlayer = ({ videoId, onTimeUpdate, onReady, onAddTimestamp, 
               variant="outline"
               size="sm"
               onClick={() => seekTo(Math.min(duration, currentTime + 15))}
-              className="bg-black border-gray-600 text-white hover:bg-gray-800"
             >
               +15s
             </Button>
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => {
                 // Utiliser la fonction callback pour ajouter un marqueur
                 onAddTimestamp?.(currentTime);
               }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
-              📍 Marquer
+              📍 Ajouter Marker
             </Button>
           </div>
         </div>

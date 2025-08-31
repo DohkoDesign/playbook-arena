@@ -33,10 +33,21 @@ import { TimestampManager } from "./vod/TimestampManager";
 import { CoachingNotes } from "./vod/CoachingNotes";
 import { VODFilters } from "./vod/VODFilters";
 import { VODShare } from "./vod/VODShare";
+import { MarkerModal } from "./vod/MarkerModal";
 
 interface VODReviewViewProps {
   teamId: string;
   gameType: string;
+}
+
+interface Timestamp {
+  id: string;
+  time: number;
+  comment: string;
+  type: "important" | "error" | "success" | "strategy" | "player-specific";
+  player?: string;
+  category?: string;
+  created_at: string;
 }
 
 interface VODSession {
@@ -57,7 +68,7 @@ interface ReviewSession {
   vod_id: string;
   coach_id: string;
   notes: string;
-  timestamps: any[];
+  timestamps: Timestamp[];
   created_at?: string;
   updated_at?: string;
 }
@@ -75,8 +86,10 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   });
   const [loading, setLoading] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
+  const [showMarkerModal, setShowMarkerModal] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -209,7 +222,29 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     return true;
   });
 
-  const [playerRef, setPlayerRef] = useState<any>(null);
+  const handleAddTimestamp = (time: number) => {
+    setCurrentPlayerTime(time);
+    setShowMarkerModal(true);
+  };
+
+  const handleSaveMarker = (markerData: any) => {
+    const timestamp: Timestamp = {
+      id: Date.now().toString(),
+      time: markerData.time,
+      comment: `${markerData.title}: ${markerData.description}`,
+      type: markerData.type,
+      player: markerData.player,
+      category: markerData.category,
+      created_at: new Date().toISOString()
+    };
+
+    if (currentReview) {
+      const updatedTimestamps = [...(currentReview.timestamps || []), timestamp].sort((a, b) => a.time - b.time);
+      const updated = { ...currentReview, timestamps: updatedTimestamps };
+      setCurrentReview(updated);
+      saveReviewSession({ timestamps: updatedTimestamps });
+    }
+  };
   const getCurrentVOD = () => {
     if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
     return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
@@ -262,11 +297,12 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
         <div className="flex-1 flex">
           <div className="flex-1 bg-black">
             <div className="w-full h-full">
-              <YouTubePlayer 
-                videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
-                onTimeUpdate={(time) => {
-                  // Callback pour mise à jour du timestamp
-                }}
+              <YouTubePlayer
+                videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}  
+                onTimeUpdate={setCurrentPlayerTime}
+                onAddTimestamp={handleAddTimestamp}
+                onSeekTo={(time) => setCurrentPlayerTime(time)}
+                timestamps={currentReview?.timestamps || []}
               />
             </div>
           </div>
@@ -515,22 +551,8 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                     onSeekTo={(time) => {
                       setCurrentPlayerTime(time);
                     }}
-                    onAddTimestamp={(time) => {
-                      // Ajouter un marqueur automatiquement quand on clique sur "Marquer"
-                      if (currentReview) {
-                        const newTimestamp = {
-                          id: Date.now().toString(),
-                          time: time,
-                          comment: `Moment important à ${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`,
-                          type: "important" as const,
-                          created_at: new Date().toISOString()
-                        };
-                        const updatedTimestamps = [...(currentReview.timestamps || []), newTimestamp].sort((a, b) => a.time - b.time);
-                        const updated = { ...currentReview, timestamps: updatedTimestamps };
-                        setCurrentReview(updated);
-                        saveReviewSession({ timestamps: updatedTimestamps });
-                      }
-                    }}
+                    onAddTimestamp={handleAddTimestamp}
+                    timestamps={currentReview?.timestamps || []}
                   />
                 </div>
               )}
@@ -576,11 +598,8 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                     }}
                     teamId={teamId}
                     onJumpToTime={(time) => {
-                      // Naviguer vers le timestamp dans le lecteur
-                      if (playerRef && playerRef.seekTo) {
-                        playerRef.seekTo(time, true);
-                        setCurrentPlayerTime(time);
-                      }
+                      // La navigation se fait maintenant directement via le YouTubePlayer
+                      setCurrentPlayerTime(time);
                     }}
                   />
                 </TabsContent>
@@ -631,16 +650,13 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
         </Card>
       )}
 
-      {/* Modal de partage */}
-      {showShare && selectedVOD && currentReview && (
-        <VODShare 
-          isOpen={showShare}
-          onClose={() => setShowShare(false)}
-          vod={selectedVOD}
-          review={currentReview}
-          teamId={teamId}
-        />
-      )}
+      {/* Marker Modal */}
+      <MarkerModal
+        isOpen={showMarkerModal}
+        onClose={() => setShowMarkerModal(false)}
+        onSave={handleSaveMarker}
+        currentTime={currentPlayerTime}
+      />
     </div>
   );
 };
