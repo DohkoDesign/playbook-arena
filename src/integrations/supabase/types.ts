@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -564,8 +564,8 @@ export type Database = {
       }
       has_team_role: {
         Args: {
-          team_uuid: string
           required_role: Database["public"]["Enums"]["player_role"]
+          team_uuid: string
           user_uuid?: string
         }
         Returns: boolean
@@ -587,7 +587,7 @@ export type Database = {
         Returns: boolean
       }
       log_security_event: {
-        Args: { event_type: string; user_id?: string; metadata?: Json }
+        Args: { event_type: string; metadata?: Json; user_id?: string }
         Returns: undefined
       }
       validate_password: {
@@ -596,9 +596,9 @@ export type Database = {
       }
       validate_role_change: {
         Args: {
-          target_user_id: string
-          target_team_id: string
           new_role: Database["public"]["Enums"]["player_role"]
+          target_team_id: string
+          target_user_id: string
         }
         Returns: boolean
       }
