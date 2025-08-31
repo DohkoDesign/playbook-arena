@@ -30,6 +30,7 @@ interface YouTubePlayerProps {
   onAddTimestamp?: (time: number) => void;
   onSeekTo?: (time: number) => void;
   timestamps?: Timestamp[];
+  onPlayerReady?: (playerInstance: any) => void;
 }
 
 export const YouTubePlayer = ({ 
@@ -38,7 +39,8 @@ export const YouTubePlayer = ({
   onReady, 
   onAddTimestamp, 
   onSeekTo,
-  timestamps = []
+  timestamps = [],
+  onPlayerReady
 }: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -61,12 +63,13 @@ export const YouTubePlayer = ({
     },
   };
 
-  const onPlayerReady = (event: any) => {
+  const onPlayerReadyHandler = (event: any) => {
     const playerInstance = event.target;
     setPlayer(playerInstance);
     setDuration(playerInstance.getDuration());
     setVolume(playerInstance.getVolume());
     onReady?.();
+    onPlayerReady?.(playerInstance); // Passer l'instance du player au parent
   };
 
   const onPlayerStateChange = (event: any) => {
@@ -185,7 +188,7 @@ export const YouTubePlayer = ({
         <YouTube
           videoId={videoId}
           opts={opts}
-          onReady={onPlayerReady}
+          onReady={onPlayerReadyHandler}
           onStateChange={onPlayerStateChange}
           className="w-full"
         />
@@ -332,6 +335,10 @@ export const YouTubePlayer = ({
             </Button>
             <Button
               onClick={() => {
+                // Mettre en pause avant d'ouvrir le modal
+                if (player && isPlaying) {
+                  player.pauseVideo();
+                }
                 // Utiliser la fonction callback pour ajouter un marqueur
                 onAddTimestamp?.(currentTime);
               }}

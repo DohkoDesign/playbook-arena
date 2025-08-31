@@ -90,6 +90,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
   const [showMarkerModal, setShowMarkerModal] = useState(false);
+  const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -223,6 +224,10 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   });
 
   const handleAddTimestamp = (time: number) => {
+    // Mettre en pause la vidéo
+    if (youtubePlayer) {
+      youtubePlayer.pauseVideo();
+    }
     setCurrentPlayerTime(time);
     setShowMarkerModal(true);
   };
@@ -303,6 +308,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                 onAddTimestamp={handleAddTimestamp}
                 onSeekTo={(time) => setCurrentPlayerTime(time)}
                 timestamps={currentReview?.timestamps || []}
+                onPlayerReady={(playerInstance) => setYoutubePlayer(playerInstance)}
               />
             </div>
           </div>
@@ -553,6 +559,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                     }}
                     onAddTimestamp={handleAddTimestamp}
                     timestamps={currentReview?.timestamps || []}
+                    onPlayerReady={(playerInstance) => setYoutubePlayer(playerInstance)}
                   />
                 </div>
               )}
