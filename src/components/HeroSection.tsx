@@ -7,10 +7,7 @@ export const HeroSection = () => {
     <section 
       className="pt-32 pb-20 px-6 relative"
       style={{
-        backgroundImage: `linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(59, 130, 246, 0.3) 100%), url(${heroBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
+        backgroundImage: `linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(59, 130, 246, 0.3) 100%)`,
       }}
     >
       <div className="container mx-auto text-center max-w-4xl">
