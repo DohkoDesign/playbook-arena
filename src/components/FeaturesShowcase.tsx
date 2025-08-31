@@ -18,7 +18,7 @@ const features = [
   {
     title: "Système de coaching avancé",
     description: "Organisez vos entraînements, matchs et événements avec un système de planification intelligent adapté au rythme de l'esport compétitif.",
-    image: image4,
+    image: "/lovable-uploads/760227d3-e254-425a-b179-bdd52f644dce.png",
     highlights: ["Calendrier partagé", "Notifications automatiques", "Gestion des disponibilités"]
   }
 ];
