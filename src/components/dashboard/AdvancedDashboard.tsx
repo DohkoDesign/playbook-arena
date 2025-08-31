@@ -240,15 +240,15 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500 bg-card">
+        <Card className="border-l-4 border-l-primary bg-card">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Matchs joués</p>
                 <p className="text-2xl font-bold">{stats.completedMatches}</p>
               </div>
-              <div className="p-3 rounded-full bg-purple-500/10">
-                <Trophy className="h-6 w-6 text-purple-500" />
+              <div className="p-3 rounded-full bg-primary/10">
+                <Trophy className="h-6 w-6 text-primary" />
               </div>
             </div>
           </CardContent>
