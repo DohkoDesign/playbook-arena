@@ -22,7 +22,10 @@ import {
   Video
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell
+} from "recharts";
 
 interface AdvancedDashboardProps {
   teamId: string;
@@ -40,7 +43,7 @@ interface TeamStats {
   winRate: number;
   recentPerformance: any[];
   memberRoles: any[];
-  activityData: any[];
+  performanceData: any[];
   teamInfo: any;
 }
 
@@ -55,7 +58,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
     winRate: 0,
     recentPerformance: [],
     memberRoles: [],
-    activityData: [],
+    performanceData: [],
     teamInfo: null
   });
   const [loading, setLoading] = useState(true);
@@ -71,7 +74,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       setLoading(true);
       
       // Charger toutes les données en parallèle
-      const [teamRes, membersRes, eventsRes] = await Promise.all([
+      const [teamRes, membersRes, eventsRes, coachingRes] = await Promise.all([
         // Informations de l'équipe
         supabase.from("teams").select("*").eq("id", teamId).single(),
         
@@ -86,7 +89,19 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
           .from("events")
           .select("*")
           .eq("team_id", teamId)
-          .order("date_debut", { ascending: false })
+          .order("date_debut", { ascending: false }),
+        
+        // Sessions de coaching avec résultats
+        supabase
+          .from("coaching_sessions")
+          .select(`
+            *,
+            events!inner(titre, date_debut, team_id)
+          `)
+          .eq("events.team_id", teamId)
+          .not("resultat", "is", null)
+          .order("created_at", { ascending: false })
+          .limit(10)
       ]);
 
       if (teamRes.error) throw teamRes.error;
@@ -94,6 +109,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       const teamInfo = teamRes.data;
       const members = membersRes.data || [];
       const events = eventsRes.data || [];
+      const coachingSessions = coachingRes.data || [];
 
       // Calculer les statistiques
       const now = new Date();
@@ -101,8 +117,23 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
       const pastEvents = events.filter(e => new Date(e.date_debut) <= now);
       const matches = pastEvents.filter(e => e.type === 'match');
       
-      // Simuler un taux de victoire basé sur les événements
-      const winRate = matches.length > 0 ? Math.round(Math.random() * 40 + 60) : 0;
+      // Calculer le taux de victoire réel basé sur les résultats de coaching_sessions
+      let wins = 0, losses = 0, draws = 0;
+      coachingSessions.forEach(session => {
+        if (session.resultat) {
+          const result = session.resultat.toLowerCase();
+          if (result.includes('victoire') || result.includes('win') || result === 'v') {
+            wins++;
+          } else if (result.includes('défaite') || result.includes('lose') || result.includes('loss') || result === 'd') {
+            losses++;
+          } else if (result.includes('égalité') || result.includes('draw') || result.includes('nul') || result === 'n') {
+            draws++;
+          }
+        }
+      });
+      
+      const totalMatches = wins + losses + draws;
+      const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
       // Répartition des rôles (seulement les joueurs)
       const playerMembers = members.filter(member => 
@@ -120,8 +151,8 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
         value: count as number
       }));
 
-      // Données d'activité simulées
-      const activityData = generateActivityData(events, []);
+      // Données de performance des 7 derniers matchs
+      const performanceData = generateMatchPerformanceData(coachingSessions.slice(0, 7));
 
       // Performance récente (basée sur les événements récents)
       const recentPerformance = generatePerformanceData(pastEvents.slice(0, 7));
@@ -132,11 +163,11 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
           m.role && ['joueur', 'remplacant', 'capitaine'].includes(m.role)
         ).length,
         upcomingEvents: upcomingEvents.length,
-        completedMatches: matches.length,
+        completedMatches: totalMatches,
         winRate,
         recentPerformance,
         memberRoles,
-        activityData,
+        performanceData,
         teamInfo
       });
     } catch (error) {
@@ -146,28 +177,37 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
     }
   };
 
-  const generateActivityData = (events: any[], coachingSessions: any[]) => {
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date;
-    }).reverse();
+  const generateMatchPerformanceData = (coachingSessions: any[]) => {
+    // Si pas assez de données, génerer des données d'exemple
+    if (coachingSessions.length === 0) {
+      return [
+        { match: "Match 1", victoires: 2, defaites: 1, egalites: 0 },
+        { match: "Match 2", victoires: 1, defaites: 2, egalites: 0 },
+        { match: "Match 3", victoires: 3, defaites: 0, egalites: 0 },
+        { match: "Match 4", victoires: 1, defaites: 1, egalites: 1 },
+        { match: "Match 5", victoires: 2, defaites: 1, egalites: 0 },
+      ];
+    }
 
-    return last7Days.map(date => {
-      const dayEvents = events.filter(e => 
-        new Date(e.date_debut).toDateString() === date.toDateString()
-      );
-      const daySessions = coachingSessions.filter(s => 
-        new Date(s.created_at).toDateString() === date.toDateString()
-      );
-
+    return coachingSessions.map((session, index) => {
+      const result = session.resultat?.toLowerCase() || '';
+      let victoires = 0, defaites = 0, egalites = 0;
+      
+      if (result.includes('victoire') || result.includes('win') || result === 'v') {
+        victoires = 1;
+      } else if (result.includes('défaite') || result.includes('lose') || result.includes('loss') || result === 'd') {
+        defaites = 1;
+      } else if (result.includes('égalité') || result.includes('draw') || result.includes('nul') || result === 'n') {
+        egalites = 1;
+      }
+      
       return {
-        date: date.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric' }),
-        events: dayEvents.length,
-        sessions: daySessions.length,
-        activity: dayEvents.length + daySessions.length
+        match: `Match ${coachingSessions.length - index}`,
+        victoires,
+        defaites,
+        egalites
       };
-    });
+    }).reverse(); // Pour avoir l'ordre chronologique
   };
 
   const generatePerformanceData = (recentEvents: any[]) => {
@@ -278,20 +318,20 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
 
       {/* Graphiques et analyses */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Graphique d'activité */}
+        {/* Graphique de performances */}
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Activity className="w-5 h-5" />
-              <span>Activité de l'équipe (7 derniers jours)</span>
+              <Trophy className="w-5 h-5" />
+              <span>Performances des derniers matchs</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={stats.activityData}>
+                <BarChart data={stats.performanceData}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                  <XAxis dataKey="date" className="text-sm" />
+                  <XAxis dataKey="match" className="text-sm" />
                   <YAxis className="text-sm" />
                   <Tooltip 
                     contentStyle={{ 
@@ -300,14 +340,10 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
                       borderRadius: '8px'
                     }}
                   />
-                  <Line 
-                    type="monotone" 
-                    dataKey="activity" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={3}
-                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
+                  <Bar dataKey="victoires" fill="hsl(142 76% 36%)" name="Victoires" />
+                  <Bar dataKey="defaites" fill="hsl(0 84% 60%)" name="Défaites" />
+                  <Bar dataKey="egalites" fill="hsl(48 96% 53%)" name="Égalités" />
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </CardContent>

@@ -66,27 +66,48 @@ const Dashboard = () => {
   const checkUserTeams = async (userId: string) => {
     console.log("🔍 Checking user teams for:", userId);
     try {
-      const { data, error } = await supabase
-        .from("teams")
-        .select("*")
-        .eq("created_by", userId);
+      // Récupérer toutes les équipes créées par l'utilisateur OU où il est membre avec rôle de management
+      const [teamsCreated, teamsMember] = await Promise.all([
+        // Équipes créées par l'utilisateur
+        supabase
+          .from("teams")
+          .select("*")
+          .eq("created_by", userId),
+        
+        // Équipes où l'utilisateur est membre avec rôle de management
+        supabase
+          .from("team_members")
+          .select(`
+            team_id,
+            role,
+            teams:team_id (*)
+          `)
+          .eq("user_id", userId)
+          .in("role", ["owner", "manager", "coach"])
+      ]);
 
-      console.log("📊 Teams query result:", { data, error });
+      console.log("📊 Teams queries result:", { teamsCreated, teamsMember });
 
-      if (error) {
-        console.error("❌ Error fetching teams:", error);
-        throw error;
-      }
+      if (teamsCreated.error) throw teamsCreated.error;
+      if (teamsMember.error) throw teamsMember.error;
 
-      setTeams(data || []);
-      console.log("✅ Teams loaded:", data?.length || 0);
+      // Combiner les équipes (éviter les doublons)
+      const allTeams = [...(teamsCreated.data || [])];
+      const memberTeams = (teamsMember.data || [])
+        .map(tm => tm.teams)
+        .filter(team => team && !allTeams.find(t => t.id === team.id));
       
-      if (!data || data.length === 0) {
+      allTeams.push(...memberTeams);
+
+      setTeams(allTeams);
+      console.log("✅ All teams loaded:", allTeams.length);
+      
+      if (!allTeams || allTeams.length === 0) {
         console.log("🚨 No teams found, redirecting to setup");
         navigate("/setup");
       } else {
-        console.log("🏆 Teams found, selecting first:", data[0].id);
-        setSelectedTeam(data[0].id);
+        console.log("🏆 Teams found, selecting first:", allTeams[0].id);
+        setSelectedTeam(allTeams[0].id);
       }
     } catch (error: any) {
       console.error("💥 Full error in checkUserTeams:", error);
