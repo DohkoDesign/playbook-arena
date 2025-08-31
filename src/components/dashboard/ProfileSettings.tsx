@@ -94,53 +94,50 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
     }
 
     const file = event.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/${Math.random()}.${fileExt}`;
-
     setUploading(true);
 
     try {
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const result = e.target?.result as string;
+        setAvatarUrl(result); // Image en base64 pour usage local
 
-      if (uploadError) {
-        throw uploadError;
-      }
+        // Mettre à jour le profil avec la nouvelle photo (base64)
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({ photo_profil: result })
+          .eq("user_id", user.id);
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+        if (updateError) throw updateError;
 
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          pseudo: user.user_metadata?.pseudo || user.email?.split('@')[0] || 'Utilisateur',
-          photo_profil: publicUrl
-        }, {
-          onConflict: 'user_id'
+        setUploading(false);
+        toast({
+          title: "Photo mise à jour",
+          description: "Votre photo de profil a été mise à jour localement",
         });
 
-      if (updateError) {
-        throw updateError;
-      }
-
-      setAvatarUrl(publicUrl);
-      onProfileUpdate?.();
+        if (onProfileUpdate) {
+          onProfileUpdate();
+        }
+      };
       
-      toast({
-        title: "Photo mise à jour",
-        description: "Votre photo de profil a été changée",
-      });
+      reader.onerror = () => {
+        setUploading(false);
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la lecture du fichier",
+          variant: "destructive",
+        });
+      };
+      
+      reader.readAsDataURL(file);
     } catch (error: any) {
+      setUploading(false);
       toast({
         title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploading(false);
     }
   };
 

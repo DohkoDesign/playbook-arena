@@ -9,8 +9,6 @@ import {
   Clock, 
   Users, 
   Filter,
-  Share,
-  Download,
   Eye,
   Calendar,
   Tag,
@@ -32,7 +30,7 @@ import { YouTubePlayer } from "./vod/YouTubePlayer";
 import { TimestampManager } from "./vod/TimestampManager";
 import { CoachingNotes } from "./vod/CoachingNotes";
 import { VODFilters } from "./vod/VODFilters";
-import { VODShare } from "./vod/VODShare";
+
 import { MarkerModal } from "./vod/MarkerModal";
 
 interface VODReviewViewProps {
@@ -85,7 +83,7 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     tag: "all"
   });
   const [loading, setLoading] = useState(false);
-  const [showShare, setShowShare] = useState(false);
+  
   const [showFilters, setShowFilters] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
@@ -171,18 +169,68 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
 
   const loadReviewSession = async (vodId: string) => {
     try {
-      // Simuler le chargement pour le moment, car la table n'est pas encore typée
-      console.log("Loading review session for VOD:", vodId);
-      
-      // Créer une nouvelle session de review
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      // Charger une review existante ou créer une nouvelle
+      try {
+        // @ts-ignore - Évite l'erreur TypeScript avec les types Supabase complexes
+        const response: any = await supabase
+          .from("vod_reviews")
+          .select("*")
+          .eq("vod_id", vodId)
+          .eq("coach_id", user.user.id)
+          .eq("team_id", teamId)
+          .maybeSingle();
+
+        const existingReview = response.data;
+
+        if (existingReview) {
+          // Parser les timestamps depuis Json vers Timestamp[]
+          let timestamps: Timestamp[] = [];
+          try {
+            if (typeof existingReview.timestamps === 'string') {
+              timestamps = JSON.parse(existingReview.timestamps);
+            } else if (Array.isArray(existingReview.timestamps)) {
+              timestamps = existingReview.timestamps as unknown as Timestamp[];
+            }
+          } catch (e) {
+            console.error("Error parsing timestamps:", e);
+            timestamps = [];
+          }
+          
+          setCurrentReview({
+            ...existingReview,
+            timestamps
+          });
+        } else {
+          // Créer une nouvelle session de review
+          setCurrentReview({
+            vod_id: vodId,
+            coach_id: user.user.id,
+            notes: "",
+            timestamps: []
+          });
+        }
+      } catch (supabaseError) {
+        console.error("Supabase query error:", supabaseError);
+        // Fallback - créer une nouvelle session
+        setCurrentReview({
+          vod_id: vodId,
+          coach_id: user.user.id,
+          notes: "",
+          timestamps: []
+        });
+      }
+    } catch (error) {
+      console.error("Error loading review session:", error);
+      // Créer une session par défaut en cas d'erreur
       setCurrentReview({
         vod_id: vodId,
-        coach_id: "current-user-id", // À remplacer par l'ID utilisateur réel
+        coach_id: "fallback",
         notes: "",
         timestamps: []
       });
-    } catch (error) {
-      console.error("Error loading review session:", error);
     }
   };
 
@@ -193,16 +241,50 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
       const updatedReview = { ...currentReview, ...reviewData };
       setCurrentReview(updatedReview);
 
-      console.log("Saving review session:", updatedReview);
+      // Sauvegarde automatique en base de données
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
 
-      toast({
-        title: "Review sauvegardée",
-        description: "Vos annotations ont été enregistrées",
-      });
+      const reviewToSave = {
+        vod_id: updatedReview.vod_id,
+        coach_id: user.user.id,
+        team_id: teamId,
+        notes: updatedReview.notes || "",
+        timestamps: JSON.stringify(updatedReview.timestamps || []) as any,
+        updated_at: new Date().toISOString()
+      };
+
+      if (updatedReview.id) {
+        // Mise à jour
+        await supabase
+          .from("vod_reviews")
+          .update(reviewToSave)
+          .eq("id", updatedReview.id);
+      } else {
+        // Création
+        const { data } = await supabase
+          .from("vod_reviews")
+          .insert(reviewToSave)
+          .select()
+          .single();
+        
+        if (data) {
+          setCurrentReview({ ...updatedReview, id: data.id });
+        }
+      }
+
+      // Toast plus discret pour l'auto-save
+      if (Math.random() < 0.1) { // Seulement 10% du temps pour éviter le spam
+        toast({
+          title: "💾 Sauvegardé",
+          description: "Annotations sauvegardées automatiquement",
+        });
+      }
     } catch (error: any) {
+      console.error("Auto-save error:", error);
       toast({
-        title: "Erreur",
-        description: error.message,
+        title: "Erreur de sauvegarde",
+        description: "Impossible de sauvegarder automatiquement",
         variant: "destructive",
       });
     }
@@ -392,38 +474,9 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
         </div>
         <div className="flex items-center space-x-2">
           {selectedVOD && (
-            <>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowShare(true)}
-                className="flex items-center space-x-2"
-              >
-                <Share className="w-4 h-4" />
-                <span>Partager</span>
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  if (currentReview) {
-                    const exportData = {
-                      vod: selectedVOD,
-                      review: currentReview,
-                      exportedAt: new Date().toISOString()
-                    };
-                    const blob = new Blob([JSON.stringify(exportData, null, 2)], 
-                      { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `review-${selectedVOD.events?.titre}-${new Date().toISOString().split('T')[0]}.json`;
-                    a.click();
-                  }
-                }}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Exporter
-              </Button>
-            </>
+            <div className="text-sm text-muted-foreground">
+              💾 Sauvegarde automatique active
+            </div>
           )}
         </div>
       </div>

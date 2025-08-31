@@ -42,52 +42,38 @@ export const TeamSetupModal = ({ isOpen, user, onClose, onTeamCreated }: TeamSet
     }
 
     const file = event.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/${Math.random()}.${fileExt}`;
-
     setUploading(true);
 
     try {
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .upsert({
-          user_id: user.id,
-          pseudo: user.user_metadata?.pseudo || user.email?.split('@')[0] || 'Utilisateur',
-          photo_profil: publicUrl
-        }, {
-          onConflict: 'user_id'
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const result = e.target?.result as string;
+        setAvatarUrl(result); // Image en base64 pour usage local
+        setUploading(false);
+        
+        toast({
+          title: "Photo téléchargée",
+          description: "Votre photo d'équipe a été ajoutée localement",
         });
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      setAvatarUrl(publicUrl);
+      };
       
-      toast({
-        title: "Photo de profil ajoutée !",
-        description: "Votre photo a été sauvegardée avec succès",
-      });
+      reader.onerror = () => {
+        setUploading(false);
+        toast({
+          title: "Erreur",
+          description: "Erreur lors de la lecture du fichier",
+          variant: "destructive",
+        });
+      };
+      
+      reader.readAsDataURL(file);
     } catch (error: any) {
+      setUploading(false);
       toast({
         title: "Erreur",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setUploading(false);
     }
   };
 
