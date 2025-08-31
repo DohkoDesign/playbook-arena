@@ -61,16 +61,7 @@ export const TeamSetupModal = ({ isOpen, user, onClose, onTeamCreated }: TeamSet
 
       if (error) throw error;
 
-      // Ajouter le créateur comme propriétaire de l'équipe
-      const { error: memberError } = await supabase
-        .from("team_members")
-        .insert({
-          team_id: data.id,
-          user_id: user.id,
-          role: "owner",
-        });
-
-      if (memberError) throw memberError;
+      // Le créateur est ajouté automatiquement comme propriétaire via un trigger DB
 
       toast({
         title: "Équipe créée !",
