@@ -99,7 +99,7 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
           user_id,
           role,
           created_at,
-          profiles:user_id (
+          profiles!inner (
             pseudo,
             photo_profil
           )
@@ -110,6 +110,7 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
       if (error) throw error;
       setMembers((data as any) || []);
     } catch (error: any) {
+      console.error("Error fetching team members:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les membres de l'équipe",
