@@ -30,15 +30,23 @@ export const useImageUpload = () => {
     try {
       setUploading(true);
 
-      // Générer un nom de fichier unique
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("Utilisateur non connecté");
+
+      // Générer un nom de fichier unique dans un dossier propre à l'utilisateur (RLS)
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${user.id}/${fileName}`;
 
-      // Upload du fichier
+      // Upload du fichier (respecte la policy: dossier = user_id)
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          contentType: file.type,
+          upsert: false,
+        });
 
       if (uploadError) {
         throw uploadError;

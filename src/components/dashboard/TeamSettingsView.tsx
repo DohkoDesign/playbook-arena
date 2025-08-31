@@ -146,12 +146,13 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     }
   };
 
-  const updateOrganizationLogo = () => {
-    localStorage.setItem("organization_logo", organizationLogo);
+  const updateOrganizationLogo = (newUrl?: string) => {
+    const urlToSave = newUrl ?? organizationLogo;
+    localStorage.setItem("organization_logo", urlToSave || "");
     
     toast({
       title: "Logo mis à jour",
-      description: organizationLogo ? "Le logo de l'organisation a été modifié" : "Le logo a été supprimé",
+      description: urlToSave ? "Le logo de l'organisation a été modifié" : "Le logo a été supprimé",
     });
   };
 
@@ -343,7 +344,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                           value={organizationLogo}
                           onChange={(e) => setOrganizationLogo(e.target.value)}
                         />
-                        <Button onClick={updateOrganizationLogo} variant="outline">
+                        <Button onClick={() => updateOrganizationLogo()} variant="outline">
                           <Save className="w-4 h-4 mr-2" />
                           Appliquer
                         </Button>
@@ -366,7 +367,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
                       <ImageUploadLocal
                         onImageUploaded={(url) => {
                           setOrganizationLogo(url);
-                          updateOrganizationLogo();
+                          updateOrganizationLogo(url);
                         }}
                         className="w-full"
                       />
