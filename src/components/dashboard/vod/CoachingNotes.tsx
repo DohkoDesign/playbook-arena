@@ -135,7 +135,7 @@ const noteTemplates: NoteTemplate[] = [
 const templateCategories = {
   individual: { icon: User, color: "bg-blue-100 text-blue-800", label: "Individuel" },
   team: { icon: Users, color: "bg-green-100 text-green-800", label: "Équipe" },
-  strategy: { icon: Target, color: "bg-purple-100 text-purple-800", label: "Stratégie" },
+  strategy: { icon: Target, color: "bg-primary/10 text-primary", label: "Stratégie" },
   general: { icon: FileText, color: "bg-orange-100 text-orange-800", label: "Général" }
 };
 

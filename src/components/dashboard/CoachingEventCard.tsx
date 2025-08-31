@@ -25,7 +25,7 @@ export const CoachingEventCard = ({
       case "match":
         return "bg-red-500/10 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300";
       case "tournoi":
-        return "bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300";
+        return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary";
       default:
         return "bg-gray-500/10 text-gray-700 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300";
     }

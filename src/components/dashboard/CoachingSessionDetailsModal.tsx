@@ -27,7 +27,7 @@ export const CoachingSessionDetailsModal = ({
       case "match":
         return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "tournoi":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+        return "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }

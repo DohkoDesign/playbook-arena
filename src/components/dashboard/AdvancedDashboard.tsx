@@ -44,7 +44,7 @@ interface TeamStats {
   teamInfo: any;
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--cyan))', 'hsl(var(--orange))', 'hsl(var(--violet))'];
+const COLORS = ['hsl(var(--primary))', 'hsl(220 92% 70%)', 'hsl(220 92% 80%)', 'hsl(220 92% 60%)'];
 
 export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, onViewChange }: AdvancedDashboardProps) => {
   const [stats, setStats] = useState<TeamStats>({
@@ -415,7 +415,7 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
           className="h-auto p-6 border-2 hover:bg-accent"
         >
           <div className="text-center">
-            <Video className="w-8 h-8 mx-auto mb-2 text-purple-500" />
+            <Video className="w-8 h-8 mx-auto mb-2 text-primary" />
             <p className="font-semibold">Coaching</p>
             <p className="text-xs text-muted-foreground">Analyser les performances</p>
           </div>

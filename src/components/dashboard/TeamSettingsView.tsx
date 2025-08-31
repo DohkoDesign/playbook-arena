@@ -30,7 +30,7 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   const [colors, setColors] = useState({
     primary: "220 38% 57%", // Bleu par défaut en HSL
     secondary: "142 76% 36%", // Vert par défaut en HSL  
-    accent: "262 83% 58%" // Violet par défaut en HSL
+    accent: "220 92% 70%" // Couleur d'accent mise à jour
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

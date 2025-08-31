@@ -464,7 +464,7 @@ export const PostMatchVODManager = ({ eventId, teamId, onVODsUpdated }: PostMatc
                         {vod.platform === 'youtube' ? (
                           <Youtube className="w-4 h-4 text-red-500" />
                         ) : (
-                          <Twitch className="w-4 h-4 text-purple-500" />
+                          <Twitch className="w-4 h-4 text-primary" />
                         )}
                         <Badge variant="outline">{vod.type.replace('_', ' ')}</Badge>
                         {vod.validated && (

@@ -213,7 +213,7 @@ export const YouTubePlayer = ({
                 important: "bg-blue-500",
                 error: "bg-red-500", 
                 success: "bg-green-500",
-                strategy: "bg-purple-500",
+                strategy: "bg-primary",
                 "player-specific": "bg-orange-500"
               };
               

@@ -40,7 +40,7 @@ const QUICK_TEMPLATES = [
     duration: 120,
     description: "Scrim contre équipe partenaire",
     icon: Gamepad2,
-    color: "bg-purple-500"
+    color: "bg-primary"
   },
   {
     id: "training_aim",

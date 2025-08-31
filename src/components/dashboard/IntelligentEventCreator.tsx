@@ -24,7 +24,7 @@ interface IntelligentEventCreatorProps {
 const EVENT_TYPES = [
   { value: "match", label: "Match", icon: Trophy, color: "bg-green-500" },
   { value: "entrainement", label: "Entraînement", icon: Users, color: "bg-blue-500" },
-  { value: "scrim", label: "Scrim", icon: Gamepad2, color: "bg-purple-500" },
+  { value: "scrim", label: "Scrim", icon: Gamepad2, color: "bg-primary" },
   { value: "tournoi", label: "Tournoi", icon: Trophy, color: "bg-yellow-500" },
 ];
 

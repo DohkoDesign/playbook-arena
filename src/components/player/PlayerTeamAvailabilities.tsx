@@ -152,7 +152,7 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     const colors = {
       1: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
       2: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      3: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      3: "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary",
       4: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
       5: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
       6: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
@@ -251,7 +251,7 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-purple-500" />
+              <Calendar className="w-5 h-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Semaine courante</p>
                 <p className="text-xl font-bold">

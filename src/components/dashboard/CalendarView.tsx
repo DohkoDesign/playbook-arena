@@ -43,7 +43,7 @@ const getEventTypeColor = (type: string) => {
     case "match":
       return "bg-red-500/10 text-red-700 border-red-200 dark:bg-red-500/20 dark:text-red-300";
     case "tournoi":
-      return "bg-purple-500/10 text-purple-700 border-purple-200 dark:bg-purple-500/20 dark:text-purple-300";
+      return "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary";
     case "coaching":
       return "bg-green-500/10 text-green-700 border-green-200 dark:bg-green-500/20 dark:text-green-300";
     case "session_individuelle":

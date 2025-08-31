@@ -105,7 +105,7 @@ export const ModernClock = ({ teamId, gameType }: ModernClockProps) => {
       case "match":
         return "bg-red-500/10 text-red-700 border-red-200";
       case "tournoi":
-        return "bg-purple-500/10 text-purple-700 border-purple-200";
+        return "bg-primary/10 text-primary border-primary/20";
       case "coaching":
         return "bg-green-500/10 text-green-700 border-green-200";
       case "session_individuelle":

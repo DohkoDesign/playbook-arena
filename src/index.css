@@ -43,18 +43,18 @@
     
     --border: 214 32% 91%; /* Bordure bleu clair */
     --input: 214 32% 91%;
-    --ring: 215 84% 50%;
+    --ring: 220 92% 70%;
     
     --radius: 12px;
     
-    /* Gradients bleus */
-    --gradient-brand: linear-gradient(135deg, hsl(215 84% 50%), hsl(212 100% 65%));
+    /* Gradients */
+    --gradient-brand: linear-gradient(135deg, hsl(220 92% 70%), hsl(220 92% 80%));
     --gradient-subtle: linear-gradient(135deg, hsl(210 40% 98%), hsl(210 40% 94%));
     
-    /* Ombres bleues */
-    --shadow-elegant: 0 4px 20px -2px rgba(59, 130, 246, 0.12);
-    --shadow-card: 0 1px 3px 0 rgba(59, 130, 246, 0.08);
-    --shadow-dropdown: 0 10px 25px -3px rgba(59, 130, 246, 0.15), 0 4px 6px -2px rgba(59, 130, 246, 0.08);
+    /* Ombres */
+    --shadow-elegant: 0 4px 20px -2px rgba(100, 149, 237, 0.12);
+    --shadow-card: 0 1px 3px 0 rgba(100, 149, 237, 0.08);
+    --shadow-dropdown: 0 10px 25px -3px rgba(100, 149, 237, 0.15), 0 4px 6px -2px rgba(100, 149, 237, 0.08);
 
     /* Sidebar variables */
     --sidebar-background: 210 40% 100%;
@@ -64,7 +64,7 @@
     --sidebar-accent: 220 92% 70%;
     --sidebar-accent-foreground: 215 25% 27%;
     --sidebar-border: 214 32% 91%;
-    --sidebar-ring: 215 84% 50%;
+    --sidebar-ring: 220 92% 70%;
   }
 
   .dark {
@@ -95,7 +95,7 @@
     
     --border: 215 20% 22%; /* Bordures bleues foncées */
     --input: 215 20% 22%;
-    --ring: 212 100% 65%;
+    --ring: 220 92% 70%;
     
     --shadow-elegant: 0 4px 20px -2px rgba(29, 78, 216, 0.25);
     --shadow-card: 0 1px 3px 0 rgba(29, 78, 216, 0.15);

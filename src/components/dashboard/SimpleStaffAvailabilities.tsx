@@ -267,7 +267,7 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5 text-purple-500" />
+              <Calendar className="w-5 h-5 text-primary" />
               <div>
                 <p className="text-sm text-muted-foreground">Meilleur jour</p>
                 <p className="text-xl font-bold">
