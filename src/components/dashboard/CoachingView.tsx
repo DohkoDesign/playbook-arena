@@ -9,20 +9,23 @@ import { CoachingSessionModal } from "./CoachingSessionModal";
 import { CoachingSessionDetailsModal } from "./CoachingSessionDetailsModal";
 import { CoachingEventCard } from "./CoachingEventCard";
 import { CoachingSessionCard } from "./CoachingSessionCard";
+import { VODAnalysisModal } from "./VODAnalysisModal";
 import { getGameConfig } from "@/data/gameConfigs";
 
 interface CoachingViewProps {
   teamId: string;
   gameType?: string;
   isPlayerView?: boolean;
+  currentUserId?: string;
 }
 
-export const CoachingView = ({ teamId, gameType, isPlayerView = false }: CoachingViewProps) => {
+export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUserId }: CoachingViewProps) => {
   const [events, setEvents] = useState<any[]>([]);
   const [coachingSessions, setCoachingSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSessionModal, setShowSessionModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showVODAnalysisModal, setShowVODAnalysisModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const { toast } = useToast();
@@ -87,7 +90,11 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false }: Coachin
 
   const openSessionDetails = (session: any) => {
     setSelectedSession(session);
-    setShowDetailsModal(true);
+    if (isPlayerView && session?.vods && session.vods.length > 0) {
+      setShowVODAnalysisModal(true);
+    } else {
+      setShowDetailsModal(true);
+    }
   };
 
   const getSessionByEventId = (eventId: string) => {
@@ -318,6 +325,19 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false }: Coachin
             openCoachingSession(selectedSession.events);
           }}
           isPlayerView={isPlayerView}
+        />
+      )}
+
+      {showVODAnalysisModal && selectedSession && (
+        <VODAnalysisModal
+          isOpen={showVODAnalysisModal}
+          onClose={() => {
+            setShowVODAnalysisModal(false);
+            setSelectedSession(null);
+          }}
+          session={selectedSession}
+          teamId={teamId}
+          currentUserId={currentUserId}
         />
       )}
     </div>
