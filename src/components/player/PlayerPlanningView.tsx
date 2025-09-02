@@ -20,9 +20,9 @@ interface PlayerPlanningViewProps {
 interface PersonalEvent {
   id: string;
   title: string;
-  type: 'training' | 'review' | 'personal';
-  date: string;
-  duration: number;
+  type: string;
+  date_start: string;
+  date_end: string;
   description?: string;
 }
 
@@ -43,39 +43,32 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
       setLoading(true);
       
       // Charger les événements d'équipe
-      const { data: events, error } = await supabase
+      const { data: events, error: eventsError } = await supabase
         .from("events")
         .select("*")
         .eq("team_id", teamId);
 
-      if (error) {
-        console.error("Error fetching events:", error);
-        throw error;
+      if (eventsError) {
+        console.error("Error fetching team events:", eventsError);
+        throw eventsError;
       }
       
       setTeamEvents(events || []);
 
-      // Simuler des événements personnels
-      const mockPersonalEvents: PersonalEvent[] = [
-        {
-          id: '1',
-          title: 'Session aim Kovaak\'s',
-          type: 'training',
-          date: new Date().toISOString(),
-          duration: 45,
-          description: 'Entraînement précision'
-        },
-        {
-          id: '2',
-          title: 'Analyse VOD',
-          type: 'review',
-          date: new Date(Date.now() + 86400000).toISOString(),
-          duration: 30,
-          description: 'Revoir les erreurs'
-        }
-      ];
+      // Charger les événements personnels du joueur depuis la base de données
+      const { data: personalEventsData, error: personalError } = await supabase
+        .from("player_personal_events")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("player_id", playerId);
 
-      setPersonalEvents(mockPersonalEvents);
+      if (personalError) {
+        console.error("Error fetching personal events:", personalError);
+        throw personalError;
+      }
+
+      console.log("📅 Personal events loaded:", personalEventsData);
+      setPersonalEvents(personalEventsData || []);
       console.log("✅ Events loaded successfully");
       
     } catch (error: any) {
@@ -91,9 +84,21 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
   };
 
   const getEventsForDate = (date: Date) => {
-    return [...personalEvents, ...teamEvents].filter(event => 
-      isSameDay(new Date(event.date || event.date_debut), date)
-    );
+    const teamEventsForDate = teamEvents.filter(event => 
+      isSameDay(new Date(event.date_debut), date)
+    ).map(event => ({
+      ...event,
+      isTeamEvent: true
+    }));
+    
+    const personalEventsForDate = personalEvents.filter(event => 
+      isSameDay(new Date(event.date_start), date)
+    ).map(event => ({
+      ...event,
+      isPersonalEvent: true
+    }));
+    
+    return [...teamEventsForDate, ...personalEventsForDate];
   };
 
   if (loading) {
@@ -148,7 +153,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium text-sm">{event.title || event.titre}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {event.type || 'Équipe'}
+                        {event.isTeamEvent ? 'Équipe' : (event.type || 'Personnel')}
                       </Badge>
                     </div>
                     {event.description && (
@@ -156,7 +161,12 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                     )}
                     <div className="flex items-center space-x-2 text-xs text-muted-foreground mt-2">
                       <Clock className="w-3 h-3" />
-                      <span>{event.duration ? `${event.duration}min` : 'Durée non définie'}</span>
+                      <span>
+                        {event.isTeamEvent 
+                          ? `${new Date(event.date_debut).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.date_fin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+                          : `${new Date(event.date_start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.date_end).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+                        }
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -190,7 +200,7 @@ export const PlayerPlanningView = ({ teamId, playerId }: PlayerPlanningViewProps
                 <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
                 <div className="flex items-center text-xs text-muted-foreground">
                   <Clock className="w-3 h-3 mr-1" />
-                  {event.duration}min
+                  {new Date(event.date_start).toLocaleString('fr-FR')}
                 </div>
               </div>
             ))}
