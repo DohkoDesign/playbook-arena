@@ -275,6 +275,48 @@ export type Database = {
         }
         Relationships: []
       }
+      player_personal_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          date_end: string
+          date_start: string
+          description: string | null
+          id: string
+          player_id: string
+          team_id: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          date_end: string
+          date_start: string
+          description?: string | null
+          id?: string
+          player_id: string
+          team_id: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date_end?: string
+          date_start?: string
+          description?: string | null
+          id?: string
+          player_id?: string
+          team_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       player_profiles: {
         Row: {
           created_at: string
@@ -329,9 +371,6 @@ export type Database = {
           photo_profil: string | null
           pseudo: string
           role: Database["public"]["Enums"]["user_role"] | null
-          tracker_last_updated: string | null
-          tracker_stats: Json | null
-          tracker_usernames: Json | null
           updated_at: string
           user_id: string
         }
@@ -344,9 +383,6 @@ export type Database = {
           photo_profil?: string | null
           pseudo: string
           role?: Database["public"]["Enums"]["user_role"] | null
-          tracker_last_updated?: string | null
-          tracker_stats?: Json | null
-          tracker_usernames?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -359,9 +395,6 @@ export type Database = {
           photo_profil?: string | null
           pseudo?: string
           role?: Database["public"]["Enums"]["user_role"] | null
-          tracker_last_updated?: string | null
-          tracker_stats?: Json | null
-          tracker_usernames?: Json | null
           updated_at?: string
           user_id?: string
         }

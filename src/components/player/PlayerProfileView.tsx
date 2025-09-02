@@ -55,10 +55,7 @@ export const PlayerProfileView = ({ playerId, teamId, teamData }: PlayerProfileV
       if (error) throw error;
       setUserProfile(data);
       
-      // Set current tracker username for this game
-      if (data.tracker_usernames && teamData?.jeu) {
-        setTrackerUsername(data.tracker_usernames[teamData.jeu] || "");
-      }
+      // Removed tracker functionality
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
     }
@@ -165,40 +162,12 @@ export const PlayerProfileView = ({ playerId, teamId, teamData }: PlayerProfileV
   };
 
   const saveTrackerUsername = async () => {
-    if (!userProfile || !teamData?.jeu) return;
-
-    setSavingTracker(true);
-    try {
-      const updatedTrackerUsernames = {
-        ...userProfile.tracker_usernames,
-        [teamData.jeu]: trackerUsername
-      };
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({ tracker_usernames: updatedTrackerUsernames })
-        .eq("user_id", playerId);
-
-      if (error) throw error;
-
-      setUserProfile({
-        ...userProfile,
-        tracker_usernames: updatedTrackerUsernames
-      });
-
-      toast({
-        title: "Pseudo sauvegardé",
-        description: "Votre pseudo de tracker a été mis à jour",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder le pseudo",
-        variant: "destructive",
-      });
-    } finally {
-      setSavingTracker(false);
-    }
+    // Tracker functionality removed
+    toast({
+      title: "Fonctionnalité supprimée",
+      description: "Cette fonctionnalité n'est plus disponible",
+      variant: "destructive",
+    });
   };
 
   if (loading) {
@@ -226,41 +195,7 @@ export const PlayerProfileView = ({ playerId, teamId, teamData }: PlayerProfileV
         </div>
       </div>
 
-      {/* Configuration Tracker */}
-      {gameConfig && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Settings className="w-4 h-4 text-primary" />
-              <span>Configuration Tracker</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="trackerUsername">
-                Votre pseudo {gameConfig.name}
-              </Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="trackerUsername"
-                  placeholder={`Ex: VotreUsername#TAG`}
-                  value={trackerUsername}
-                  onChange={(e) => setTrackerUsername(e.target.value)}
-                />
-                <Button 
-                  onClick={saveTrackerUsername} 
-                  disabled={savingTracker || !trackerUsername.trim()}
-                >
-                  {savingTracker ? "..." : <Save className="w-4 h-4" />}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Configurez votre pseudo pour voir vos vraies statistiques de performance
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Configuration supprimée - fonctionnalité tracker retirée */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Points forts */}

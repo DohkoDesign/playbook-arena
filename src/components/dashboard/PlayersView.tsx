@@ -143,37 +143,51 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {members.length === 0 ? (
           <Card className="md:col-span-2 lg:col-span-3">
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-8 text-center">
+              <Users className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Équipe vide</h3>
               <p className="text-muted-foreground">
                 Aucun membre dans l'équipe. Invitez vos premiers joueurs !
               </p>
+              {!isPlayerView && (
+                <Button onClick={() => setShowInviteModal(true)} className="mt-4">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Inviter un joueur
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
           members.map((member) => (
-            <Card key={member.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {member.profiles?.photo_profil ? (
-                        <img 
-                          src={member.profiles.photo_profil} 
-                          alt={`Photo de profil de ${member.profiles.pseudo}`}
-                          className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-brand flex items-center justify-center text-primary-foreground font-bold">
-                          {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
-                        </div>
-                      )}
+            <Card key={member.id} className="group hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-card to-card/80 backdrop-blur-sm">
+              <CardContent className="p-0">
+                {/* Header avec avatar et info principale */}
+                <div className="relative p-6 pb-4">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-t-lg"></div>
+                  <div className="relative flex items-start justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        {member.profiles?.photo_profil ? (
+                          <img 
+                            src={member.profiles.photo_profil} 
+                            alt={`Photo de profil de ${member.profiles.pseudo}`}
+                            className="w-16 h-16 rounded-2xl object-cover border-2 border-background shadow-lg"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center text-primary-foreground font-bold text-xl shadow-lg">
+                            {member.profiles?.pseudo?.charAt(0).toUpperCase() || "?"}
+                          </div>
+                        )}
+                        <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-background shadow-md"></div>
+                      </div>
                       <div>
-                        <CardTitle className="text-lg">
+                        <h3 className="text-xl font-bold text-foreground mb-1">
                           {member.profiles?.pseudo || "Joueur"}
-                        </CardTitle>
-                        <Badge className={getRoleColor(member.role)}>
+                        </h3>
+                        <Badge className={`${getRoleColor(member.role)} font-medium shadow-sm`}>
                           {member.role}
                         </Badge>
                       </div>
@@ -181,65 +195,79 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
                     {!isPlayerView && (
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => openPlayerManagement(member)}
+                        className="opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary/10 hover:text-primary"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
+                        <Eye className="w-4 h-4 mr-2" />
                         Gérer
                       </Button>
                     )}
                   </div>
-              </CardHeader>
-              
-              <CardContent className="space-y-3">
-                {/* Personnages favoris */}
-                {member.personnages_favoris && member.personnages_favoris.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Personnages favoris:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {member.personnages_favoris.slice(0, 3).map((char: string, index: number) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {char}
-                        </Badge>
-                      ))}
-                      {member.personnages_favoris.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{member.personnages_favoris.length - 3}
-                        </Badge>
+                </div>
+
+                {/* Contenu principal */}
+                <div className="px-6 pb-6 space-y-4">
+                  {/* Personnages favoris */}
+                  {member.personnages_favoris && member.personnages_favoris.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                        Personnages favoris
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {member.personnages_favoris.slice(0, 3).map((char: string, index: number) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-muted/50 border-muted">
+                            {char}
+                          </Badge>
+                        ))}
+                        {member.personnages_favoris.length > 3 && (
+                          <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                            +{member.personnages_favoris.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Statistiques du profil joueur */}
+                  {member.player_profiles && member.player_profiles.length > 0 && (
+                    <div className="grid grid-cols-3 gap-3">
+                      {member.player_profiles[0].points_forts && member.player_profiles[0].points_forts.length > 0 && (
+                        <div className="text-center p-3 bg-green-50 dark:bg-green-950/20 rounded-xl border border-green-200 dark:border-green-800">
+                          <TrendingUp className="w-4 h-4 text-green-600 mx-auto mb-1" />
+                          <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                            {member.player_profiles[0].points_forts.length}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-500">
+                            Points forts
+                          </p>
+                        </div>
+                      )}
+                      {member.player_profiles[0].points_faibles && member.player_profiles[0].points_faibles.length > 0 && (
+                        <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
+                          <TrendingDown className="w-4 h-4 text-orange-600 mx-auto mb-1" />
+                          <p className="text-sm font-semibold text-orange-700 dark:text-orange-400">
+                            {member.player_profiles[0].points_faibles.length}
+                          </p>
+                          <p className="text-xs text-orange-600 dark:text-orange-500">
+                            Améliorations
+                          </p>
+                        </div>
+                      )}
+                      {member.player_profiles[0].objectifs_individuels && member.player_profiles[0].objectifs_individuels.length > 0 && (
+                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                          <Target className="w-4 h-4 text-blue-600 mx-auto mb-1" />
+                          <p className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                            {member.player_profiles[0].objectifs_individuels.length}
+                          </p>
+                          <p className="text-xs text-blue-600 dark:text-blue-500">
+                            Objectifs
+                          </p>
+                        </div>
                       )}
                     </div>
-                  </div>
-                )}
-
-                {/* Aperçu des points forts/faibles pour les joueurs */}
-                {member.player_profiles && member.player_profiles.length > 0 && (
-                  <div className="space-y-2">
-                    {member.player_profiles[0].points_forts && member.player_profiles[0].points_forts.length > 0 && (
-                      <div className="flex items-center space-x-2 text-green-600">
-                        <TrendingUp className="w-4 h-4" />
-                        <span className="text-xs">
-                          {member.player_profiles[0].points_forts.length} point(s) fort(s)
-                        </span>
-                      </div>
-                    )}
-                    {member.player_profiles[0].points_faibles && member.player_profiles[0].points_faibles.length > 0 && (
-                      <div className="flex items-center space-x-2 text-red-600">
-                        <TrendingDown className="w-4 h-4" />
-                        <span className="text-xs">
-                          {member.player_profiles[0].points_faibles.length} point(s) à améliorer
-                        </span>
-                      </div>
-                    )}
-                    {member.player_profiles[0].objectifs_individuels && member.player_profiles[0].objectifs_individuels.length > 0 && (
-                      <div className="flex items-center space-x-2 text-blue-600">
-                        <Target className="w-4 h-4" />
-                        <span className="text-xs">
-                          {member.player_profiles[0].objectifs_individuels.length} objectif(s)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))

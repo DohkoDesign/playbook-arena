@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+import { PlayerPersonalEvents as PlayerPersonalEventsComponent } from "@/components/dashboard/PlayerPersonalEvents";
 
 export const PlayerManagement = () => {
   const { teamId, userId } = useParams();
@@ -368,6 +368,13 @@ export const PlayerManagement = () => {
                 Profil & Analyse
               </TabsTrigger>
               <TabsTrigger 
+                value="planning"
+                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                <CalendarIcon className="w-4 h-4 mr-2" />
+                Planning Personnel
+              </TabsTrigger>
+              <TabsTrigger 
                 value="notes"
                 className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
               >
@@ -532,6 +539,14 @@ export const PlayerManagement = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="planning" className="space-y-8 animate-fade-in">
+            <PlayerPersonalEventsComponent 
+              teamId={teamId || ""}
+              playerId={userId || ""}
+              playerName={profile?.pseudo || "Joueur"}
+            />
           </TabsContent>
 
           <TabsContent value="notes" className="animate-fade-in">
