@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { startOfWeek, format, addWeeks, endOfWeek } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar, Clock, Users, User, Settings } from "lucide-react";
+import { Calendar, Clock, Users, User, Settings, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SimpleAvailabilityManager } from "./SimpleAvailabilityManager";
@@ -34,18 +36,25 @@ const dayNames = {
   0: 'Dimanche'
 };
 
+// Utiliser la même fonction que dans SimpleAvailabilityManager
+const getWeekStart = (date: Date = new Date()) => {
+  const monday = startOfWeek(date, { weekStartsOn: 1 });
+  return monday.toISOString().split('T')[0];
+};
+
 export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailabilitiesProps) => {
   const [availabilities, setAvailabilities] = useState<PlayerAvailability[]>([]);
   const [players, setPlayers] = useState<{id: string, pseudo: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState<string>('all');
   const [selectedDay, setSelectedDay] = useState<string>('all');
+  const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchData();
-  }, [teamId]);
+  }, [teamId, selectedWeek]);
 
   const fetchData = async () => {
     try {
@@ -88,12 +97,10 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
       setPlayers(playersData);
       console.log("✅ Players loaded:", playersData.length);
 
-      // Récupérer les disponibilités de la semaine courante
-      const startOfWeek = new Date();
-      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-      const weekStart = startOfWeek.toISOString().split('T')[0];
+      // Récupérer les disponibilités de la semaine sélectionnée avec la même logique
+      const weekStart = getWeekStart(selectedWeek);
 
-      console.log("📅 Week start:", weekStart);
+      console.log("📅 Week start (synchronized):", weekStart);
 
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
         .from("player_availabilities")
@@ -165,6 +172,16 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     return colors[dayOfWeek as keyof typeof colors] || colors[1];
   };
 
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setSelectedWeek(prev => addWeeks(prev, direction === 'next' ? 1 : -1));
+  };
+
+  const getWeekRange = () => {
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+    return `${format(start, 'dd MMM', { locale: fr })} - ${format(end, 'dd MMM yyyy', { locale: fr })}`;
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -190,6 +207,37 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         <Button onClick={() => setShowAvailabilityModal(true)}>
           <Settings className="w-4 h-4 mr-2" />
           Mes disponibilités
+        </Button>
+      </div>
+
+      {/* Sélecteur de semaine */}
+      <div className="flex items-center justify-center space-x-4 p-4 bg-muted/30 rounded-lg">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('prev')}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        
+        <div className="text-center">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4" />
+            <span className="font-medium">Semaine du {getWeekRange()}</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {selectedWeek < new Date() ? 'Semaine passée' : 
+             format(selectedWeek, 'yyyy') === format(new Date(), 'yyyy') && 
+             format(selectedWeek, 'w') === format(new Date(), 'w') ? 'Semaine courante' : 'Semaine future'}
+          </p>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('next')}
+        >
+          <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
 
