@@ -177,33 +177,38 @@ export const PlayerProfileModal = ({
                 <span>Points forts</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2 min-h-[2rem]">
                 {pointsForts.map((point, index) => (
                   <Badge
                     key={index}
-                    className="bg-black text-white border-2 border-white"
+                    variant="secondary" 
+                    className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors group"
                   >
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
                       onClick={() => removePointFort(index)}
                     >
                       <X className="w-3 h-3" />
                     </Button>
                   </Badge>
                 ))}
+                {pointsForts.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Aucun point fort ajouté</p>
+                )}
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Ajouter un point fort..."
+                  placeholder="Ex: Bon aim, Leadership..."
                   value={newPointFort}
                   onChange={(e) => setNewPointFort(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addPointFort()}
+                  className="flex-1"
                 />
-                <Button size="sm" onClick={addPointFort}>
+                <Button size="sm" onClick={addPointFort} variant="outline" className="shrink-0">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -218,33 +223,38 @@ export const PlayerProfileModal = ({
                 <span>Points à améliorer</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2 min-h-[2rem]">
                 {pointsFaibles.map((point, index) => (
                   <Badge
                     key={index}
-                    className="bg-black text-white border-2 border-white"
+                    variant="secondary" 
+                    className="bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors group"
                   >
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
                       onClick={() => removePointFaible(index)}
                     >
                       <X className="w-3 h-3" />
                     </Button>
                   </Badge>
                 ))}
+                {pointsFaibles.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Aucun point à améliorer ajouté</p>
+                )}
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Ajouter un point à améliorer..."
+                  placeholder="Ex: Positionnement, Communication..."
                   value={newPointFaible}
                   onChange={(e) => setNewPointFaible(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addPointFaible()}
+                  className="flex-1"
                 />
-                <Button size="sm" onClick={addPointFaible}>
+                <Button size="sm" onClick={addPointFaible} variant="outline" className="shrink-0">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -259,33 +269,38 @@ export const PlayerProfileModal = ({
                 <span>Objectifs individuels</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap gap-2 min-h-[2rem]">
                 {objectifs.map((objectif, index) => (
                   <Badge
                     key={index}
-                    className="bg-black text-white border-2 border-white"
+                    variant="secondary" 
+                    className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors group"
                   >
                     {objectif}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-1 h-4 w-4 p-0 hover:bg-transparent hover:text-red-400"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
                       onClick={() => removeObjectif(index)}
                     >
                       <X className="w-3 h-3" />
                     </Button>
                   </Badge>
                 ))}
+                {objectifs.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic">Aucun objectif ajouté</p>
+                )}
               </div>
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <Input
-                  placeholder="Ajouter un objectif..."
+                  placeholder="Ex: Améliorer le KDA, Apprendre de nouveaux agents..."
                   value={newObjectif}
                   onChange={(e) => setNewObjectif(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addObjectif()}
+                  className="flex-1"
                 />
-                <Button size="sm" onClick={addObjectif}>
+                <Button size="sm" onClick={addObjectif} variant="outline" className="shrink-0">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
