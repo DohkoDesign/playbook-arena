@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
-import heroBackground from "@/assets/hero-background.jpg";
 
 interface HeroSectionProps {
   onOpenSignup: () => void;
@@ -12,7 +11,7 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
     <section 
       className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen"
       style={{
-        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)), url(${heroBackground})`,
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
