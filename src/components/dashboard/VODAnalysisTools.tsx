@@ -404,7 +404,19 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
               et de partager vos analyses avec votre équipe.
             </p>
             <Button 
-              onClick={() => window.open('/dashboard?view=vod-review', '_blank')}
+              onClick={() => {
+                // Naviguer vers la vue VOD Review au lieu d'ouvrir une nouvelle fenêtre
+                if (window.location.pathname === '/dashboard') {
+                  // Si nous sommes déjà sur le dashboard, changer la vue
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('view', 'vod-review');
+                  window.history.pushState({}, '', url.toString());
+                  window.location.reload();
+                } else {
+                  // Sinon naviguer vers le dashboard avec la vue VOD
+                  window.location.href = '/dashboard?view=vod-review';
+                }
+              }}
               className="bg-primary hover:bg-primary/90"
             >
               <PlayCircle className="w-4 h-4 mr-2" />

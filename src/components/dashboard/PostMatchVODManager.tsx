@@ -17,10 +17,12 @@ import {
   Users,
   Tag,
   ExternalLink,
-  CheckCircle
+  CheckCircle,
+  PlayCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { VODViewer } from "./VODViewer";
 
 interface PostMatchVODManagerProps {
   eventId: string;
@@ -51,6 +53,7 @@ interface VODData {
 
 export const PostMatchVODManager = ({ eventId, teamId, onVODsUpdated }: PostMatchVODManagerProps) => {
   const [vods, setVods] = useState<VODData[]>([]);
+  const [selectedVOD, setSelectedVOD] = useState<any>(null);
   const [newVOD, setNewVOD] = useState<VODData>({
     type: 'match_complet',
     platform: 'youtube',
@@ -503,9 +506,10 @@ export const PostMatchVODManager = ({ eventId, teamId, onVODsUpdated }: PostMatc
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => window.open(vod.url, '_blank')}
+                        onClick={() => setSelectedVOD(vod)}
                       >
-                        <ExternalLink className="w-3 h-3" />
+                        <PlayCircle className="w-3 h-3 mr-1" />
+                        Voir
                       </Button>
                       <Button
                         variant={vod.validated ? "default" : "outline"}
@@ -540,6 +544,16 @@ export const PostMatchVODManager = ({ eventId, teamId, onVODsUpdated }: PostMatc
             </p>
           </CardContent>
         </Card>
+      )}
+
+      {/* VOD Viewer */}
+      {selectedVOD && (
+        <VODViewer
+          vod={selectedVOD}
+          isOpen={!!selectedVOD}
+          onClose={() => setSelectedVOD(null)}
+          showExternalLink={true}
+        />
       )}
     </div>
   );
