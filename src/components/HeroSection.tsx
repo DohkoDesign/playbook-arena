@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 
-export const HeroSection = () => {
+interface HeroSectionProps {
+  onOpenSignup: () => void;
+  onOpenLogin: () => void;
+}
+
+export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => {
   return (
     <section 
       className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen"
@@ -65,11 +70,11 @@ export const HeroSection = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group" onClick={() => window.location.href = '/auth'}>
+          <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group" onClick={onOpenSignup}>
             Commencer gratuitement
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+          <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10" onClick={() => document.getElementById('features-detail')?.scrollIntoView({ behavior: 'smooth' })}>
             Découvrir les fonctionnalités
           </Button>
         </div>

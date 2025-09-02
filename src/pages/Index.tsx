@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
-import { FeaturesList } from "@/components/FeaturesList";
+import { FeaturesDetails } from "@/components/FeaturesDetails";
 import { FeaturesShowcase } from "@/components/FeaturesShowcase";
 import { GamesList } from "@/components/GamesList";
 import { TestimonialsSection } from "@/components/TestimonialsSection";
@@ -242,8 +242,12 @@ const Index = () => {
         onOpenLogin={() => setIsLoginOpen(true)}
       />
       <main>
-        <HeroSection />
+        <HeroSection 
+          onOpenSignup={() => setIsSignupOpen(true)}
+          onOpenLogin={() => setIsLoginOpen(true)}
+        />
         <FeaturesShowcase />
+        <FeaturesDetails />
         <GamesList />
         {/* <TestimonialsSection /> */}
       </main>
