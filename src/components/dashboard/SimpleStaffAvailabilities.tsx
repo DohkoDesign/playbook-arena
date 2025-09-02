@@ -391,58 +391,68 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
       {/* Liste des joueurs - horizontal sans scroll */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Joueurs de l'équipe</h3>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {players.map(player => (
-            <Card key={player.id} className="flex-shrink-0 w-64">
+            <Card key={player.id} className="h-fit">
               <CardContent className="p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <Avatar className="w-10 h-10">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Avatar className="w-12 h-12">
                     <AvatarImage src={player.photo_profil} />
                     <AvatarFallback>
                       {player.pseudo.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold">{player.pseudo}</h3>
+                    <h3 className="font-semibold text-lg">{player.pseudo}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {player.totalSlots} créneau{player.totalSlots > 1 ? 'x' : ''}
+                      {player.totalSlots > 0 
+                        ? `${player.totalSlots} créneau${player.totalSlots > 1 ? 'x' : ''} disponible${player.totalSlots > 1 ? 's' : ''}`
+                        : 'Aucune disponibilité'
+                      }
                     </p>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  {player.totalSlots === 0 ? (
-                    <div className="text-center py-2">
-                      <XCircle className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
-                      <p className="text-xs text-muted-foreground">Aucune disponibilité</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {[1, 2, 3, 4, 5, 6, 0].map(day => {
-                        const daySlots = player.slots.filter(slot => slot.day_of_week === day);
-                        if (daySlots.length === 0) return null;
-                        
-                        return (
-                          <div key={day} className="text-xs">
-                            <div className="font-medium text-muted-foreground mb-1">
-                              {dayShort[day]}
-                            </div>
-                            <div className="space-y-1 ml-2">
-                              {daySlots.map((slot, index) => (
-                                <div key={index} className="flex items-center space-x-1">
-                                  <Clock className="w-3 h-3 text-primary" />
-                                  <span className="text-primary">
+                {player.totalSlots === 0 ? (
+                  <div className="text-center py-6 bg-muted/30 rounded-lg">
+                    <XCircle className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Pas de créneaux cette semaine</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5, 6, 0].map(day => {
+                      const daySlots = player.slots.filter(slot => slot.day_of_week === day);
+                      if (daySlots.length === 0) return null;
+                      
+                      return (
+                        <div key={day} className="border rounded-lg p-3 bg-muted/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-sm">{dayNames[day]}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {daySlots.length} créneau{daySlots.length > 1 ? 'x' : ''}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1">
+                            {daySlots.map((slot, index) => {
+                              const Icon = getTimeSlotIcon(slot.start_time);
+                              return (
+                                <div key={index} className="flex items-center space-x-2 text-sm">
+                                  <Icon className="w-4 h-4 text-primary" />
+                                  <span className="text-primary font-medium">
                                     {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                   </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    ({getTimeSlotLabel(slot.start_time)})
+                                  </span>
                                 </div>
-                              ))}
-                            </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
