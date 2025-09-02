@@ -19,10 +19,13 @@ import {
   Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { GuideContent } from "@/components/documentation/GuideContent";
+import { getGuideById } from "@/data/guideContents";
 
 export const Documentation = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGuide, setSelectedGuide] = useState<string | null>(null);
 
   const sections = [
     {
@@ -30,9 +33,9 @@ export const Documentation = () => {
       icon: Play,
       description: "Découvrez comment démarrer avec Shadow Hub",
       articles: [
-        { title: "Créer votre première équipe", time: "5 min", description: "Guide complet pour configurer votre équipe eSport" },
-        { title: "Inviter des joueurs", time: "3 min", description: "Ajouter des membres à votre équipe" },
-        { title: "Vue d'ensemble du dashboard", time: "8 min", description: "Naviguer dans l'interface principale" }
+        { title: "Créer votre première équipe", time: "5 min", description: "Guide complet pour configurer votre équipe eSport", id: "creer-equipe" },
+        { title: "Inviter des joueurs", time: "3 min", description: "Ajouter des membres à votre équipe", id: "inviter-joueurs" },
+        { title: "Vue d'ensemble du dashboard", time: "8 min", description: "Naviguer dans l'interface principale", id: "dashboard-overview" }
       ]
     },
     {
@@ -40,9 +43,9 @@ export const Documentation = () => {
       icon: Users,
       description: "Organisez et gérez efficacement votre équipe",
       articles: [
-        { title: "Organisation des rosters", time: "10 min", description: "Structurer votre équipe par jeu et rôle" },
-        { title: "Rôles et permissions", time: "6 min", description: "Définir les droits d'accès des membres" },
-        { title: "Gestion des remplaçants", time: "5 min", description: "Configurer les joueurs de réserve" }
+        { title: "Organisation des rosters", time: "10 min", description: "Structurer votre équipe par jeu et rôle", id: "organisation-rosters" },
+        { title: "Rôles et permissions", time: "6 min", description: "Définir les droits d'accès des membres", id: "roles-permissions" },
+        { title: "Gestion des remplaçants", time: "5 min", description: "Configurer les joueurs de réserve", id: "gestion-remplacants" }
       ]
     },
     {
@@ -50,9 +53,9 @@ export const Documentation = () => {
       icon: Calendar,
       description: "Planifiez vos matchs et entraînements",
       articles: [
-        { title: "Créer des événements", time: "8 min", description: "Planifier matchs et sessions d'entraînement" },
-        { title: "Calendrier partagé", time: "5 min", description: "Synchroniser les disponibilités de l'équipe" },
-        { title: "Gestion des disponibilités", time: "7 min", description: "Suivre la présence des joueurs" }
+        { title: "Créer des événements", time: "8 min", description: "Planifier matchs et sessions d'entraînement", id: "creer-evenements" },
+        { title: "Calendrier partagé", time: "5 min", description: "Synchroniser les disponibilités de l'équipe", id: "calendrier-partage" },
+        { title: "Gestion des disponibilités", time: "7 min", description: "Suivre la présence des joueurs", id: "gestion-disponibilites" }
       ]
     },
     {
@@ -60,9 +63,9 @@ export const Documentation = () => {
       icon: MessageSquare,
       description: "Formez et développez vos joueurs",
       articles: [
-        { title: "Sessions de coaching", time: "12 min", description: "Organiser et suivre les formations" },
-        { title: "Système de feedback", time: "6 min", description: "Documenter les progrès des joueurs" },
-        { title: "Objectifs et évaluations", time: "10 min", description: "Définir et mesurer les performances" }
+        { title: "Sessions de coaching", time: "12 min", description: "Organiser et suivre les formations", id: "sessions-coaching" },
+        { title: "Système de feedback", time: "6 min", description: "Documenter les progrès des joueurs", id: "systeme-feedback" },
+        { title: "Objectifs et évaluations", time: "10 min", description: "Définir et mesurer les performances", id: "objectifs-evaluations" }
       ]
     },
     {
@@ -70,9 +73,9 @@ export const Documentation = () => {
       icon: Video,
       description: "Analysez vos replays et améliorez-vous",
       articles: [
-        { title: "Upload de VODs", time: "5 min", description: "Importer vos replays et analyses vidéo" },
-        { title: "Organisation des vidéos", time: "8 min", description: "Classer par événement et joueur" },
-        { title: "Outils d'analyse", time: "15 min", description: "Utiliser les fonctionnalités d'annotation" }
+        { title: "Upload de VODs", time: "5 min", description: "Importer vos replays et analyses vidéo", id: "upload-vods" },
+        { title: "Organisation des vidéos", time: "8 min", description: "Classer par événement et joueur", id: "organisation-videos" },
+        { title: "Outils d'analyse", time: "15 min", description: "Utiliser les fonctionnalités d'annotation", id: "outils-analyse" }
       ]
     },
     {
@@ -80,9 +83,9 @@ export const Documentation = () => {
       icon: BarChart3,
       description: "Suivez les performances de votre équipe",
       articles: [
-        { title: "Dashboard équipe", time: "10 min", description: "Vue d'ensemble des statistiques" },
-        { title: "Statistiques individuelles", time: "8 min", description: "Analyser les performances par joueur" },
-        { title: "Rapports de progression", time: "12 min", description: "Suivre l'évolution dans le temps" }
+        { title: "Dashboard équipe", time: "10 min", description: "Vue d'ensemble des statistiques", id: "dashboard-equipe" },
+        { title: "Statistiques individuelles", time: "8 min", description: "Analyser les performances par joueur", id: "stats-individuelles" },
+        { title: "Rapports de progression", time: "12 min", description: "Suivre l'évolution dans le temps", id: "rapports-progression" }
       ]
     }
   ];
@@ -92,19 +95,22 @@ export const Documentation = () => {
       title: "Configuration initiale",
       description: "Tout configurer en 15 minutes",
       time: "15 min",
-      steps: 4
+      steps: 4,
+      id: "configuration-initiale"
     },
     {
       title: "Premier match",
       description: "Organiser votre première compétition",
       time: "10 min", 
-      steps: 3
+      steps: 3,
+      id: "premier-match"
     },
     {
       title: "Analyse post-match",
       description: "Débriefing et amélioration",
       time: "20 min",
-      steps: 5
+      steps: 5,
+      id: "analyse-post-match"
     }
   ];
 
@@ -114,6 +120,22 @@ export const Documentation = () => {
       article.title.toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
+
+  const handleGuideSelect = (guideId: string) => {
+    setSelectedGuide(guideId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedGuide(null);
+  };
+
+  // If a guide is selected, show the guide content
+  if (selectedGuide) {
+    const guide = getGuideById(selectedGuide);
+    if (guide) {
+      return <GuideContent guide={guide} onBack={handleBackToList} />;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -176,7 +198,11 @@ export const Documentation = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {quickGuides.map((guide, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+              <Card 
+                key={index} 
+                className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group"
+                onClick={() => handleGuideSelect(guide.id)}
+              >
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Badge variant="outline" className="text-xs">
@@ -225,7 +251,11 @@ export const Documentation = () => {
                 <CardContent>
                   <div className="space-y-3">
                     {section.articles.map((article, articleIndex) => (
-                      <div key={articleIndex} className="flex items-start justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group">
+                      <div 
+                        key={articleIndex} 
+                        className="flex items-start justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                        onClick={() => handleGuideSelect(article.id)}
+                      >
                         <div className="flex-1">
                           <h4 className="font-medium text-sm mb-1 group-hover:text-primary transition-colors">
                             {article.title}
