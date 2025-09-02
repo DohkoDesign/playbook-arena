@@ -22,10 +22,11 @@ export const DashboardSidebar = ({
   onNewTeam,
   currentUserId,
 }: DashboardSidebarProps) => {
+  // Définir d'abord les variables nécessaires
   const currentTeamData = teams.find(team => team.id === selectedTeam);
   const isTeamOwner = currentTeamData && currentUserId && currentTeamData.created_by === currentUserId;
   
-  // Navigation organisée par catégories
+  // Navigation organisée par catégories - défini après isTeamOwner
   const navigationSections = [
     {
       title: "Navigation",
