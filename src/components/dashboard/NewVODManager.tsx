@@ -257,15 +257,21 @@ export const NewVODManager = ({ teamId }: NewVODManagerProps) => {
                 events.map((event) => (
                   <Card
                     key={event.id}
-                    className={`cursor-pointer transition-colors hover:bg-accent ${
-                      selectedEvent?.id === event.id ? 'bg-accent border-primary' : ''
+                    className={`cursor-pointer transition-colors ${
+                      selectedEvent?.id === event.id 
+                        ? 'bg-primary/10 border-primary text-primary-foreground' 
+                        : 'hover:bg-accent/50'
                     }`}
                     onClick={() => setSelectedEvent(event)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium">{event.titre}</h4>
+                          <h4 className={`font-medium ${
+                            selectedEvent?.id === event.id ? 'text-foreground' : ''
+                          }`}>
+                            {event.titre}
+                          </h4>
                           <div className="flex items-center space-x-2 mt-1">
                             <Badge variant="outline" className="text-xs">
                               {event.type}
@@ -276,7 +282,11 @@ export const NewVODManager = ({ teamId }: NewVODManagerProps) => {
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className={`text-xs mt-1 ${
+                            selectedEvent?.id === event.id 
+                              ? 'text-muted-foreground' 
+                              : 'text-muted-foreground'
+                          }`}>
                             {new Date(event.date_debut).toLocaleDateString("fr-FR")}
                           </p>
                         </div>
