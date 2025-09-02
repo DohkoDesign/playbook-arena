@@ -183,13 +183,14 @@ export const PlayerProfileModal = ({
                   <Badge
                     key={index}
                     variant="secondary" 
-                    className="bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors group"
+                    className="bg-accent text-accent-foreground border border-border hover:bg-primary/10 hover:border-primary/30 transition-colors group px-3 py-1.5"
                   >
+                    <TrendingUp className="w-3 h-3 mr-1.5 text-primary" />
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-destructive"
                       onClick={() => removePointFort(index)}
                     >
                       <X className="w-3 h-3" />
@@ -228,14 +229,15 @@ export const PlayerProfileModal = ({
                 {pointsFaibles.map((point, index) => (
                   <Badge
                     key={index}
-                    variant="secondary" 
-                    className="bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors group"
+                    variant="outline"
+                    className="bg-muted/50 text-muted-foreground border border-muted-foreground/20 hover:bg-muted hover:border-muted-foreground/40 transition-colors group px-3 py-1.5"
                   >
+                    <TrendingDown className="w-3 h-3 mr-1.5 text-muted-foreground" />
                     {point}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-destructive"
                       onClick={() => removePointFaible(index)}
                     >
                       <X className="w-3 h-3" />
@@ -274,14 +276,15 @@ export const PlayerProfileModal = ({
                 {objectifs.map((objectif, index) => (
                   <Badge
                     key={index}
-                    variant="secondary" 
-                    className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors group"
+                    variant="default"
+                    className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 hover:border-primary/30 transition-colors group px-3 py-1.5"
                   >
+                    <Target className="w-3 h-3 mr-1.5" />
                     {objectif}
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-red-500"
+                      className="ml-2 h-4 w-4 p-0 hover:bg-transparent group-hover:text-destructive"
                       onClick={() => removeObjectif(index)}
                     >
                       <X className="w-3 h-3" />

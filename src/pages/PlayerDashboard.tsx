@@ -22,7 +22,10 @@ const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState<PlayerView>("dashboard");
+  const [currentView, setCurrentView] = useState<PlayerView>(() => {
+    const saved = localStorage.getItem('player-dashboard-current-view');
+    return (saved as PlayerView) || "dashboard";
+  });
   const [teamData, setTeamData] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
@@ -209,7 +212,11 @@ const PlayerDashboard = () => {
         <PlayerSidebar
           teamData={teamData}
           currentView={currentView}
-          onViewChange={(view) => setCurrentView(view as PlayerView)}
+          onViewChange={(view) => {
+            const playerView = view as PlayerView;
+            setCurrentView(playerView);
+            localStorage.setItem('player-dashboard-current-view', playerView);
+          }}
         />
         
         <div className="flex-1 ml-72">

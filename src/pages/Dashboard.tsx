@@ -25,7 +25,10 @@ const Dashboard = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [showTeamSetup, setShowTeamSetup] = useState(false);
-  const [currentView, setCurrentView] = useState<DashboardView>("dashboard");
+  const [currentView, setCurrentView] = useState<DashboardView>(() => {
+    const saved = localStorage.getItem('dashboard-current-view');
+    return (saved as DashboardView) || "dashboard";
+  });
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [teams, setTeams] = useState<any[]>([]);
   const navigate = useNavigate();
@@ -174,7 +177,11 @@ const Dashboard = () => {
           selectedTeam={selectedTeam}
           onTeamSelect={setSelectedTeam}
           currentView={currentView}
-          onViewChange={(view) => setCurrentView(view as DashboardView)}
+          onViewChange={(view) => {
+            const dashboardView = view as DashboardView;
+            setCurrentView(dashboardView);
+            localStorage.setItem('dashboard-current-view', dashboardView);
+          }}
           onNewTeam={() => setShowTeamSetup(true)}
           currentUserId={user?.id}
         />

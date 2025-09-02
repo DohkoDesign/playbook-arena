@@ -275,7 +275,12 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" disabled={member.role === 'owner'} className="bg-card border-border hover:bg-accent">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              disabled={member.role === 'owner'} 
+                              className="bg-background border-2 border-border hover:bg-accent hover:border-primary/20 transition-all duration-200 shadow-sm"
+                            >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
