@@ -35,7 +35,6 @@ export const PlayerSidebar = ({
       title: "Équipe",
       items: [
         { id: "team-availabilities", label: "Disponibilités équipe", icon: Clock },
-        { id: "team-strategies", label: "Stratégies", icon: BookOpen },
         { id: "team-coaching", label: "Coaching", icon: Video },
       ]
     }

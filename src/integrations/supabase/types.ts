@@ -400,50 +400,6 @@ export type Database = {
         }
         Relationships: []
       }
-      strategies: {
-        Row: {
-          contenu: Json | null
-          created_at: string
-          created_by: string
-          id: string
-          map_name: string | null
-          nom: string
-          team_id: string
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          contenu?: Json | null
-          created_at?: string
-          created_by: string
-          id?: string
-          map_name?: string | null
-          nom: string
-          team_id: string
-          type: string
-          updated_at?: string
-        }
-        Update: {
-          contenu?: Json | null
-          created_at?: string
-          created_by?: string
-          id?: string
-          map_name?: string | null
-          nom?: string
-          team_id?: string
-          type?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "strategies_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       team_members: {
         Row: {
           created_at: string

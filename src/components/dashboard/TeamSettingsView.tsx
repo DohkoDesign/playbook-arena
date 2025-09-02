@@ -185,9 +185,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
       // Supprimer tous les membres de l'équipe
       await supabase.from("team_members").delete().eq("team_id", teamId);
       
-      // Supprimer toutes les stratégies
-      await supabase.from("strategies").delete().eq("team_id", teamId);
-      
       // Supprimer tous les événements
       await supabase.from("events").delete().eq("team_id", teamId);
       
