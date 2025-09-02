@@ -18,7 +18,7 @@ export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <Button variant="ghost" className="hidden sm:inline-flex" onClick={onOpenLogin}>
+          <Button variant="ghost" className="hidden sm:inline-flex text-white hover:bg-white/10" onClick={onOpenLogin}>
             Connexion
           </Button>
           <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenSignup}>
