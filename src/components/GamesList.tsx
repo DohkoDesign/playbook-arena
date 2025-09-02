@@ -12,13 +12,13 @@ const POPULAR_GAMES = [
 
 export const GamesList = () => {
   return (
-    <section id="games" className="py-20 px-6 bg-muted/30">
+    <section id="games" className="py-20 px-6" style={{backgroundColor: '#0e131b'}}>
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
             9 jeux compétitifs supportés
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-white/70 max-w-2xl mx-auto">
             Gérez vos équipes sur tous les jeux eSport majeurs avec des configurations 
             automatiques adaptées à chaque discipline et des rosters spécialisés.
           </p>
@@ -45,7 +45,7 @@ export const GamesList = () => {
         </div>
 
         <div className="text-center mt-12">
-          <p className="text-muted-foreground">
+          <p className="text-white/60">
             Configuration automatique des rosters selon le jeu sélectionné
           </p>
         </div>
