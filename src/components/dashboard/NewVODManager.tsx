@@ -348,7 +348,7 @@ export const NewVODManager = ({ teamId }: NewVODManagerProps) => {
                       players.map((player) => (
                         <div
                           key={player.id}
-                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer"
+                          className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
                           onClick={() => handleOpenVODModal('vod_perso', player)}
                         >
                           <div className="flex items-center space-x-3">
