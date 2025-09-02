@@ -20,6 +20,7 @@ export type Database = {
           created_at: string
           expires_at: string | null
           id: string
+          team_name: string | null
           used_at: string | null
           used_by: string | null
         }
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
+          team_name?: string | null
           used_at?: string | null
           used_by?: string | null
         }
@@ -36,6 +38,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
+          team_name?: string | null
           used_at?: string | null
           used_by?: string | null
         }

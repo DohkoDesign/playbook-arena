@@ -10,6 +10,7 @@ import PlayerDashboard from "./pages/PlayerDashboard";
 import { PlayerManagement } from "./pages/PlayerManagement";
 import { Documentation } from "./pages/Documentation";
 import { FAQ } from "./pages/FAQ";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/player-management/:teamId/:userId" element={<PlayerManagement />} />
           <Route path="/documentation" element={<Documentation />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
