@@ -210,7 +210,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
       const weekStart = getWeekStart(selectedWeek);
       console.log("📅 Week start:", weekStart);
 
-      // Supprimer les anciennes disponibilités
+      // Supprimer les anciennes disponibilités et attendre la confirmation
       console.log("🗑️ Deleting old availabilities...");
       const { error: deleteError } = await supabase
         .from('player_availabilities')
@@ -223,6 +223,11 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
         console.error("❌ Delete error:", deleteError);
         throw deleteError;
       }
+
+      console.log("✅ Old availabilities deleted successfully");
+
+      // Attendre un petit délai pour s'assurer que la suppression est bien traitée
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const availabilitiesToInsert = [];
 
@@ -274,6 +279,33 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
 
       if (availabilitiesToInsert.length > 0) {
         console.log("🚀 Making Supabase insert request...");
+        
+        // Vérifier qu'il n'y a plus d'anciennes données avant d'insérer
+        const { data: existingData, error: checkError } = await supabase
+          .from('player_availabilities')
+          .select('id')
+          .eq('team_id', teamId)
+          .eq('user_id', playerId)
+          .eq('week_start', weekStart);
+
+        if (checkError) {
+          console.error("❌ Check error:", checkError);
+          throw checkError;
+        }
+
+        if (existingData && existingData.length > 0) {
+          console.log("⚠️ Found existing data after delete, forcing another delete...");
+          await supabase
+            .from('player_availabilities')
+            .delete()
+            .eq('team_id', teamId)
+            .eq('user_id', playerId)
+            .eq('week_start', weekStart);
+          
+          // Attendre encore un peu
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
         const { error: insertError } = await supabase
           .from('player_availabilities')
           .insert(availabilitiesToInsert);
@@ -301,7 +333,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
       console.error("❌ Error saving availabilities:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de sauvegarder",
+        description: `Impossible de sauvegarder: ${error.message || 'Erreur inconnue'}`,
         variant: "destructive",
       });
     } finally {
