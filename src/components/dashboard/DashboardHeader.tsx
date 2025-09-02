@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Settings, Shield } from "lucide-react";
+import { LogOut, Settings, Shield, UserCog } from "lucide-react";
 import { ProfileSettings } from "./ProfileSettings";
 import { NotificationCenter } from "./NotificationCenter";
 import { TeamSettingsView } from "./TeamSettingsView";
 import { supabase } from "@/integrations/supabase/client";
 import { getGameConfig } from "@/data/gameConfigs";
+import { useNavigate } from "react-router-dom";
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -28,8 +29,12 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
   const [showProfileSettings, setShowProfileSettings] = useState(false);
   const [showTeamSettings, setShowTeamSettings] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
+  const navigate = useNavigate();
   
   const gameConfig = currentTeam?.jeu ? getGameConfig(currentTeam.jeu) : null;
+  
+  // Vérifier si l'utilisateur est admin
+  const isAdmin = user?.email === 'dohkoworld@gmail.com';
 
   useEffect(() => {
     if (user) {
@@ -110,6 +115,15 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
               <Settings className="mr-2 h-4 w-4" />
               <span>Paramètres du profil</span>
             </DropdownMenuItem>
+            {isAdmin && (
+              <DropdownMenuItem 
+                onClick={() => navigate('/admin')}
+                className="cursor-pointer"
+              >
+                <UserCog className="mr-2 h-4 w-4" />
+                <span>Administration</span>
+              </DropdownMenuItem>
+            )}
             {currentTeam && (
               <DropdownMenuItem 
                 onClick={() => setShowTeamSettings(true)}
