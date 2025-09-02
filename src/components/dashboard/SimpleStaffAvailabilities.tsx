@@ -59,6 +59,12 @@ const getTimeSlotLabel = (start: string) => {
   return 'Soir';
 };
 
+// Utiliser la même fonction que côté joueur pour le calcul de semaine
+const getWeekStart = (date: Date = new Date()) => {
+  const monday = startOfWeek(date, { weekStartsOn: 1 });
+  return monday.toISOString().split('T')[0];
+};
+
 export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesProps) => {
   const [players, setPlayers] = useState<PlayerSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,12 +106,9 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
       }
 
       // Récupérer la semaine courante avec la même logique que côté joueur
-      const today = new Date();
-      const weekStartDate = startOfWeek(today, { weekStartsOn: 1 });
-      const weekStart = weekStartDate.toISOString().split('T')[0];
+      const weekStart = getWeekStart();
       
       console.log("📅 Week start calculated with startOfWeek:", weekStart);
-      console.log("📅 Today:", today.toISOString().split('T')[0]);
 
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
         .from("player_availabilities")
