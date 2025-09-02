@@ -85,7 +85,7 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
             Commencer gratuitement
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
-          <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10" onClick={() => document.getElementById('features-detail')?.scrollIntoView({ behavior: 'smooth' })}>
+          <Button size="lg" variant="outline" className="border-2 border-white/30 text-white hover:bg-white/10 hover:text-white" onClick={() => document.getElementById('features-detail')?.scrollIntoView({ behavior: 'smooth' })}>
             Découvrir les fonctionnalités
           </Button>
         </div>

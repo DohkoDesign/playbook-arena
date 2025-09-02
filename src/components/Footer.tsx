@@ -39,12 +39,12 @@ export const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">À propos</h3>
+            <h3 className="font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Plateforme de gestion</li>
-              <li>Équipes eSport</li>
-              <li>Outils professionnels</li>
-              <li>Interface moderne</li>
+              <li><a href="/documentation" className="hover:text-foreground transition-colors">Documentation</a></li>
+              <li><a href="/contact" className="hover:text-foreground transition-colors">Contact</a></li>
+              <li><a href="/faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+              <li><a href="/status" className="hover:text-foreground transition-colors">Status</a></li>
             </ul>
           </div>
         </div>

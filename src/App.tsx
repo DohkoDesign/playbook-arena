@@ -8,8 +8,10 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
 import { PlayerManagement } from "./pages/PlayerManagement";
-
-
+import { Documentation } from "./pages/Documentation";
+import { Contact } from "./pages/Contact";
+import { FAQ } from "./pages/FAQ";
+import { Status } from "./pages/Status";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,10 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />
             <Route path="/player-management/:teamId/:userId" element={<PlayerManagement />} />
+            <Route path="/documentation" element={<Documentation />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/status" element={<Status />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
