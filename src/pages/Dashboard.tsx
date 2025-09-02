@@ -143,7 +143,7 @@ const Dashboard = () => {
 
     switch (currentView) {
       case "dashboard":
-        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
+        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
       case "calendar":
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
       case "strategies":
@@ -165,7 +165,7 @@ const Dashboard = () => {
       case "availabilities":
         return <StaffAvailabilitiesView teamId={selectedTeam} />;
       default:
-        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} />;
+        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
     }
   };
 
@@ -179,6 +179,7 @@ const Dashboard = () => {
           currentView={currentView}
           onViewChange={(view) => setCurrentView(view as DashboardView)}
           onNewTeam={() => setShowTeamSetup(true)}
+          currentUserId={user?.id}
         />
         
         <div className="flex-1 ml-72">

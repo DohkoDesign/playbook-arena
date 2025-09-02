@@ -10,6 +10,7 @@ interface DashboardSidebarProps {
   currentView: string;
   onViewChange: (view: string) => void;
   onNewTeam: () => void;
+  currentUserId?: string;
 }
 
 export const DashboardSidebar = ({
@@ -19,7 +20,11 @@ export const DashboardSidebar = ({
   currentView,
   onViewChange,
   onNewTeam,
+  currentUserId,
 }: DashboardSidebarProps) => {
+  const currentTeamData = teams.find(team => team.id === selectedTeam);
+  const isTeamOwner = currentTeamData && currentUserId && currentTeamData.created_by === currentUserId;
+  
   // Navigation organisée par catégories
   const navigationSections = [
     {
@@ -54,12 +59,10 @@ export const DashboardSidebar = ({
       title: "Gestion",
       items: [
         { id: "recruitment", label: "Recrutement", icon: UserSearch },
-        { id: "settings", label: "Paramètres", icon: Settings },
+        ...(isTeamOwner ? [{ id: "settings", label: "Paramètres", icon: Settings }] : [])
       ]
     }
   ];
-  
-  const currentTeamData = teams.find(team => team.id === selectedTeam);
   
   // Récupérer le logo de l'organisation depuis localStorage
   const organizationLogo = localStorage.getItem("organization_logo");

@@ -25,6 +25,7 @@ interface IntelligentMenuProps {
   isStaff?: boolean;
   onViewChange: (view: string) => void;
   currentView: string;
+  isTeamOwner?: boolean;
 }
 
 interface MenuSection {
@@ -42,7 +43,7 @@ interface MenuItem {
   notifications?: number;
 }
 
-export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange, currentView }: IntelligentMenuProps) => {
+export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange, currentView, isTeamOwner = false }: IntelligentMenuProps) => {
   const [menuSections, setMenuSections] = useState<MenuSection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -66,7 +67,7 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
       const strategyCount = strategiesRes.data?.length || 0;
 
       if (isStaff) {
-        setMenuSections(generateStaffMenu(upcomingEvents, memberCount, strategyCount));
+        setMenuSections(generateStaffMenu(upcomingEvents, memberCount, strategyCount, isTeamOwner));
       } else {
         setMenuSections(generatePlayerMenu(upcomingEvents, memberCount, strategyCount));
       }
@@ -77,7 +78,7 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
     }
   };
 
-  const generateStaffMenu = (events: number, members: number, strategies: number): MenuSection[] => {
+  const generateStaffMenu = (events: number, members: number, strategies: number, isOwner: boolean): MenuSection[] => {
     return [
       {
         title: "Gestion d'équipe",
@@ -146,13 +147,13 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
             icon: Clock,
             priority: 'low'
           },
-          {
+          ...(isOwner ? [{
             id: "settings",
             title: "Paramètres",
             description: "Configuration équipe",
             icon: Settings,
-            priority: 'low'
-          }
+            priority: 'low' as const
+          }] : [])
         ]
       }
     ];

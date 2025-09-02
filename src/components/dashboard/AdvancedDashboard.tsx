@@ -33,6 +33,7 @@ interface AdvancedDashboardProps {
   teamData?: any;
   isStaff?: boolean;
   onViewChange: (view: string) => void;
+  currentUserId?: string;
 }
 
 interface TeamStats {
@@ -49,7 +50,7 @@ interface TeamStats {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(220 92% 70%)', 'hsl(220 92% 80%)', 'hsl(220 92% 60%)'];
 
-export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, onViewChange }: AdvancedDashboardProps) => {
+export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, onViewChange, currentUserId }: AdvancedDashboardProps) => {
   const [stats, setStats] = useState<TeamStats>({
     totalMembers: 0,
     activeMembers: 0,
