@@ -45,7 +45,7 @@ const QUICK_TEMPLATES = [
   },
   {
     id: "training_aim",
-    name: "Entraînement visée",
+    name: "Entraînement",
     type: "entrainement", 
     duration: 60,
     description: "Session focused visée et aim",
