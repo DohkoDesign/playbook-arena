@@ -19,56 +19,38 @@ export const FeaturesDetails = () => {
     {
       icon: Users,
       title: "Gestion d'équipe complète",
-      description: "Organisez vos rosters, définissez les rôles, gérez les remplaçants et suivez les performances de chaque joueur.",
-      points: ["Création d'équipes multi-jeux", "Gestion des rôles et permissions", "Suivi des statistiques individuelles"]
+      description: "Organisez vos rosters, définissez les rôles, gérez les remplaçants et invitez de nouveaux membres.",
+      points: ["Création d'équipes multi-jeux", "Gestion des rôles et permissions", "Système d'invitations"]
     },
     {
       icon: Calendar,
-      title: "Planning et organisation",
-      description: "Planifiez vos scrimmages, matchs officiels et sessions de coaching avec un système de calendrier intégré.",
-      points: ["Calendrier partagé", "Notification automatique", "Gestion des disponibilités"]
-    },
-    {
-      icon: Target,
-      title: "Stratégies et tactiques", 
-      description: "Créez, annotez et partagez vos stratégies sur toutes les maps avec des outils visuels avancés.",
-      points: ["Éditeur de stratégies", "Annotations visuelles", "Bibliothèque de tactiques"]
-    },
-    {
-      icon: Video,
-      title: "Analyse VOD avancée",
-      description: "Analysez vos replays avec des outils de marquage temporel et de prise de notes collaboratives.",
-      points: ["Marqueurs temporels", "Notes collaboratives", "Analyse des phases de jeu"]
-    },
-    {
-      icon: BarChart3,
-      title: "Analytics et performances",
-      description: "Suivez l'évolution de vos performances avec des graphiques détaillés et des métriques personnalisées.",
-      points: ["Tableaux de bord personnalisés", "Métriques avancées", "Historique des performances"]
+      title: "Planning et calendrier",
+      description: "Planifiez vos scrimmages, matchs officiels et sessions de coaching avec un calendrier partagé.",
+      points: ["Calendrier d'équipe intégré", "Événements personnalisables", "Gestion des disponibilités"]
     },
     {
       icon: MessageSquare,
-      title: "Communication intégrée",
-      description: "Centralisez la communication de votre équipe avec un système de notifications intelligent.",
-      points: ["Notifications en temps réel", "Canaux de discussion", "Alertes personnalisées"]
+      title: "Sessions de coaching", 
+      description: "Organisez et suivez vos sessions de coaching avec prise de notes et analyses détaillées.",
+      points: ["Planification des sessions", "Notes et feedback", "Suivi des progrès"]
     },
     {
-      icon: Clock,
-      title: "Gestion du temps",
-      description: "Optimisez vos horaires d'entraînement et suivez le temps investi par chaque membre.",
-      points: ["Suivi du temps d'entraînement", "Planification automatique", "Rapports d'activité"]
+      icon: Video,
+      title: "Analyse VOD",
+      description: "Gérez vos replays et VODs avec des outils d'upload et d'organisation avancés.",
+      points: ["Upload de VODs", "Organisation par événement", "Validation des analyses"]
     },
     {
-      icon: Trophy,
-      title: "Suivi des compétitions",
-      description: "Gérez vos inscriptions aux tournois et suivez vos résultats en compétition.",
-      points: ["Calendrier des tournois", "Historique des résultats", "Gestion des inscriptions"]
+      icon: BarChart3,
+      title: "Dashboard analytique",
+      description: "Suivez les performances de votre équipe avec des tableaux de bord personnalisés.",
+      points: ["Vue d'ensemble de l'équipe", "Statistiques des joueurs", "Suivi des événements"]
     },
     {
-      icon: Shield,
-      title: "Sécurité et confidentialité",
-      description: "Protégez vos données et stratégies avec des niveaux d'accès personnalisables.",
-      points: ["Chiffrement des données", "Contrôle d'accès granulaire", "Backup automatique"]
+      icon: Target,
+      title: "Recrutement",
+      description: "Gérez le recrutement de nouveaux talents pour renforcer votre équipe.",
+      points: ["Processus de recrutement", "Évaluation des candidats", "Intégration des nouveaux membres"]
     }
   ];
 
@@ -80,14 +62,14 @@ export const FeaturesDetails = () => {
             Tout ce dont votre équipe a besoin
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Découvrez toutes les fonctionnalités qui font de notre plateforme 
-            l'outil de référence pour la gestion d'équipes eSport professionnelles.
+            Découvrez les fonctionnalités essentielles pour gérer efficacement 
+            votre équipe eSport et optimiser vos performances.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50">
+            <Card key={index} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover-scale">
               <CardContent className="p-6">
                 <div className="flex items-start space-x-4">
                   <div className="flex-shrink-0">

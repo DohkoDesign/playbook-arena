@@ -11,44 +11,47 @@ export const Footer = () => {
               <span className="text-lg font-montserrat font-bold tracking-tight uppercase">Shadow Hub</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              La plateforme professionnelle pour gérer vos équipes eSport sur 8 jeux compétitifs.
+              La plateforme de gestion d'équipes eSport nouvelle génération.
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-4">Fonctionnalités</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Gestion d'équipe</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Planning & Calendrier</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Stratégies & Playbook</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Suivi performance</a></li>
+              <li>Gestion d'équipe</li>
+              <li>Planning & Calendrier</li>
+              <li>Coaching & Formation</li>
+              <li>Analyse VOD</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Jeux populaires</h3>
+            <h3 className="font-semibold mb-4">Jeux supportés</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>Valorant</li>
               <li>League of Legends</li>
               <li>Counter-Strike 2</li>
               <li>Rocket League</li>
+              <li>Overwatch 2</li>
+              <li>Apex Legends</li>
+              <li>Call of Duty</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
+            <h3 className="font-semibold mb-4">À propos</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Contact</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">FAQ</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Status</a></li>
+              <li>Plateforme de gestion</li>
+              <li>Équipes eSport</li>
+              <li>Outils professionnels</li>
+              <li>Interface moderne</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 Shadow Hub. Tous droits réservés.
+            © 2024 Shadow Hub. Plateforme de gestion d'équipes eSport.
           </p>
         </div>
       </div>
