@@ -100,20 +100,35 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
           id,
           user_id,
           role,
-          created_at,
-          profiles (
-            pseudo,
-            photo_profil
-          )
+          created_at
         `)
         .eq("team_id", teamId)
         .order("created_at", { ascending: true });
 
+      if (error) throw error;
+
+      // Récupérer les profils séparément
+      const userIds = data?.map(member => member.user_id) || [];
+      let profilesData: any[] = [];
+      
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, pseudo, photo_profil")
+          .in("user_id", userIds);
+        
+        profilesData = profiles || [];
+      }
+
+      // Joindre les données
+      const membersWithProfiles = data?.map(member => ({
+        ...member,
+        profiles: profilesData.find(profile => profile.user_id === member.user_id) || null
+      })) || [];
+
       console.log("Team members query result:", { data, error });
 
-      if (error) throw error;
-      
-      setMembers((data as any) || []);
+      setMembers(membersWithProfiles);
       
       if (!data || data.length === 0) {
         console.log("No members found for team:", teamId);
