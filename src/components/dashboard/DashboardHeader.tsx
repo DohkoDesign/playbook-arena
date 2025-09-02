@@ -108,13 +108,6 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56 bg-background border-border shadow-lg z-50" align="end" forceMount>
-            <DropdownMenuItem 
-              onClick={() => setShowProfileSettings(true)}
-              className="cursor-pointer"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Paramètres du profil</span>
-            </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem 
                 onClick={() => navigate('/admin')}
