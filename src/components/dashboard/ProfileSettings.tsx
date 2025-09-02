@@ -8,8 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { useToast } from "@/hooks/use-toast";
 import { User as SupabaseUser } from "@supabase/supabase-js";
-import { Loader2, User, Mail, Lock, BarChart3 } from "lucide-react";
-import { TrackerSettings } from "../player/TrackerSettings";
+import { Loader2, User, Mail, Lock } from "lucide-react";
 
 interface ProfileSettingsProps {
   user: SupabaseUser | null;
@@ -261,7 +260,7 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
       </div>
 
       <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className={`grid w-full ${isPlayer && !isStaff ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="profile" className="flex items-center gap-2">
             <User className="w-4 h-4" />
             Profil
@@ -270,12 +269,6 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
             <Lock className="w-4 h-4" />
             Sécurité
           </TabsTrigger>
-          {isPlayer && !isStaff && (
-            <TabsTrigger value="tracker" className="flex items-center gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Tracker
-            </TabsTrigger>
-          )}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
@@ -383,16 +376,6 @@ export const ProfileSettings = ({ user, onProfileUpdate }: ProfileSettingsProps)
             </CardContent>
           </Card>
         </TabsContent>
-
-        {isPlayer && !isStaff && (
-          <TabsContent value="tracker" className="space-y-4">
-            <TrackerSettings 
-              userId={user?.id || ''} 
-              userProfile={userProfile} 
-              teamData={teamData} 
-            />
-          </TabsContent>
-        )}
       </Tabs>
     </div>
   );

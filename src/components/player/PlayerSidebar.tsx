@@ -28,7 +28,6 @@ export const PlayerSidebar = ({
         { id: "fiche", label: "Ma Fiche", icon: User },
         { id: "objectives", label: "Mes Objectifs", icon: Target },
         { id: "planning", label: "Planning Personnel", icon: Calendar },
-        { id: "performance", label: "Performances", icon: TrendingUp },
         { id: "feedback", label: "Mes Feedbacks", icon: MessageSquare },
       ]
     },
