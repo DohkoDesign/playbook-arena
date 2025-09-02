@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
   const [betaCodes, setBetaCodes] = useState<any[]>([]);
@@ -18,6 +19,7 @@ const AdminPanel = () => {
   const [customCode, setCustomCode] = useState('');
   const [notes, setNotes] = useState('');
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBetaCodes();
@@ -147,7 +149,18 @@ const AdminPanel = () => {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Administration - Codes Beta</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Retour au Dashboard
+          </Button>
+          <h1 className="text-3xl font-bold">Administration - Codes Beta</h1>
+        </div>
         <Badge variant="secondary">Admin: dohkoworld@gmail.com</Badge>
       </div>
 
