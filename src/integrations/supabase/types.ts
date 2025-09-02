@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      beta_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       coaching_sessions: {
         Row: {
           composition_adversaire: Json | null
@@ -581,6 +608,10 @@ export type Database = {
       log_security_event: {
         Args: { event_type: string; metadata?: Json; user_id?: string }
         Returns: undefined
+      }
+      validate_and_use_beta_code: {
+        Args: { beta_code: string; user_id: string }
+        Returns: boolean
       }
       validate_password: {
         Args: { password: string }

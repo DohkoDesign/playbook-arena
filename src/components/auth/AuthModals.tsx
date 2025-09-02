@@ -25,6 +25,7 @@ export const AuthModals = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pseudo, setPseudo] = useState("");
+  const [betaCode, setBetaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
   const { toast } = useToast();
@@ -78,9 +79,32 @@ export const AuthModals = ({
       return;
     }
 
+    if (!betaCode.trim()) {
+      toast({
+        title: "Code bêta requis",
+        description: "Veuillez saisir votre code bêta pour créer un compte",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      // Pré-validation du code bêta (non consommante)
+      const { data: beta, error: betaError } = await supabase
+        .from("beta_codes")
+        .select("id")
+        .eq("code", betaCode.trim())
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      if (betaError || !beta) {
+        throw new Error("Code bêta invalide ou expiré");
+      }
+
+      // Inscription
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -92,6 +116,19 @@ export const AuthModals = ({
       });
 
       if (error) throw error;
+
+      // Consommation du code bêta côté serveur (liaison à l'utilisateur)
+      const userId = signUpData.user?.id;
+      if (userId) {
+        const { data: rpcRes, error: rpcError } = await supabase.rpc(
+          "validate_and_use_beta_code",
+          { beta_code: betaCode.trim(), user_id: userId }
+        );
+        if (rpcError || rpcRes !== true) {
+          await supabase.auth.signOut();
+          throw new Error("Impossible de valider le code bêta. Réessayez ou contactez le support.");
+        }
+      }
 
       setWaitingForVerification(true);
       toast({
@@ -208,6 +245,18 @@ export const AuthModals = ({
                   placeholder="votre@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-beta">Code bêta</Label>
+                <Input
+                  id="signup-beta"
+                  type="text"
+                  placeholder="SH-BETA-2024-0XX-XXXXX"
+                  value={betaCode}
+                  onChange={(e) => setBetaCode(e.target.value)}
                   required
                 />
               </div>
