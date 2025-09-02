@@ -5,7 +5,7 @@ import heroBackground from "@/assets/hero-background.jpg";
 export const HeroSection = () => {
   return (
     <section 
-      className="pt-32 pb-20 px-6 relative overflow-hidden"
+      className="pt-0 pb-20 px-6 relative overflow-hidden min-h-screen"
       style={{
         background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`
       }}
@@ -49,7 +49,7 @@ export const HeroSection = () => {
           }
         `
       }} />
-      <div className="container mx-auto text-center max-w-4xl">
+      <div className="container mx-auto text-center max-w-4xl flex flex-col justify-center min-h-screen">
         <div className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
             Gérez vos équipes eSport
