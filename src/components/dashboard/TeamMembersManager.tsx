@@ -92,6 +92,8 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
   const fetchMembers = async () => {
     try {
       setLoading(true);
+      console.log("Fetching team members for team:", teamId);
+      
       const { data, error } = await supabase
         .from("team_members")
         .select(`
@@ -99,7 +101,7 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
           user_id,
           role,
           created_at,
-          profiles!inner (
+          profiles (
             pseudo,
             photo_profil
           )
@@ -107,8 +109,24 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
         .eq("team_id", teamId)
         .order("created_at", { ascending: true });
 
+      console.log("Team members query result:", { data, error });
+
       if (error) throw error;
+      
       setMembers((data as any) || []);
+      
+      if (!data || data.length === 0) {
+        console.log("No members found for team:", teamId);
+        // Vérifier s'il y a au moins un owner
+        const { data: ownerCheck, error: ownerError } = await supabase
+          .from("team_members")
+          .select("id, user_id, role")
+          .eq("team_id", teamId)
+          .eq("role", "owner");
+          
+        console.log("Owner check:", { ownerCheck, ownerError });
+      }
+      
     } catch (error: any) {
       console.error("Error fetching team members:", error);
       toast({
