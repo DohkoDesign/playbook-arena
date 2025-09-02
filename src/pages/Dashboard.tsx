@@ -29,7 +29,9 @@ const Dashboard = () => {
     const saved = localStorage.getItem('dashboard-current-view');
     return (saved as DashboardView) || "dashboard";
   });
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<string | null>(() => {
+    return localStorage.getItem('dashboard-selected-team') || null;
+  });
   const [teams, setTeams] = useState<any[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -108,8 +110,12 @@ const Dashboard = () => {
         console.log("🚨 No teams found, redirecting to setup");
         navigate("/setup");
       } else {
-        console.log("🏆 Teams found, selecting first:", allTeams[0].id);
-        setSelectedTeam(allTeams[0].id);
+        const savedTeam = localStorage.getItem('dashboard-selected-team');
+        const teamToSelect = savedTeam && allTeams.find(t => t.id === savedTeam) 
+          ? savedTeam 
+          : allTeams[0].id;
+        console.log("🏆 Teams found, selecting:", teamToSelect);
+        setSelectedTeam(teamToSelect);
       }
     } catch (error: any) {
       console.error("💥 Full error in checkUserTeams:", error);
@@ -175,7 +181,10 @@ const Dashboard = () => {
         <DashboardSidebar
           teams={teams}
           selectedTeam={selectedTeam}
-          onTeamSelect={setSelectedTeam}
+          onTeamSelect={(teamId) => {
+            setSelectedTeam(teamId);
+            localStorage.setItem('dashboard-selected-team', teamId);
+          }}
           currentView={currentView}
           onViewChange={(view) => {
             const dashboardView = view as DashboardView;
