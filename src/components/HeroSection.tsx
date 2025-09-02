@@ -12,9 +12,16 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
     <section 
       className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen"
       style={{
-        background: `linear-gradient(135deg, #0f172a 0%, #1e293b 100%)`
+        backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.8)), url(${heroBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
       }}
     >
+      {/* Overlay for better text readability */}
+      <div className="absolute inset-0 bg-slate-900/60"></div>
+      
+      {/* Animated floating elements */}
       <div className="absolute inset-0">
         <div 
           className="absolute top-10 left-10 w-32 h-32 bg-blue-500/30 rounded-full blur-3xl"
@@ -35,6 +42,7 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
           }}
         ></div>
       </div>
+
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes moveFloat1 {
@@ -54,8 +62,10 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
           }
         `
       }} />
-      <div className="container mx-auto text-center max-w-4xl flex flex-col justify-center min-h-screen pt-16">
-        <div className="mb-8">
+
+      <div className="container mx-auto text-center max-w-4xl flex flex-col justify-center min-h-screen pt-16 relative z-10">
+        {/* Main hero content */}
+        <header className="mb-8">
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-white">
             Gérez vos équipes eSport
             <br />
@@ -67,8 +77,9 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
             La plateforme tout-en-un pour organiser, planifier et optimiser les performances 
             de vos équipes sur les 25 jeux compétitifs les plus populaires.
           </p>
-        </div>
+        </header>
 
+        {/* Call-to-action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
           <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group" onClick={onOpenSignup}>
             Commencer gratuitement
@@ -79,46 +90,47 @@ export const HeroSection = ({ onOpenSignup, onOpenLogin }: HeroSectionProps) => 
           </Button>
         </div>
 
+        {/* Feature highlights */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-20">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <article className="text-center">
+            <div className="w-12 h-12 bg-slate-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
               <Users className="h-6 w-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 text-white">Gestion d'équipe</h3>
             <p className="text-sm text-slate-300">
               Organisez vos rosters avec rôles et remplaçants
             </p>
-          </div>
+          </article>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <article className="text-center">
+            <div className="w-12 h-12 bg-slate-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
               <Calendar className="h-6 w-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 text-white">Planning intégré</h3>
             <p className="text-sm text-slate-300">
               Planifiez scrims, matchs et sessions de coaching
             </p>
-          </div>
+          </article>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <article className="text-center">
+            <div className="w-12 h-12 bg-slate-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
               <Target className="h-6 w-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 text-white">Stratégies & Playbook</h3>
             <p className="text-sm text-slate-300">
               Créez et annotez vos stratégies sur toutes les maps
             </p>
-          </div>
+          </article>
 
-          <div className="text-center">
-            <div className="w-12 h-12 bg-slate-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+          <article className="text-center">
+            <div className="w-12 h-12 bg-slate-700/80 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4">
               <TrendingUp className="h-6 w-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 text-white">Suivi performance</h3>
             <p className="text-sm text-slate-300">
               Analysez et améliorez les performances individuelles
             </p>
-          </div>
+          </article>
         </div>
       </div>
     </section>
