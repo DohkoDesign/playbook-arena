@@ -7,60 +7,39 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Brain, 
-  Target, 
-  TrendingUp, 
-  Users, 
-  Clock,
-  Video,
-  BarChart3,
-  Lightbulb,
-  MessageSquare,
-  Eye,
-  PlayCircle,
-  CheckCircle,
-  Calendar,
-  Trophy,
-  Plus,
-  FileText
-} from "lucide-react";
+import { Brain, Target, TrendingUp, Users, Clock, Video, BarChart3, Lightbulb, MessageSquare, Eye, PlayCircle, CheckCircle, Calendar, Trophy, Plus, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NewVODManager } from "./NewVODManager";
-
 interface VODAnalysisToolsProps {
   teamId: string;
 }
-
-export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
+export const VODAnalysisTools = ({
+  teamId
+}: VODAnalysisToolsProps) => {
   const [currentTool, setCurrentTool] = useState("vod-management");
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [completedMatches, setCompletedMatches] = useState<any[]>([]);
   const [matchesWithResults, setMatchesWithResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     fetchCompletedMatches();
     fetchMatchesWithResults();
   }, [teamId]);
-
   const fetchCompletedMatches = async () => {
     try {
-      const { data, error } = await supabase
-        .from("coaching_sessions")
-        .select("*, events!inner(*)")
-        .eq("events.team_id", teamId)
-        .not("resultat", "is", null);
-
+      const {
+        data,
+        error
+      } = await supabase.from("coaching_sessions").select("*, events!inner(*)").eq("events.team_id", teamId).not("resultat", "is", null);
       if (error) throw error;
-
       const matches = data?.map(session => ({
         ...session.events,
         analysis_data: session
       })) || [];
-
       setCompletedMatches(matches);
     } catch (error) {
       console.error("Erreur:", error);
@@ -68,29 +47,22 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
       setLoading(false);
     }
   };
-
   const fetchMatchesWithResults = async () => {
     try {
-      const { data, error } = await supabase
-        .from("events")
-        .select("*, coaching_sessions(*)")
-        .eq("team_id", teamId)
-        .order("date_debut", { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from("events").select("*, coaching_sessions(*)").eq("team_id", teamId).order("date_debut", {
+        ascending: false
+      });
       if (error) throw error;
-
       setMatchesWithResults(data || []);
     } catch (error) {
       console.error("Erreur chargement événements:", error);
     }
   };
-
-  const renderVODManagement = () => (
-    <NewVODManager teamId={teamId} />
-  );
-
-  const renderVODReview = () => (
-    <div className="space-y-6">
+  const renderVODManagement = () => <NewVODManager teamId={teamId} />;
+  const renderVODReview = () => <div className="space-y-6">
       {/* Sélection du match */}
       <Card>
         <CardHeader>
@@ -100,68 +72,51 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-4">
+          {loading ? <div className="text-center py-4">
               <p className="text-muted-foreground">Chargement des matchs...</p>
-            </div>
-          ) : completedMatches.length === 0 ? (
-            <div className="text-center py-8">
+            </div> : completedMatches.length === 0 ? <div className="text-center py-8">
               <Trophy className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">Aucun match terminé disponible</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Complétez vos analyses post-match pour accéder aux outils VOD
               </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
+            </div> : <div className="space-y-4">
               <Label>Choisir un match à analyser</Label>
-              <Select value={selectedMatch?.id || ""} onValueChange={(value) => {
-                const match = completedMatches.find(m => m.id === value);
-                setSelectedMatch(match);
-              }}>
+              <Select value={selectedMatch?.id || ""} onValueChange={value => {
+            const match = completedMatches.find(m => m.id === value);
+            setSelectedMatch(match);
+          }}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner un match" />
                 </SelectTrigger>
                 <SelectContent>
-                  {completedMatches.map((match) => (
-                    <SelectItem key={match.id} value={match.id}>
+                  {completedMatches.map(match => <SelectItem key={match.id} value={match.id}>
                       <div className="flex items-center space-x-2">
                         <span>{match.titre}</span>
                         <Badge variant="outline" className="text-xs">
                           {new Date(match.date_debut).toLocaleDateString('fr-FR')}
                         </Badge>
-                        {match.analysis_data?.resultat && (
-                          <Badge variant={match.analysis_data.resultat.toLowerCase().includes('victoire') ? 'default' : 'destructive'} className="text-xs">
+                        {match.analysis_data?.resultat && <Badge variant={match.analysis_data.resultat.toLowerCase().includes('victoire') ? 'default' : 'destructive'} className="text-xs">
                             {match.analysis_data.resultat}
-                          </Badge>
-                        )}
+                          </Badge>}
                       </div>
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
               
-              {selectedMatch && (
-                <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+              {selectedMatch && <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                   <h4 className="font-semibold mb-2">{selectedMatch.titre}</h4>
                   <div className="text-sm text-muted-foreground space-y-1">
                     <p>Date: {new Date(selectedMatch.date_debut).toLocaleDateString('fr-FR')}</p>
-                    {selectedMatch.analysis_data?.resultat && (
-                      <p>Résultat: {selectedMatch.analysis_data.resultat}</p>
-                    )}
-                    {selectedMatch.analysis_data?.vods && selectedMatch.analysis_data.vods.length > 0 && (
-                      <p>VODs: {selectedMatch.analysis_data.vods.length} disponible(s)</p>
-                    )}
+                    {selectedMatch.analysis_data?.resultat && <p>Résultat: {selectedMatch.analysis_data.resultat}</p>}
+                    {selectedMatch.analysis_data?.vods && selectedMatch.analysis_data.vods.length > 0 && <p>VODs: {selectedMatch.analysis_data.vods.length} disponible(s)</p>}
                   </div>
-                </div>
-              )}
-            </div>
-          )}
+                </div>}
+            </div>}
         </CardContent>
       </Card>
 
-      {selectedMatch && (
-        <>
+      {selectedMatch && <>
           {/* Analyse temporelle */}
           <Card>
             <CardHeader>
@@ -253,15 +208,10 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
               </div>
             </CardContent>
           </Card>
-        </>
-      )}
-    </div>
-  );
-
-  const renderPatternAnalysis = () => (
-    <div className="space-y-6">
-      {selectedMatch ? (
-        <>
+        </>}
+    </div>;
+  const renderPatternAnalysis = () => <div className="space-y-6">
+      {selectedMatch ? <>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -345,22 +295,16 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
               </div>
             </CardContent>
           </Card>
-        </>
-      ) : (
-        <Card>
+        </> : <Card>
           <CardContent className="pt-6 text-center">
             <TrendingUp className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
               Sélectionnez un match dans l'onglet "Revue VOD" pour analyser les patterns
             </p>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-
-  return (
-    <div className="space-y-6">
+        </Card>}
+    </div>;
+  return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">Post-Match</h2>
@@ -376,10 +320,7 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
             <Plus className="w-4 h-4" />
             <span>Gestion VODs</span>
           </TabsTrigger>
-          <TabsTrigger value="vod-analysis" className="flex items-center space-x-2">
-            <PlayCircle className="w-4 h-4" />
-            <span>Analyse VOD</span>
-          </TabsTrigger>
+          
         </TabsList>
 
         <TabsContent value="vod-management" className="mt-6">
@@ -403,28 +344,24 @@ export const VODAnalysisTools = ({ teamId }: VODAnalysisToolsProps) => {
               L'analyse VOD vous permet de créer des marqueurs temporels, d'ajouter des notes stratégiques 
               et de partager vos analyses avec votre équipe.
             </p>
-            <Button 
-              onClick={() => {
-                // Naviguer vers la vue VOD Review au lieu d'ouvrir une nouvelle fenêtre
-                if (window.location.pathname === '/dashboard') {
-                  // Si nous sommes déjà sur le dashboard, changer la vue
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('view', 'vod-review');
-                  window.history.pushState({}, '', url.toString());
-                  window.location.reload();
-                } else {
-                  // Sinon naviguer vers le dashboard avec la vue VOD
-                  window.location.href = '/dashboard?view=vod-review';
-                }
-              }}
-              className="bg-primary hover:bg-primary/90"
-            >
+            <Button onClick={() => {
+            // Naviguer vers la vue VOD Review au lieu d'ouvrir une nouvelle fenêtre
+            if (window.location.pathname === '/dashboard') {
+              // Si nous sommes déjà sur le dashboard, changer la vue
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', 'vod-review');
+              window.history.pushState({}, '', url.toString());
+              window.location.reload();
+            } else {
+              // Sinon naviguer vers le dashboard avec la vue VOD
+              window.location.href = '/dashboard?view=vod-review';
+            }
+          }} className="bg-primary hover:bg-primary/90">
               <PlayCircle className="w-4 h-4 mr-2" />
               Ouvrir l'Analyse VOD
             </Button>
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };
