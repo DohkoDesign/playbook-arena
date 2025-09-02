@@ -7,7 +7,6 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { TeamSetupModal } from "@/components/dashboard/TeamSetupModal";
 import { AdvancedDashboard } from "@/components/dashboard/AdvancedDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
-import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { MatchAnalysisView } from "@/components/dashboard/MatchAnalysisView";
@@ -17,7 +16,7 @@ import { RecruitmentView } from "@/components/dashboard/RecruitmentView";
 import { StaffFeedbackView } from "@/components/dashboard/StaffFeedbackView";
 import { StaffAvailabilitiesView } from "@/components/dashboard/StaffAvailabilitiesView";
 
-type DashboardView = "dashboard" | "calendar" | "strategies" | "players" | "coaching" | "match-analysis" | "coaching-analysis" | "settings" | "recruitment" | "feedbacks" | "availabilities";
+type DashboardView = "dashboard" | "calendar" | "players" | "coaching" | "match-analysis" | "coaching-analysis" | "settings" | "recruitment" | "feedbacks" | "availabilities";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -146,8 +145,6 @@ const Dashboard = () => {
         return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
       case "calendar":
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
-      case "strategies":
-        return <StrategiesView teamId={selectedTeam} gameType={gameType} />;
       case "players":
         return <PlayersView teamId={selectedTeam} />;
       case "coaching":

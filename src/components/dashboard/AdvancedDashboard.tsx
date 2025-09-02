@@ -489,18 +489,6 @@ export const AdvancedDashboard = ({ teamId, gameType, teamData, isStaff = true, 
             <p className="text-xs text-muted-foreground">Analyser les performances</p>
           </div>
         </Button>
-
-        <Button 
-          onClick={() => onViewChange("strategies")}
-          variant="outline"
-          className="h-auto p-6 border-2 hover:bg-accent"
-        >
-          <div className="text-center">
-            <Target className="w-8 h-8 mx-auto mb-2 text-orange-500" />
-            <p className="font-semibold">Stratégies</p>
-            <p className="text-xs text-muted-foreground">Créer des tactiques</p>
-          </div>
-        </Button>
       </div>
     </div>
   );

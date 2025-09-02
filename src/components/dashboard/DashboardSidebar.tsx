@@ -39,7 +39,6 @@ export const DashboardSidebar = ({
       items: [
         { id: "calendar", label: "Calendrier", icon: Calendar },
         { id: "players", label: "Membres", icon: Users },
-        { id: "strategies", label: "Stratégies", icon: BookOpen },
       ]
     },
     {

@@ -56,20 +56,18 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
       setLoading(true);
 
       // Récupérer les données pour personnaliser le menu
-      const [eventsRes, membersRes, strategiesRes] = await Promise.all([
+      const [eventsRes, membersRes] = await Promise.all([
         supabase.from("events").select("*").eq("team_id", teamId).gte("date_debut", new Date().toISOString()),
-        supabase.from("team_members").select("*").eq("team_id", teamId),
-        supabase.from("strategies").select("*").eq("team_id", teamId)
+        supabase.from("team_members").select("*").eq("team_id", teamId)
       ]);
 
       const upcomingEvents = eventsRes.data?.length || 0;
       const memberCount = membersRes.data?.length || 0;
-      const strategyCount = strategiesRes.data?.length || 0;
 
       if (isStaff) {
-        setMenuSections(generateStaffMenu(upcomingEvents, memberCount, strategyCount, isTeamOwner));
+        setMenuSections(generateStaffMenu(upcomingEvents, memberCount, isTeamOwner));
       } else {
-        setMenuSections(generatePlayerMenu(upcomingEvents, memberCount, strategyCount));
+        setMenuSections(generatePlayerMenu(upcomingEvents, memberCount));
       }
     } catch (error) {
       console.error("Erreur lors de la génération du menu intelligent:", error);
@@ -78,7 +76,7 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
     }
   };
 
-  const generateStaffMenu = (events: number, members: number, strategies: number, isOwner: boolean): MenuSection[] => {
+  const generateStaffMenu = (events: number, members: number, isOwner: boolean): MenuSection[] => {
     return [
       {
         title: "Gestion d'équipe",
@@ -111,16 +109,8 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
         ]
       },
       {
-        title: "Stratégie & Performance",
+        title: "Performance & Analyse",
         items: [
-          {
-            id: "strategies",
-            title: "Stratégies",
-            description: `${strategies} stratégies créées`,
-            icon: MapPin,
-            badge: strategies === 0 ? 'Nouveau' : undefined,
-            priority: strategies === 0 ? 'high' : 'medium'
-          },
           {
             id: "coaching",
             title: "Analyses",
@@ -159,7 +149,7 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
     ];
   };
 
-  const generatePlayerMenu = (events: number, members: number, strategies: number): MenuSection[] => {
+  const generatePlayerMenu = (events: number, members: number): MenuSection[] => {
     return [
       {
         title: "Mon Espace",
@@ -199,13 +189,6 @@ export const IntelligentMenu = ({ teamId, gameType, isStaff = true, onViewChange
       {
         title: "Équipe",
         items: [
-          {
-            id: "team-strategies",
-            title: "Stratégies",
-            description: `${strategies} stratégies disponibles`,
-            icon: MapPin,
-            priority: 'medium'
-          },
           {
             id: "team-coaching",
             title: "Analyses",

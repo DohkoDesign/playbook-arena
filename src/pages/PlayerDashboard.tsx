@@ -6,7 +6,6 @@ import { PlayerSidebar } from "@/components/player/PlayerSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { SmartDashboard } from "@/components/dashboard/SmartDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
-import { StrategiesView } from "@/components/dashboard/StrategiesView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
 import { PlayerProfileView } from "@/components/player/PlayerProfileView";
@@ -17,7 +16,7 @@ import { PlayerFeedbackView } from "@/components/player/PlayerFeedbackView";
 import { PlayerTeamAvailabilities } from "@/components/player/PlayerTeamAvailabilities";
 import { useToast } from "@/hooks/use-toast";
 
-type PlayerView = "dashboard" | "calendar" | "fiche" | "objectives" | "planning" | "feedback" | "team-availabilities" | "team-strategies" | "team-coaching";
+type PlayerView = "dashboard" | "calendar" | "fiche" | "objectives" | "planning" | "feedback" | "team-availabilities" | "team-coaching";
 
 const PlayerDashboard = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -196,8 +195,6 @@ const PlayerDashboard = () => {
       // Équipe (lecture seule)
       case "team-availabilities":
         return <PlayerTeamAvailabilities teamId={teamData.id} playerId={user?.id || ""} />;
-      case "team-strategies":
-        return <StrategiesView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       case "team-coaching":
         return <CoachingView teamId={teamData.id} gameType={teamData.jeu} isPlayerView={true} />;
       
