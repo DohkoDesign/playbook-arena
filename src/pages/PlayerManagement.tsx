@@ -249,111 +249,49 @@ export const PlayerManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Fond d'écran coloré avec pattern */}
-      <div className="fixed inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 -z-10">
-        <div className="absolute inset-0 bg-grid-pattern opacity-10"></div>
-      </div>
-      {/* Header avec design moderne */}
-      <div className="relative bg-card/80 backdrop-blur-xl border-b">
-        <div className="relative max-w-7xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-8">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="hover:bg-muted"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Retour à l'équipe
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-background">
+      {/* Header compact */}
+      <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="border-border/50 hover:bg-muted/50"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Retour
+              </Button>
+              <div className="flex items-center space-x-3">
+                <Avatar className="w-10 h-10 border">
+                  <AvatarImage src={profile?.photo_profil} alt={profile?.pseudo} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                    {profile?.pseudo?.charAt(0).toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-lg font-semibold text-foreground">{profile?.pseudo}</h1>
+                  <Badge variant="secondary" className="text-xs">
+                    {getRoleIcon(player?.role)}
+                    <span className="ml-1">{player?.role}</span>
+                  </Badge>
+                </div>
+              </div>
+            </div>
             <Button 
               onClick={savePlayerProfile} 
               disabled={saving}
+              size="sm"
               className="bg-primary hover:bg-primary/90"
             >
               <Save className="w-4 h-4 mr-2" />
-              {saving ? "Sauvegarde..." : "Sauvegarder les modifications"}
+              {saving ? "Sauvegarde..." : "Sauvegarder"}
             </Button>
           </div>
-          
-          {/* Card du joueur simplifiée */}
-          <Card className="bg-card/90 backdrop-blur-xl border shadow-lg">
-            <CardContent className="p-8">
-              <div className="flex items-start space-x-6">
-                {/* Avatar */}
-                <div className="relative">
-                  <Avatar className="w-24 h-24 border-2 border-border">
-                    <AvatarImage 
-                      src={profile?.photo_profil} 
-                      alt={profile?.pseudo || "Joueur"} 
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
-                      {profile?.pseudo?.charAt(0).toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-background flex items-center justify-center">
-                    <div className="w-3 h-3 bg-white rounded-full"></div>
-                  </div>
-                </div>
-                  
-                  {/* Informations du joueur */}
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <h1 className="text-3xl font-bold text-foreground mb-2">
-                        {profile?.pseudo || "Joueur"}
-                      </h1>
-                      <div className="flex items-center space-x-4 mb-4">
-                        <Badge className={`${getRoleColor(player?.role)} text-sm px-4 py-2`}>
-                          {getRoleIcon(player?.role)}
-                          <span className="ml-2 font-medium">{player?.role || "Joueur"}</span>
-                        </Badge>
-                        {profile?.tracker_last_updated && (
-                          <div className="flex items-center text-sm text-muted-foreground bg-muted rounded-full px-3 py-1">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Mis à jour le {format(new Date(profile.tracker_last_updated), "dd/MM/yyyy", { locale: fr })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Statistiques rapides */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-card rounded-xl p-4 border">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Points forts</p>
-                            <p className="text-2xl font-bold text-foreground">{pointsForts.length}</p>
-                          </div>
-                          <TrendingUp className="w-8 h-8 text-green-500" />
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-xl p-4 border">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Points d'amélioration</p>
-                            <p className="text-2xl font-bold text-foreground">{pointsFaibles.length}</p>
-                          </div>
-                          <TrendingDown className="w-8 h-8 text-orange-500" />
-                        </div>
-                      </div>
-                      <div className="bg-card rounded-xl p-4 border">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm text-muted-foreground">Objectifs</p>
-                            <p className="text-2xl font-bold text-foreground">{objectifs.length}</p>
-                          </div>
-                          <Target className="w-8 h-8 text-primary" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
+      </div>
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-6 py-8">
