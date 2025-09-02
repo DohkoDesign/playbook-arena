@@ -390,7 +390,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
                     className={`p-2 rounded-lg border cursor-pointer transition-all ${
                       isActive 
                         ? 'bg-primary text-primary-foreground border-primary' 
-                        : 'bg-muted/30 hover:bg-muted/50 border-border'
+                        : 'bg-muted/30 hover:bg-primary/80 hover:text-primary-foreground border-border'
                     }`}
                     onClick={() => toggleSlot(day.id, slot.id)}
                   >
@@ -405,7 +405,7 @@ export const SimpleAvailabilityManager = ({ teamId, playerId, onSaveSuccess }: S
                         className="pointer-events-none scale-75"
                       />
                     </div>
-                    <div className="text-xs mt-1 opacity-75">
+                    <div className={`text-xs mt-1 ${isActive ? 'text-primary-foreground/90' : 'text-muted-foreground'}`}>
                       {slot.start} - {slot.end}
                     </div>
                   </div>
