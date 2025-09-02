@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { startOfWeek } from "date-fns";
+import { startOfWeek, format, addWeeks, endOfWeek } from "date-fns";
+import { fr } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { 
   Calendar, 
   Clock, 
@@ -13,7 +15,9 @@ import {
   Moon,
   Filter,
   CheckCircle2,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,11 +73,12 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
   const [players, setPlayers] = useState<PlayerSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
   const { toast } = useToast();
 
   useEffect(() => {
     fetchData();
-  }, [teamId]);
+  }, [teamId, selectedWeek]);
 
   const fetchData = async () => {
     try {
@@ -105,8 +110,8 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
         throw profilesError;
       }
 
-      // Récupérer la semaine courante avec la même logique que côté joueur
-      const weekStart = getWeekStart();
+      // Récupérer la semaine sélectionnée avec la même logique que côté joueur
+      const weekStart = getWeekStart(selectedWeek);
       
       console.log("📅 Week start calculated with startOfWeek:", weekStart);
 
@@ -190,6 +195,16 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
     return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
   };
 
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setSelectedWeek(prev => addWeeks(prev, direction === 'next' ? 1 : -1));
+  };
+
+  const getWeekRange = () => {
+    const start = startOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const end = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+    return `${format(start, 'dd MMM', { locale: fr })} - ${format(end, 'dd MMM yyyy', { locale: fr })}`;
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -212,9 +227,37 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
           <Users className="w-5 h-5" />
           <h2 className="text-2xl font-bold">Disponibilités de l'équipe</h2>
         </div>
-        <Badge variant="outline" className="text-sm">
-          Semaine du {new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-        </Badge>
+      </div>
+        
+      {/* Sélecteur de semaine */}
+      <div className="flex items-center justify-center space-x-4 p-4 bg-muted/30 rounded-lg">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('prev')}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        
+        <div className="text-center">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4" />
+            <span className="font-medium">Semaine du {getWeekRange()}</span>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {selectedWeek < new Date() ? 'Semaine passée' : 
+             format(selectedWeek, 'yyyy') === format(new Date(), 'yyyy') && 
+             format(selectedWeek, 'w') === format(new Date(), 'w') ? 'Semaine courante' : 'Semaine future'}
+          </p>
+        </div>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => navigateWeek('next')}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
       </div>
 
       {/* Vue d'ensemble rapide */}
