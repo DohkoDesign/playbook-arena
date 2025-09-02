@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, Users, User } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar, Clock, Users, User, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { SimpleAvailabilityManager } from "./SimpleAvailabilityManager";
 
 interface PlayerTeamAvailabilitiesProps {
   teamId: string;
@@ -37,6 +40,7 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
   const [loading, setLoading] = useState(true);
   const [selectedPlayer, setSelectedPlayer] = useState<string>('all');
   const [selectedDay, setSelectedDay] = useState<string>('all');
+  const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -183,6 +187,10 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
           <Users className="w-5 h-5" />
           <h2 className="text-2xl font-bold">Disponibilités de l'équipe</h2>
         </div>
+        <Button onClick={() => setShowAvailabilityModal(true)}>
+          <Settings className="w-4 h-4 mr-2" />
+          Mes disponibilités
+        </Button>
       </div>
 
       {/* Filtres */}
@@ -326,6 +334,32 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
           ))
         )}
       </div>
+
+      {/* Modal pour gérer ses propres disponibilités */}
+      <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto w-[95vw]">
+          <DialogHeader>
+            <DialogTitle>Gérer mes disponibilités</DialogTitle>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <SimpleAvailabilityManager 
+              teamId={teamId} 
+              playerId={playerId} 
+              onSaveSuccess={() => {
+                setShowAvailabilityModal(false);
+                fetchData(); // Recharger les données après modification
+              }}
+            />
+          </div>
+          
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowAvailabilityModal(false)}>
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
