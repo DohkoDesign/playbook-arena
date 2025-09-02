@@ -411,22 +411,35 @@ export const SimpleStaffAvailabilities = ({ teamId }: SimpleStaffAvailabilitiesP
                 </div>
                 
                 <div className="space-y-2">
-                  <div className="flex flex-wrap gap-1">
-                    {[1, 2, 3, 4, 5, 6, 0].map(day => (
-                      <Badge 
-                        key={day}
-                        variant={player.availableDays.includes(day) ? "default" : "outline"}
-                        className="text-xs"
-                      >
-                        {dayShort[day]}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  {player.totalSlots === 0 && (
+                  {player.totalSlots === 0 ? (
                     <div className="text-center py-2">
                       <XCircle className="w-6 h-6 mx-auto text-muted-foreground mb-1" />
                       <p className="text-xs text-muted-foreground">Aucune disponibilité</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {[1, 2, 3, 4, 5, 6, 0].map(day => {
+                        const daySlots = player.slots.filter(slot => slot.day_of_week === day);
+                        if (daySlots.length === 0) return null;
+                        
+                        return (
+                          <div key={day} className="text-xs">
+                            <div className="font-medium text-muted-foreground mb-1">
+                              {dayShort[day]}
+                            </div>
+                            <div className="space-y-1 ml-2">
+                              {daySlots.map((slot, index) => (
+                                <div key={index} className="flex items-center space-x-1">
+                                  <Clock className="w-3 h-3 text-primary" />
+                                  <span className="text-primary">
+                                    {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
