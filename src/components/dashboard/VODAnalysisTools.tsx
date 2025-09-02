@@ -251,10 +251,7 @@ export const VODAnalysisTools = ({
                   </Select>
                 </div>
               </div>
-              <div>
-                <Label>Description du pattern</Label>
-                <Textarea placeholder="Décrivez le comportement répétitif observé..." />
-              </div>
+              
               
             </CardContent>
           </Card>
