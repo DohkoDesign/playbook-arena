@@ -322,66 +322,175 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         </Card>
       </div>
 
-      {/* Liste des disponibilités par joueur */}
-      <div className="space-y-6">
-        {Object.keys(groupedByPlayer).length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Aucune disponibilité trouvée</h3>
-              <p className="text-muted-foreground">
-                {selectedPlayer !== 'all' || selectedDay !== 'all'
-                  ? "Aucune disponibilité ne correspond aux filtres sélectionnés."
-                  : "Aucune disponibilité n'a été renseignée pour cette semaine."}
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          Object.entries(groupedByPlayer).map(([playerId, playerData]) => (
-            <Card key={playerId}>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <User className="w-5 h-5" />
-                  <span>{playerData.pseudo}</span>
-                  <Badge variant="outline">
-                    {playerData.availabilities.length} créneau{playerData.availabilities.length > 1 ? 'x' : ''}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {playerData.availabilities
-                    .sort((a, b) => a.day_of_week - b.day_of_week || a.start_time.localeCompare(b.start_time))
-                    .map((availability) => (
-                      <div 
-                        key={availability.id}
-                        className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <Badge className={getDayColor(availability.day_of_week)}>
-                            {dayNames[availability.day_of_week as keyof typeof dayNames]}
+      {/* Vue compacte des disponibilités */}
+      {Object.keys(groupedByPlayer).length === 0 ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Aucune disponibilité trouvée</h3>
+            <p className="text-muted-foreground">
+              {selectedPlayer !== 'all' || selectedDay !== 'all'
+                ? "Aucune disponibilité ne correspond aux filtres sélectionnés."
+                : "Aucune disponibilité n'a été renseignée pour cette semaine."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5" />
+              <span>Vue d'ensemble des disponibilités</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Grille compacte des joueurs */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(groupedByPlayer).map(([playerId, playerData]) => (
+                <div key={playerId} className="border rounded-lg p-4 space-y-3">
+                  {/* En-tête joueur */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span className="font-medium text-sm">{playerData.pseudo}</span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {playerData.availabilities.length}
+                    </Badge>
+                  </div>
+                  
+                  {/* Disponibilités par jour */}
+                  <div className="space-y-2">
+                    {[1, 2, 3, 4, 5, 6, 0].map(dayOfWeek => {
+                      const dayAvailabilities = playerData.availabilities.filter(
+                        avail => avail.day_of_week === dayOfWeek
+                      );
+                      
+                      if (dayAvailabilities.length === 0) return null;
+                      
+                      return (
+                        <div key={dayOfWeek} className="flex items-center justify-between text-xs">
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs px-2 py-1 ${getDayColor(dayOfWeek)}`}
+                          >
+                            {dayNames[dayOfWeek as keyof typeof dayNames].slice(0, 3)}
                           </Badge>
-                          <div className="flex items-center space-x-1 text-sm">
-                            <Clock className="w-4 h-4" />
-                            <span className="font-medium">
-                              {formatTime(availability.start_time)} - {formatTime(availability.end_time)}
-                            </span>
+                          <div className="flex flex-wrap gap-1">
+                            {dayAvailabilities
+                              .sort((a, b) => a.start_time.localeCompare(b.start_time))
+                              .map((availability) => (
+                                <span 
+                                  key={availability.id}
+                                  className="text-xs bg-muted px-2 py-1 rounded"
+                                >
+                                  {formatTime(availability.start_time)}-{formatTime(availability.end_time)}
+                                </span>
+                              ))}
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground">
-                          {Math.floor(
-                            (new Date(`1970-01-01T${availability.end_time}`).getTime() - 
-                             new Date(`1970-01-01T${availability.start_time}`).getTime()) / 60000
-                          )} min
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+              ))}
+            </div>
+            
+            {/* Vue détaillée par créneaux horaires */}
+            <div className="mt-8 pt-6 border-t">
+              <h3 className="text-lg font-semibold mb-4">Disponibilités par créneaux</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Matin */}
+                <Card className="p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                    <span className="font-medium">Matin (9h-12h)</span>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(groupedByPlayer).map(([playerId, playerData]) => {
+                      const morningSlots = playerData.availabilities.filter(avail => 
+                        avail.start_time >= '09:00:00' && avail.start_time < '12:00:00'
+                      );
+                      if (morningSlots.length === 0) return null;
+                      
+                      return (
+                        <div key={playerId} className="flex items-center justify-between text-sm">
+                          <span>{playerData.pseudo}</span>
+                          <div className="flex gap-1">
+                            {morningSlots.map(slot => (
+                              <Badge key={slot.id} variant="outline" className="text-xs">
+                                {dayNames[slot.day_of_week as keyof typeof dayNames].slice(0, 3)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+
+                {/* Après-midi */}
+                <Card className="p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-3 h-3 bg-orange-400 rounded-full"></div>
+                    <span className="font-medium">Après-midi (14h-18h)</span>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(groupedByPlayer).map(([playerId, playerData]) => {
+                      const afternoonSlots = playerData.availabilities.filter(avail => 
+                        avail.start_time >= '14:00:00' && avail.start_time < '18:00:00'
+                      );
+                      if (afternoonSlots.length === 0) return null;
+                      
+                      return (
+                        <div key={playerId} className="flex items-center justify-between text-sm">
+                          <span>{playerData.pseudo}</span>
+                          <div className="flex gap-1">
+                            {afternoonSlots.map(slot => (
+                              <Badge key={slot.id} variant="outline" className="text-xs">
+                                {dayNames[slot.day_of_week as keyof typeof dayNames].slice(0, 3)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+
+                {/* Soir */}
+                <Card className="p-4">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                    <span className="font-medium">Soir (19h-23h)</span>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(groupedByPlayer).map(([playerId, playerData]) => {
+                      const eveningSlots = playerData.availabilities.filter(avail => 
+                        avail.start_time >= '19:00:00' && avail.start_time < '23:00:00'
+                      );
+                      if (eveningSlots.length === 0) return null;
+                      
+                      return (
+                        <div key={playerId} className="flex items-center justify-between text-sm">
+                          <span>{playerData.pseudo}</span>
+                          <div className="flex gap-1">
+                            {eveningSlots.map(slot => (
+                              <Badge key={slot.id} variant="outline" className="text-xs">
+                                {dayNames[slot.day_of_week as keyof typeof dayNames].slice(0, 3)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Modal pour gérer ses propres disponibilités */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
