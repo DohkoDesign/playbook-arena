@@ -95,13 +95,12 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
     try {
       setLoading(true);
       
-      // Récupérer seulement les feedbacks non-anonymes du joueur
+      // Récupérer tous les feedbacks du joueur (anonymes et non-anonymes)
       const { data, error } = await supabase
         .from('player_feedbacks')
         .select('*')
         .eq('team_id', teamId)
         .eq('user_id', playerId)
-        .eq('is_anonymous', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -147,7 +146,7 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
       
       const feedbackData = {
         team_id: teamId,
-        user_id: formData.is_anonymous ? null : playerId,
+        user_id: playerId, // Toujours associer au joueur pour qu'il puisse voir ses feedbacks
         title: formData.title.trim(),
         content: formData.content.trim(),
         category: formData.category,
@@ -177,10 +176,8 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
       
       setShowCreateModal(false);
       
-      // Recharger les feedbacks si ce n'était pas anonyme
-      if (!formData.is_anonymous) {
-        fetchFeedbacks();
-      }
+      // Toujours recharger les feedbacks
+      fetchFeedbacks();
       
     } catch (error: any) {
       console.error('Error submitting feedback:', error);
@@ -297,7 +294,7 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
               {formData.is_anonymous && (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800">
-                    <strong>Note :</strong> Les feedbacks anonymes ne pourront pas être consultés dans votre historique personnel.
+                    <strong>Note :</strong> Les feedbacks anonymes seront visibles dans votre historique, mais votre identité ne sera pas révélée au staff.
                   </p>
                 </div>
               )}
