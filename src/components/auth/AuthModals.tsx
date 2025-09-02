@@ -25,6 +25,7 @@ export const AuthModals = ({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pseudo, setPseudo] = useState("");
+  const [age, setAge] = useState("");
   const [betaCode, setBetaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
@@ -51,10 +52,21 @@ export const AuthModals = ({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !pseudo) {
+    if (!email || !password || !pseudo || !age || !betaCode) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validation de l'âge
+    const ageNum = parseInt(age);
+    if (isNaN(ageNum) || ageNum < 13 || ageNum > 100) {
+      toast({
+        title: "Âge invalide",
+        description: "L'âge doit être entre 13 et 100 ans",
         variant: "destructive",
       });
       return;
@@ -81,7 +93,20 @@ export const AuthModals = ({
 
     setLoading(true);
     try {
-      // Inscription sans code beta (le code beta n'est requis que pour la création d'équipe)
+      // Pré-validation du code bêta
+      const { data: beta, error: betaError } = await supabase
+        .from("beta_codes")
+        .select("id")
+        .eq("code", betaCode.trim().toUpperCase())
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .maybeSingle();
+
+      if (betaError || !beta) {
+        throw new Error("Code bêta invalide ou expiré");
+      }
+
+      // Inscription
       const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         password,
@@ -89,11 +114,25 @@ export const AuthModals = ({
           emailRedirectTo: `${window.location.origin}/`,
           data: {
             pseudo: pseudo,
+            age: ageNum,
           },
         },
       });
 
       if (error) throw error;
+
+      // Consommation du code bêta côté serveur
+      const userId = signUpData.user?.id;
+      if (userId) {
+        const { data: rpcRes, error: rpcError } = await supabase.rpc(
+          "validate_and_use_beta_code",
+          { beta_code: betaCode.trim().toUpperCase(), user_id: userId }
+        );
+        if (rpcError || rpcRes !== true) {
+          await supabase.auth.signOut();
+          throw new Error("Impossible de valider le code bêta. Réessayez ou contactez le support.");
+        }
+      }
 
       setWaitingForVerification(true);
       toast({
@@ -150,6 +189,8 @@ export const AuthModals = ({
     setEmail("");
     setPassword("");
     setPseudo("");
+    setAge("");
+    setBetaCode("");
     setLoading(false);
     setWaitingForVerification(false);
   };
@@ -215,6 +256,35 @@ export const AuthModals = ({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="signup-age">Âge</Label>
+                <Input
+                  id="signup-age"
+                  type="number"
+                  placeholder="18"
+                  min="13"
+                  max="100"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-beta">Code bêta</Label>
+                <Input
+                  id="signup-beta"
+                  type="text"
+                  placeholder="Votre code d'accès bêta"
+                  value={betaCode}
+                  onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Contactez l'équipe pour obtenir votre code bêta
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-password">Mot de passe</Label>
                 <Input
                   id="signup-password"
@@ -224,6 +294,9 @@ export const AuthModals = ({
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Minimum 8 caractères avec lettres et chiffres
+                </p>
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>
