@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-transparent border-b-0">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center">
           <div className="w-8 h-8 flex items-center justify-center">
