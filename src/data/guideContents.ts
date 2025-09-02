@@ -865,7 +865,7 @@ export const guideContents = {
         `
       }
     ]
-  }
+  },
 
   // Guides complets pour Planification
   "creer-evenements": {
