@@ -208,7 +208,7 @@ export const AuthModals = ({
           <DialogHeader>
             <DialogTitle>Créer un compte</DialogTitle>
             <DialogDescription>
-              Rejoignez Core.gg pour gérer vos équipes esport
+              Rejoignez Core Link pour gérer vos équipes esport
             </DialogDescription>
           </DialogHeader>
 
@@ -320,7 +320,7 @@ export const AuthModals = ({
           <DialogHeader>
             <DialogTitle>Connexion</DialogTitle>
             <DialogDescription>
-              Connectez-vous à votre compte Core.gg
+              Connectez-vous à votre compte Core Link
             </DialogDescription>
           </DialogHeader>
 

@@ -280,7 +280,7 @@ export const Documentation = () => {
           <div className="bg-muted/30 rounded-2xl p-8">
             <h3 className="text-xl font-bold mb-4">Vous ne trouvez pas ce que vous cherchez ?</h3>
             <p className="text-muted-foreground mb-6">
-              Notre équipe est là pour vous aider à tirer le meilleur parti de Core.gg
+              Notre équipe est là pour vous aider à tirer le meilleur parti de Core Link
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={() => navigate("/faq")} variant="outline">

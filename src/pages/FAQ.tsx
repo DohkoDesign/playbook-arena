@@ -148,7 +148,7 @@ export const FAQ = () => {
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Questions fréquentes</h2>
           <p className="text-xl text-muted-foreground mb-8">
-            Trouvez rapidement les réponses à vos questions sur Core.gg
+            Trouvez rapidement les réponses à vos questions sur Core Link
           </p>
           
           {/* Search */}

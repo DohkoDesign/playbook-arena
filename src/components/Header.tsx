@@ -12,9 +12,9 @@ export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 flex items-center justify-center">
-            <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Core.gg Logo" className="w-8 h-8 object-contain" />
+            <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-8 h-8 object-contain" />
           </div>
-          <span className="text-xl font-montserrat font-black tracking-tight text-white">Core.gg</span>
+          <span className="text-xl font-montserrat font-black tracking-tight text-white">Core Link</span>
         </div>
 
         <div className="flex items-center space-x-3">

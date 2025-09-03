@@ -9,7 +9,7 @@ export const guideContents = {
       {
         title: "Créer votre compte et équipe",
         content: `
-          <p>Commencez par vous inscrire sur Shadow Hub et créer votre première équipe eSport.</p>
+          <p>Commencez par vous inscrire sur Core Link et créer votre première équipe eSport.</p>
           <ul>
             <li>Choisissez un nom d'équipe unique</li>
             <li>Sélectionnez votre jeu principal (Valorant, CS2, League of Legends, etc.)</li>
