@@ -30,30 +30,22 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
       async (event, session) => {
         // Si l'utilisateur se connecte avec succès après validation email
         if (event === 'SIGNED_IN' && session?.user && waitingForVerification) {
-          console.log("✅ Email validé, utilisateur connecté");
+          console.log("✅ Email validé dans PlayerInviteModal, fermeture du modal");
           
-          // Vérifier si l'utilisateur a maintenant un profil player
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
-            .eq("user_id", session.user.id)
-            .single();
-            
-          if (profile?.role === "player") {
-            // Fermer la modal et rediriger
-            setWaitingForVerification(false);
-            toast({
-              title: "Compte validé !",
-              description: "Bienvenue dans l'équipe !",
-            });
-            onPlayerAdded();
-          }
+          // Fermer le modal et laisser Index.tsx gérer la suite
+          setWaitingForVerification(false);
+          resetForm();
+          toast({
+            title: "Email vérifié !",
+            description: "Ajout à l'équipe en cours...",
+          });
+          onClose(); // Fermer le modal pour laisser Index.tsx prendre le relais
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [waitingForVerification, onPlayerAdded, toast]);
+  }, [waitingForVerification, onClose, toast]);
 
   const handlePlayerSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +60,7 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
 
     setLoading(true);
     try {
-      // Créer le compte joueur
+      // Créer le compte joueur avec redirection vers la même page
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -84,13 +76,11 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
       if (authError) throw authError;
 
       setWaitingForVerification(true);
+      setLoading(false);
       toast({
         title: "Email envoyé",
         description: "Vérifiez votre boîte mail pour confirmer votre compte et rejoindre l'équipe.",
       });
-
-      // Une fois l'email vérifié, l'utilisateur sera automatiquement ajouté à l'équipe
-      // via la logique dans JoinTeam.tsx
 
     } catch (error: any) {
       setLoading(false);

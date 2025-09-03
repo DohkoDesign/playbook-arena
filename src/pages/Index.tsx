@@ -78,6 +78,12 @@ const Index = () => {
     await checkUserTeamsAndRedirect(currentUser);
   };
 
+  const handlePlayerAdded = () => {
+    console.log("🎉 Player added via invitation");
+    setIsPlayerInviteOpen(false);
+    navigate("/player");
+  };
+
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
       console.log("🔗 Processing invitation for user:", currentUser.id);
@@ -215,12 +221,6 @@ const Index = () => {
     console.log("🎉 Team created, redirecting to dashboard");
     setIsTeamSetupOpen(false);
     navigate("/dashboard");
-  };
-
-  const handlePlayerAdded = () => {
-    console.log("🎉 Player added via invitation");
-    setIsPlayerInviteOpen(false);
-    navigate("/player");
   };
 
   const closeAllModals = () => {
