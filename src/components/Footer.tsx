@@ -5,8 +5,8 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <div className="flex items-center">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-10 h-10 object-contain" />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-12 h-12 object-contain" />
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
