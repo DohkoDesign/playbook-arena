@@ -61,6 +61,23 @@ export const TeamSetupModal = ({ isOpen, user, onClose, onTeamCreated }: TeamSet
 
       if (error) throw error;
 
+      // Si l'utilisateur a mis une photo, l'utiliser aussi comme photo de profil si il n'en a pas
+      if (avatarUrl) {
+        const { data: existingProfile } = await supabase
+          .from("profiles")
+          .select("photo_profil")
+          .eq("user_id", user.id)
+          .single();
+
+        if (!existingProfile?.photo_profil) {
+          console.log("📸 Setting team logo as user profile photo");
+          await supabase
+            .from("profiles")
+            .update({ photo_profil: avatarUrl })
+            .eq("user_id", user.id);
+        }
+      }
+
       // Le créateur est ajouté automatiquement comme propriétaire via un trigger DB
 
       toast({

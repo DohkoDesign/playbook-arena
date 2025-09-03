@@ -45,6 +45,7 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
   const loadUserAvatar = async () => {
     if (!user) return;
     
+    console.log("🖼️ Loading user avatar for:", user.id);
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -52,10 +53,15 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
         .eq("user_id", user.id)
         .single();
 
+      console.log("📸 Avatar query result:", { data, error });
+
       if (error && error.code !== "PGRST116") {
         console.error("Error loading avatar:", error);
       } else if (data?.photo_profil) {
+        console.log("✅ Setting avatar URL:", data.photo_profil);
         setAvatarUrl(data.photo_profil);
+      } else {
+        console.log("❌ No avatar found in profile");
       }
     } catch (error) {
       console.error("Error loading avatar:", error);

@@ -107,8 +107,8 @@ const Dashboard = () => {
       console.log("✅ All teams loaded:", allTeams.length);
       
       if (!allTeams || allTeams.length === 0) {
-        console.log("🚨 No teams found, redirecting to setup");
-        navigate("/setup");
+        console.log("🚨 No teams found, opening team setup modal");
+        setShowTeamSetup(true);
       } else {
         const savedTeam = localStorage.getItem('dashboard-selected-team');
         const teamToSelect = savedTeam && allTeams.find(t => t.id === savedTeam) 
