@@ -27,6 +27,7 @@ export const AuthModals = ({
   const [password, setPassword] = useState("");
   const [pseudo, setPseudo] = useState("");
   const [age, setAge] = useState("");
+  const [betaCode, setBetaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
   const { toast } = useToast();
@@ -52,7 +53,7 @@ export const AuthModals = ({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !pseudo || !age) {
+    if (!email || !password || !pseudo || !age || !betaCode) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs",
@@ -100,6 +101,24 @@ export const AuthModals = ({
         throw new Error("Vous devez avoir au moins 13 ans pour vous inscrire");
       }
 
+      // Vérification du code bêta AVANT l'inscription
+      const { data: beta, error: betaError } = await supabase
+        .from("beta_codes")
+        .select("id")
+        .eq("code", betaCode.trim().toUpperCase())
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString())
+        .limit(1)
+        .maybeSingle();
+
+      if (betaError) {
+        throw new Error("Erreur lors de la vérification du code bêta");
+      }
+
+      if (!beta) {
+        throw new Error("Code bêta invalide ou expiré");
+      }
+
       // Inscription de l'utilisateur
       const { data: signUpData, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -114,6 +133,19 @@ export const AuthModals = ({
       });
 
       if (error) throw error;
+
+      // Consommation du code bêta côté serveur
+      const userId = signUpData.user?.id;
+      if (userId) {
+        const { data: rpcRes, error: rpcError } = await supabase.rpc(
+          "validate_and_use_beta_code",
+          { beta_code: betaCode.trim().toUpperCase(), user_id: userId }
+        );
+        if (rpcError || rpcRes !== true) {
+          await supabase.auth.signOut();
+          throw new Error("Impossible de valider le code bêta. Réessayez ou contactez le support.");
+        }
+      }
 
       setWaitingForVerification(true);
       toast({
@@ -171,6 +203,7 @@ export const AuthModals = ({
     setPassword("");
     setPseudo("");
     setAge("");
+    setBetaCode("");
     setLoading(false);
     setWaitingForVerification(false);
   };
@@ -186,9 +219,9 @@ export const AuthModals = ({
       <Dialog open={isSignupOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Créer un compte</DialogTitle>
+            <DialogTitle>Créer un compte créateur d'équipe</DialogTitle>
             <DialogDescription>
-              Rejoignez Core Link pour gérer vos équipes esport
+              Utilisez votre code bêta pour créer un compte et gérer vos équipes esport
             </DialogDescription>
           </DialogHeader>
 
@@ -252,6 +285,21 @@ export const AuthModals = ({
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="signup-beta">Code bêta</Label>
+                <Input
+                  id="signup-beta"
+                  type="text"
+                  placeholder="Votre code d'accès bêta"
+                  value={betaCode}
+                  onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Contactez l'équipe pour obtenir votre code bêta
+                </p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="signup-password">Mot de passe</Label>
                 <PasswordInput
                   id="signup-password"
@@ -272,7 +320,7 @@ export const AuthModals = ({
                     Création en cours...
                   </>
                 ) : (
-                  "Créer mon compte"
+                  "Créer mon compte créateur"
                 )}
               </Button>
             </form>
