@@ -254,6 +254,8 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                                       src={selectedVOD.url}
                                       className="w-full h-full rounded-lg"
                                       allowFullScreen
+                                      sandbox="allow-scripts allow-same-origin allow-presentation"
+                                      referrerPolicy="strict-origin-when-cross-origin"
                                     />
                                   </div>
                                 )}
@@ -334,6 +336,8 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                                   src={selectedVOD.url}
                                   className="w-full h-full rounded-lg"
                                   allowFullScreen
+                                  sandbox="allow-scripts allow-same-origin allow-presentation"
+                                  referrerPolicy="strict-origin-when-cross-origin"
                                 />
                               </div>
                             )}

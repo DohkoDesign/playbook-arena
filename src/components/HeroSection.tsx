@@ -30,8 +30,7 @@ export const HeroSection = ({
       }}></div>
       </div>
 
-      <style dangerouslySetInnerHTML={{
-      __html: `
+      <style>{`
           @keyframes moveFloat1 {
             0%, 100% { transform: translate(0px, 0px); }
             25% { transform: translate(30px, -20px); }
@@ -47,8 +46,7 @@ export const HeroSection = ({
             0%, 100% { transform: translate(0px, 0px); }
             50% { transform: translate(40px, 30px); }
           }
-        `
-    }} />
+        `}</style>
 
       <div className="container mx-auto text-center max-w-4xl flex flex-col justify-center min-h-screen pt-16 relative z-10">
         {/* Main hero content */}
