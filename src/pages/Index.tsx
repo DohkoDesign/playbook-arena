@@ -137,11 +137,14 @@ const Index = () => {
   };
 
   const handleSignupSuccess = () => {
+    console.log("🎉 Signup success - user verified email, redirecting to team creation");
     setIsSignupOpen(false);
-    // Ouvrir directement la popup de création d'équipe après vérification email
+    
+    // Attendre un peu pour que l'état soit à jour puis ouvrir la popup de création d'équipe
     setTimeout(() => {
+      console.log("🏗️ Opening team setup modal after signup success");
       setIsTeamSetupOpen(true);
-    }, 500); // Petit délai pour que la transition soit fluide
+    }, 1000); // Délai plus long pour s'assurer que tout est synchronisé
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {

@@ -59,11 +59,20 @@ export const AuthModals = ({
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("🔐 Auth state change:", event, session?.user?.email_confirmed_at);
+        
         if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at && waitingForVerification) {
+          console.log("✅ Email verified! Closing verification popup and calling success callback");
           setWaitingForVerification(false);
           setVerificationTimer(30);
           setLoading(false);
+          
+          // Fermer la popup
+          handleClose();
+          
+          // Appeler le callback de succès
           onSignupSuccess();
+          
           toast({
             title: "Email vérifié !",
             description: "Votre compte a été créé avec succès.",
