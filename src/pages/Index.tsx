@@ -156,6 +156,14 @@ const Index = () => {
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
     console.log("🔍 Starting checkUserTeamsAndRedirect for user:", currentUser.id);
+    
+    // Si il y a un token d'invitation, ne pas traiter la redirection automatique
+    // Laisser la logique d'invitation s'occuper de ça
+    if (token) {
+      console.log("🔗 Invitation token detected, skipping automatic redirect - invitation logic will handle this");
+      return;
+    }
+    
     let profile = null;
     
     try {
