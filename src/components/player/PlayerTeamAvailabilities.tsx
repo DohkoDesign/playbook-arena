@@ -500,14 +500,18 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
           </DialogHeader>
           
           <div className="py-4">
-            <SimpleAvailabilityManager 
-              teamId={teamId} 
-              playerId={playerId} 
-              onSaveSuccess={() => {
-                setShowAvailabilityModal(false);
-                fetchData(); // Recharger les données après modification
-              }}
-            />
+          <SimpleAvailabilityManager 
+            teamId={teamId} 
+            playerId={playerId} 
+            onSaveSuccess={() => {
+              setShowAvailabilityModal(false);
+              fetchData(); // Recharger les données après modification
+              toast({
+                title: "Succès",
+                description: "Vos disponibilités ont été mises à jour",
+              });
+            }}
+          />
           </div>
           
           <div className="flex justify-end pt-4 border-t">
