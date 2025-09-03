@@ -82,36 +82,23 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
   };
 
   const loadColors = () => {
-    const saved = localStorage.getItem("site_colors");
-    if (saved) {
-      setColors(JSON.parse(saved));
-    } else {
-      // Appliquer les couleurs par défaut
-      applyColorsToCSS(colors);
-    }
+    // Couleurs fixes de la nouvelle direction artistique - plus de personnalisation
+    return;
   };
 
-  const applyColorsToCSS = (colorValues: typeof colors) => {
-    const root = document.documentElement;
-    root.style.setProperty('--primary', colorValues.primary);
-    root.style.setProperty('--secondary', colorValues.secondary);
-    root.style.setProperty('--accent', colorValues.accent);
-    
-    // Variantes pour les dégradés
-    root.style.setProperty('--primary-glow', colorValues.primary);
-    root.style.setProperty('--gradient-brand', `linear-gradient(135deg, hsl(${colorValues.primary}), hsl(${colorValues.accent}))`);
-    root.style.setProperty('--gradient-subtle', `linear-gradient(180deg, hsl(${colorValues.primary} / 0.05), transparent)`);
+  const applyColorsToCSS = () => {
+    // Couleurs fixes de la nouvelle direction artistique - plus de personnalisation
+    return;
   };
 
   const saveColors = () => {
-    localStorage.setItem("site_colors", JSON.stringify(colors));
-    applyColorsToCSS(colors);
-    
-    toast({
-      title: "Couleurs appliquées",
-      description: "Les couleurs du site ont été mises à jour",
-    });
+    // Couleurs fixes de la nouvelle direction artistique - plus de personnalisation
+    return;
   };
+
+  // Supprimé: Conversion hex vers HSL pour les couleurs (plus nécessaire)
+  const hexToHsl = () => { return ""; };
+  const hslToHex = () => { return ""; };
 
   const updateTeam = async (teamId: string, field: 'nom') => {
     const value = teamNames[teamId];
@@ -210,55 +197,6 @@ export const TeamSettingsView = ({ teamId, gameType, teams, onTeamUpdated }: Tea
     } finally {
       setLoading(false);
     }
-  };
-
-  // Conversion hex vers HSL pour les couleurs
-  const hexToHsl = (hex: string): string => {
-    const r = parseInt(hex.slice(1, 3), 16) / 255;
-    const g = parseInt(hex.slice(3, 5), 16) / 255;
-    const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    let h = 0, s = 0, l = (max + min) / 2;
-
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      switch (max) {
-        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-        case g: h = (b - r) / d + 2; break;
-        case b: h = (r - g) / d + 4; break;
-      }
-      h /= 6;
-    }
-
-    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
-  };
-
-  const hslToHex = (hsl: string): string => {
-    const [h, s, l] = hsl.split(' ').map((v, i) => 
-      i === 0 ? parseInt(v) : parseInt(v.replace('%', ''))
-    );
-    
-    const hDecimal = h / 360;
-    const sDecimal = s / 100;
-    const lDecimal = l / 100;
-
-    const c = (1 - Math.abs(2 * lDecimal - 1)) * sDecimal;
-    const x = c * (1 - Math.abs((hDecimal * 6) % 2 - 1));
-    const m = lDecimal - c / 2;
-
-    let r = 0, g = 0, b = 0;
-    if (hDecimal >= 0 && hDecimal < 1/6) { r = c; g = x; b = 0; }
-    else if (hDecimal >= 1/6 && hDecimal < 2/6) { r = x; g = c; b = 0; }
-    else if (hDecimal >= 2/6 && hDecimal < 3/6) { r = 0; g = c; b = x; }
-    else if (hDecimal >= 3/6 && hDecimal < 4/6) { r = 0; g = x; b = c; }
-    else if (hDecimal >= 4/6 && hDecimal < 5/6) { r = x; g = 0; b = c; }
-    else { r = c; g = 0; b = x; }
-
-    const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   };
 
   return (
