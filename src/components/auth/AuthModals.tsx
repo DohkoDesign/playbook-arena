@@ -70,19 +70,26 @@ export const AuthModals = ({
           // Fermer la popup
           handleClose();
           
-          // Appeler le callback de succès
+          // Appeler le callback de succès - cela va gérer la redirection
           onSignupSuccess();
           
           toast({
             title: "Email vérifié !",
-            description: "Votre compte a été créé avec succès.",
+            description: "Redirection vers votre dashboard...",
           });
+        }
+        
+        // Détection d'une connexion après clic sur lien email (sans popup ouverte)
+        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at && !waitingForVerification) {
+          console.log("🔗 User signed in via email verification link - calling success callback");
+          // L'utilisateur a cliqué sur le lien dans l'email directement
+          onSignupSuccess();
         }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, [waitingForVerification, onSignupSuccess, toast]);
+  }, [waitingForVerification, onSignupSuccess]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();

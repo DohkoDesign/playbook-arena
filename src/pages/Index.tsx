@@ -137,21 +137,24 @@ const Index = () => {
   };
 
   const handleSignupSuccess = () => {
-    console.log("🎉 Signup success - checking if user should create team or join existing one");
+    console.log("🎉 Signup success - determining user flow based on context");
     setIsSignupOpen(false);
     
-    // Si il y a un token d'invitation dans l'URL, l'utilisateur rejoint une équipe
+    // Vérifier si l'utilisateur a un token d'invitation (rejoint une équipe)
     if (token) {
-      console.log("🔗 User has invitation token, will join existing team");
-      // Ne pas ouvrir la popup de création, l'utilisateur va rejoindre une équipe
+      console.log("🔗 User has invitation token, will auto-join team and redirect to player dashboard");
+      // L'utilisateur rejoint une équipe via invitation
+      // La logique handleInvitationJoin va s'occuper de la redirection
       return;
     }
     
-    // Sinon, l'utilisateur veut créer une nouvelle équipe
+    // Attendre un peu puis vérifier le statut de l'utilisateur pour déterminer la redirection
     setTimeout(() => {
-      console.log("🏗️ Opening team setup modal for team creation");
-      setIsTeamSetupOpen(true);
-    }, 1000);
+      if (user) {
+        console.log("🔄 Checking user status after signup to determine redirect");
+        checkUserTeamsAndRedirect(user);
+      }
+    }, 1500);
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
