@@ -138,6 +138,41 @@ export type Database = {
           },
         ]
       }
+      feedback_responses: {
+        Row: {
+          created_at: string
+          feedback_id: string
+          id: string
+          responded_by: string
+          response_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_id: string
+          id?: string
+          responded_by: string
+          response_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feedback_id?: string
+          id?: string
+          responded_by?: string
+          response_text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_responses_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "player_feedbacks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           created_at: string
@@ -269,6 +304,7 @@ export type Database = {
       player_feedbacks: {
         Row: {
           category: string
+          contact_email: string | null
           content: string
           created_at: string
           id: string
@@ -281,6 +317,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          contact_email?: string | null
           content: string
           created_at?: string
           id?: string
@@ -293,6 +330,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          contact_email?: string | null
           content?: string
           created_at?: string
           id?: string
