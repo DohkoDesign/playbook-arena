@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -21,22 +21,33 @@ const Index = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isTeamSetupOpen, setIsTeamSetupOpen] = useState(false);
   const [isPlayerInviteOpen, setIsPlayerInviteOpen] = useState(false);
+  const [hasCheckedTeams, setHasCheckedTeams] = useState(false);
   const navigate = useNavigate();
   const { token } = useParams();
+  const invitationProcessed = useRef(false);
 
   // Gestion de l'authentification
   useEffect(() => {
+    console.log("🔄 Setting up auth listener");
+    
     // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("🔐 Auth state change:", event, session?.user?.email_confirmed_at);
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Reset le flag de vérification des équipes quand l'utilisateur change
+        if (!session?.user) {
+          setHasCheckedTeams(false);
+          invitationProcessed.current = false;
+        }
       }
     );
 
     // Vérifier la session existante
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("📊 Initial session check:", !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
     });
@@ -44,22 +55,26 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Gestion des invitations - logique principale
+  // Gestion des invitations et redirection - logique principale
   useEffect(() => {
-    if (token && user) {
+    console.log("🎯 Main logic triggered:", { token: !!token, user: !!user, hasCheckedTeams, invitationProcessed: invitationProcessed.current });
+    
+    if (token && user && !invitationProcessed.current) {
       // Utilisateur connecté avec token d'invitation → traiter l'invitation
-      console.log("🔗 User with invitation token detected, processing invitation");
+      console.log("🔗 Processing invitation for authenticated user");
+      invitationProcessed.current = true;
       handleInvitationJoin(token, user);
     } else if (token && !user) {
       // Token d'invitation mais pas d'utilisateur → ouvrir modal d'inscription
-      console.log("🔗 Invitation token detected, opening player signup modal");
+      console.log("🔗 Opening player signup modal for invitation");
       setIsPlayerInviteOpen(true);
-    } else if (!token && user) {
-      // Pas de token, utilisateur connecté → vérifier ses équipes
-      console.log("👤 No invitation token, checking user teams");
+    } else if (!token && user && !hasCheckedTeams) {
+      // Pas de token, utilisateur connecté → vérifier ses équipes une seule fois
+      console.log("👤 Checking user teams (first time)");
+      setHasCheckedTeams(true);
       checkUserTeamsAndRedirect(user);
     }
-  }, [token, user]);
+  }, [token, user, hasCheckedTeams]);
 
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
@@ -126,7 +141,6 @@ const Index = () => {
       
     } catch (error: any) {
       console.error("💥 Error processing invitation:", error);
-      // En cas d'erreur, rediriger selon le rôle par défaut
       navigate("/player");
     }
   };
@@ -134,21 +148,11 @@ const Index = () => {
   const handleSignupSuccess = () => {
     console.log("🎉 Signup success");
     setIsSignupOpen(false);
-    
-    // Si il ya un token d'invitation, l'invitation sera traitée automatiquement 
-    // par l'useEffect principal quand user sera disponible
-    if (token) {
-      console.log("🔗 Invitation token present, will be processed automatically");
-    }
+    // Reset le flag pour permettre la vérification des équipes après inscription
+    setHasCheckedTeams(false);
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
-    // Ne jamais traiter la redirection s'il y a un token d'invitation
-    if (token) {
-      console.log("🔗 Skipping team check due to invitation token");
-      return;
-    }
-    
     console.log("🔍 Checking user teams for:", currentUser.id);
     
     try {
@@ -159,7 +163,7 @@ const Index = () => {
         .eq("user_id", currentUser.id)
         .single();
 
-      // Vérifier si l'utilisateur a créé des équipes (propriétaire/staff)
+      // Vérifier si l'utilisateur a créé des équipes
       const { data: createdTeams } = await supabase
         .from("teams")
         .select("*")
@@ -179,11 +183,9 @@ const Index = () => {
 
       // Redirection selon le rôle et le statut
       if (profileData?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
-        // Staff ou propriétaire d'équipe → Dashboard de gestion
         console.log("🚀 Redirecting to management dashboard");
         navigate("/dashboard");
       } else if (teamMembers && teamMembers.length > 0) {
-        // Membre d'équipe → vérifier le rôle
         const hasManagementRole = teamMembers.some(tm => 
           ['owner', 'manager', 'coach'].includes(tm.role)
         );
@@ -195,13 +197,11 @@ const Index = () => {
           navigate("/player");
         }
       } else {
-        // Nouvel utilisateur sans équipe → modal de création d'équipe
         console.log("🆕 New user without team, opening team setup modal");
         setIsTeamSetupOpen(true);
       }
     } catch (error) {
       console.error("💥 Error checking user teams:", error);
-      // En cas d'erreur, ouvrir la modal de création d'équipe
       setIsTeamSetupOpen(true);
     }
   };
@@ -209,7 +209,8 @@ const Index = () => {
   const handleLoginSuccess = () => {
     console.log("🎉 Login success");
     setIsLoginOpen(false);
-    // La logique de redirection se fera automatiquement via l'useEffect principal
+    // Reset le flag pour permettre la vérification des équipes après connexion
+    setHasCheckedTeams(false);
   };
 
   const handleTeamCreated = () => {
@@ -246,7 +247,6 @@ const Index = () => {
         <FeaturesShowcase />
         <FeaturesDetails />
         <GamesList />
-        {/* <TestimonialsSection /> */}
       </main>
       <Footer />
 
