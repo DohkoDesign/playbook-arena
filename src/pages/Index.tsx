@@ -198,8 +198,10 @@ const Index = () => {
           ['owner', 'manager', 'coach'].includes(tm.role)
         );
         if (hasManagementRole) {
+          console.log("👑 Redirecting to dashboard (management role)");
           navigate("/dashboard");
         } else {
+          console.log("🎮 Redirecting to player interface (team member)");
           navigate("/player");
         }
       } else {
@@ -234,8 +236,16 @@ const Index = () => {
   };
 
   const handleTeamCreated = () => {
+    console.log("🎉 Team created! Redirecting to dashboard");
     setIsTeamSetupOpen(false);
+    
+    // Redirection immédiate vers le dashboard
     navigate("/dashboard");
+    
+    // Éviter que la vérification automatique interfère
+    setTimeout(() => {
+      console.log("✅ Team creation flow completed - user should be on dashboard");
+    }, 500);
   };
 
   const handlePlayerAdded = () => {
