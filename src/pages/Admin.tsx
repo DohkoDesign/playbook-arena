@@ -21,8 +21,14 @@ const Admin = () => {
         return;
       }
 
-      // Vérifier que c'est le bon email
-      if (user.email === 'dohkoworld@gmail.com') {
+      // Check if user has staff role (keeping email check as fallback)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (user.email === 'dohkoworld@gmail.com' || profile?.role === 'staff') {
         setIsAuthorized(true);
       } else {
         navigate('/');
