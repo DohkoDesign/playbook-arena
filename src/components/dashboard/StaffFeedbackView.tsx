@@ -21,7 +21,7 @@ import {
   CheckCircle,
   Clock
 } from "lucide-react";
-import { useAuth } from "@/components/auth/AuthGuard";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
