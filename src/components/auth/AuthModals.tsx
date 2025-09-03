@@ -101,21 +101,17 @@ export const AuthModals = ({
         throw new Error("Vous devez avoir au moins 13 ans pour vous inscrire");
       }
 
-      // Vérification du code bêta AVANT l'inscription
-      const { data: beta, error: betaError } = await supabase
-        .from("beta_codes")
-        .select("id")
-        .eq("code", betaCode.trim().toUpperCase())
-        .is("used_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .limit(1)
-        .maybeSingle();
+      // Vérification du code bêta AVANT l'inscription avec fonction sécurisée
+      const { data: isValidBeta, error: betaError } = await supabase
+        .rpc("validate_beta_code_exists", { 
+          code_input: betaCode.trim().toUpperCase() 
+        });
 
       if (betaError) {
         throw new Error("Erreur lors de la vérification du code bêta");
       }
 
-      if (!beta) {
+      if (!isValidBeta) {
         throw new Error("Code bêta invalide ou expiré");
       }
 

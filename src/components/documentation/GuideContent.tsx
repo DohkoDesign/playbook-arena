@@ -2,6 +2,7 @@ import { ArrowLeft, CheckCircle, Info, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import DOMPurify from 'dompurify';
 
 interface Step {
   title: string;
@@ -63,7 +64,12 @@ export const GuideContent = ({ guide, onBack }: GuideContentProps) => {
                   <div className="flex-1">
                     <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
                     <div className="prose prose-sm max-w-none text-muted-foreground mb-6">
-                      <div dangerouslySetInnerHTML={{ __html: step.content }} />
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(step.content, {
+                          ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'code', 'pre', 'ul', 'ol', 'li', 'a'],
+                          ALLOWED_ATTR: ['href', 'target', 'rel']
+                        })
+                      }} />
                     </div>
                     
                     {step.image && (

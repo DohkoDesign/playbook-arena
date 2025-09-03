@@ -650,12 +650,25 @@ export type Database = {
         Args: { team_uuid: string; user_uuid?: string }
         Returns: boolean
       }
+      log_admin_action: {
+        Args: {
+          action_type: string
+          metadata?: Json
+          target_id?: string
+          target_table: string
+        }
+        Returns: undefined
+      }
       log_security_event: {
         Args: { event_type: string; metadata?: Json; user_id?: string }
         Returns: undefined
       }
       validate_and_use_beta_code: {
         Args: { beta_code: string; user_id: string }
+        Returns: boolean
+      }
+      validate_beta_code_exists: {
+        Args: { code_input: string }
         Returns: boolean
       }
       validate_password: {

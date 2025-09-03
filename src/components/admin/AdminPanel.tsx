@@ -122,6 +122,17 @@ const AdminPanel = () => {
         throw new Error("Ce code existe déjà, veuillez en choisir un autre");
       }
 
+      // Log admin action for audit trail
+      await supabase.rpc('log_admin_action', {
+        action_type: 'create_beta_code',
+        target_table: 'beta_codes',
+        metadata: {
+          code: customCode.toUpperCase(),
+          team_name: teamName || null,
+          expires_at: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      });
+
       const { error } = await supabase
         .from('beta_codes')
         .insert({
