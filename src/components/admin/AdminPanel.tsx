@@ -111,35 +111,11 @@ const AdminPanel = () => {
     setIsGenerating(true);
     
     try {
-      // Vérifier que le code n'existe pas déjà
-      const { data: existing } = await supabase
-        .from('beta_codes')
-        .select('id')
-        .eq('code', customCode.toUpperCase())
-        .limit(1);
-
-      if (existing && existing.length > 0) {
-        throw new Error("Ce code existe déjà, veuillez en choisir un autre");
-      }
-
-      // Log admin action for audit trail
-      await supabase.rpc('log_admin_action', {
-        action_type: 'create_beta_code',
-        target_table: 'beta_codes',
-        metadata: {
-          code: customCode.toUpperCase(),
-          team_name: teamName || null,
-          expires_at: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString()
-        }
+      // Use secure RPC function to create beta code
+      const { data, error } = await supabase.rpc('admin_create_beta_code', {
+        p_code: customCode,
+        p_team_name: teamName
       });
-
-      const { error } = await supabase
-        .from('beta_codes')
-        .insert({
-          code: customCode.toUpperCase(),
-          team_name: teamName,
-          expires_at: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString() // 6 mois
-        });
 
       if (error) throw error;
 

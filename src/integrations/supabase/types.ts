@@ -610,6 +610,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_beta_code: {
+        Args: { p_code: string; p_expires_at?: string; p_team_name?: string }
+        Returns: string
+      }
       current_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
