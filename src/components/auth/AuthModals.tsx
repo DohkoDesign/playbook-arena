@@ -61,29 +61,26 @@ export const AuthModals = ({
       (event, session) => {
         console.log("🔐 Auth state change:", event, session?.user?.email_confirmed_at);
         
-        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at && waitingForVerification) {
-          console.log("✅ Email verified! Closing verification popup and calling success callback");
-          setWaitingForVerification(false);
-          setVerificationTimer(30);
-          setLoading(false);
+        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at) {
+          console.log("✅ Email verified! Processing based on context...");
           
-          // Fermer la popup
-          handleClose();
+          // Si nous sommes en attente de vérification, fermer la popup
+          if (waitingForVerification) {
+            console.log("📱 Closing verification popup");
+            setWaitingForVerification(false);
+            setVerificationTimer(30);
+            setLoading(false);
+            handleClose();
+          }
           
-          // Appeler le callback de succès - cela va gérer la redirection
+          // Toujours appeler le callback de succès pour gérer la redirection
+          console.log("🔗 Calling signup success callback");
           onSignupSuccess();
           
           toast({
             title: "Email vérifié !",
-            description: "Redirection vers votre dashboard...",
+            description: "Redirection en cours...",
           });
-        }
-        
-        // Détection d'une connexion après clic sur lien email (sans popup ouverte)
-        if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at && !waitingForVerification) {
-          console.log("🔗 User signed in via email verification link - calling success callback");
-          // L'utilisateur a cliqué sur le lien dans l'email directement
-          onSignupSuccess();
         }
       }
     );

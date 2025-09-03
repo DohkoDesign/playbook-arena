@@ -143,8 +143,13 @@ const Index = () => {
     // Vérifier si l'utilisateur a un token d'invitation (rejoint une équipe)
     if (token) {
       console.log("🔗 User has invitation token, will auto-join team and redirect to player dashboard");
-      // L'utilisateur rejoint une équipe via invitation
-      // La logique handleInvitationJoin va s'occuper de la redirection
+      // Attendre que l'utilisateur soit disponible puis traiter l'invitation
+      setTimeout(() => {
+        if (user) {
+          console.log("🚀 Processing invitation for newly verified user");
+          handleInvitationJoin(token, user);
+        }
+      }, 1000);
       return;
     }
     
