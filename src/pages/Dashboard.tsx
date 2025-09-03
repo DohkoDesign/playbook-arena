@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { TeamSetupModal } from "@/components/dashboard/TeamSetupModal";
-import { AdvancedDashboard } from "@/components/dashboard/AdvancedDashboard";
+import { RealTimeDashboard } from "@/components/dashboard/RealTimeDashboard";
 import { CalendarView } from "@/components/dashboard/CalendarView";
 import { PlayersView } from "@/components/dashboard/PlayersView";
 import { CoachingView } from "@/components/dashboard/CoachingView";
@@ -151,7 +151,7 @@ const Dashboard = () => {
 
     switch (currentView) {
       case "dashboard":
-        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
+        return <RealTimeDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
       case "calendar":
         return <CalendarView teamId={selectedTeam} gameType={gameType} />;
       case "players":
@@ -171,7 +171,7 @@ const Dashboard = () => {
       case "availabilities":
         return <StaffAvailabilitiesView teamId={selectedTeam} />;
       default:
-        return <AdvancedDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
+        return <RealTimeDashboard teamId={selectedTeam} gameType={gameType} teamData={team} isStaff={true} onViewChange={(view) => setCurrentView(view as DashboardView)} currentUserId={user?.id} />;
     }
   };
 
