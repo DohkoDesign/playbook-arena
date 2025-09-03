@@ -138,10 +138,10 @@ const Index = () => {
 
   const handleSignupSuccess = () => {
     setIsSignupOpen(false);
-    // Attendre que l'utilisateur soit connecté, puis ouvrir la configuration d'équipe
-    if (user) {
+    // Ouvrir directement la popup de création d'équipe après vérification email
+    setTimeout(() => {
       setIsTeamSetupOpen(true);
-    }
+    }, 500); // Petit délai pour que la transition soit fluide
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {

@@ -30,7 +30,30 @@ export const AuthModals = ({
   const [betaCode, setBetaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
+  const [verificationTimer, setVerificationTimer] = useState(30);
   const { toast } = useToast();
+
+  // Timer pour la popup de vérification d'email (30 secondes)
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (waitingForVerification && verificationTimer > 0) {
+      timer = setTimeout(() => {
+        setVerificationTimer(prev => prev - 1);
+      }, 1000);
+    } else if (waitingForVerification && verificationTimer === 0) {
+      // Fermer la popup après 30 secondes
+      setWaitingForVerification(false);
+      setVerificationTimer(30);
+      handleClose();
+      toast({
+        title: "Vérification en attente",
+        description: "Cliquez sur le lien dans votre email pour finaliser votre inscription.",
+      });
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [waitingForVerification, verificationTimer]);
 
   // Écouter les changements d'état d'authentification pour détecter la vérification
   useEffect(() => {
@@ -38,6 +61,7 @@ export const AuthModals = ({
       (event, session) => {
         if (event === 'SIGNED_IN' && session?.user?.email_confirmed_at && waitingForVerification) {
           setWaitingForVerification(false);
+          setVerificationTimer(30);
           setLoading(false);
           onSignupSuccess();
           toast({
@@ -144,6 +168,7 @@ export const AuthModals = ({
       }
 
       setWaitingForVerification(true);
+      setVerificationTimer(30);
       toast({
         title: "Inscription réussie !",
         description: "Vérifiez votre email pour confirmer votre compte.",
@@ -202,6 +227,7 @@ export const AuthModals = ({
     setBetaCode("");
     setLoading(false);
     setWaitingForVerification(false);
+    setVerificationTimer(30);
   };
 
   const handleClose = () => {
@@ -235,7 +261,9 @@ export const AuthModals = ({
               </div>
               <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span className="text-sm text-muted-foreground">En attente de vérification...</span>
+                <span className="text-sm text-muted-foreground">
+                  Fermeture automatique dans {verificationTimer}s...
+                </span>
               </div>
             </div>
           ) : (
