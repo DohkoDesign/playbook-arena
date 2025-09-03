@@ -124,7 +124,7 @@ export const DashboardHeader = ({ user, onLogout, currentTeam }: DashboardHeader
                 <span>Administration</span>
               </DropdownMenuItem>
             )}
-            {currentTeam && (
+            {currentTeam && currentTeam.created_by === user?.id && (
               <DropdownMenuItem 
                 onClick={() => setShowTeamSettings(true)}
                 className="cursor-pointer"
