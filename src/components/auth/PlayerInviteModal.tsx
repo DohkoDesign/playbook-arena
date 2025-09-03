@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -176,9 +177,8 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
 
             <div className="space-y-2">
               <Label htmlFor="player-password">Mot de passe</Label>
-              <Input
+              <PasswordInput
                 id="player-password"
-                type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

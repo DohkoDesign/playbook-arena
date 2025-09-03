@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -315,10 +316,9 @@ export default function PlayerSignup() {
                   <div className="space-y-2">
                     <Label htmlFor="password">Mot de passe *</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                      <Input
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
+                      <PasswordInput
                         id="password"
-                        type="password"
                         className="pl-9"
                         placeholder="Mot de passe sécurisé"
                         value={formData.password}
