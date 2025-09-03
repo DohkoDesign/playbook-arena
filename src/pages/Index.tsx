@@ -177,7 +177,10 @@ const Index = () => {
       console.log("📊 Redirection info:", { 
         profile: profile?.role, 
         createdTeams: createdTeams?.length, 
-        teamMembers: teamMembers?.length 
+        teamMembers: teamMembers?.length,
+        profileData: profile,
+        createdTeamsData: createdTeams,
+        teamMembersData: teamMembers
       });
 
       // Redirection selon le rôle et le statut
@@ -212,7 +215,14 @@ const Index = () => {
           .limit(1)
           .maybeSingle();
 
-        console.log("🔍 Beta code check result:", { hasBetaCode, betaError });
+        console.log("🔍 Beta code check result:", { 
+          hasBetaCode, 
+          betaError,
+          profileRole: profile?.role,
+          isStaff: profile?.role === "staff",
+          hasValidBetaCode: !!hasBetaCode,
+          shouldOpenModal: (profile?.role === "staff" || !!hasBetaCode)
+        });
 
         if (profile?.role === "staff" || hasBetaCode) {
           // Staff ou utilisateur avec code beta validé -> ouvrir la modal de création d'équipe
