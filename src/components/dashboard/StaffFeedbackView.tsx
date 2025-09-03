@@ -21,6 +21,7 @@ import {
   CheckCircle,
   Clock
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -39,7 +40,15 @@ interface Feedback {
   status: 'pending' | 'reviewed' | 'resolved';
   created_at: string;
   user_id?: string;
-  // Données du joueur (jointure)
+  pseudo?: string;
+  responses?: FeedbackResponse[];
+}
+
+interface FeedbackResponse {
+  id: string;
+  response_text: string;
+  created_at: string;
+  responded_by: string;
   pseudo?: string;
 }
 
@@ -87,6 +96,7 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
   const [responseText, setResponseText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchFeedbacks();
@@ -96,19 +106,26 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
     try {
       setLoading(true);
       
-      // Récupérer tous les feedbacks de l'équipe
       const { data, error } = await supabase
         .from('player_feedbacks')
-        .select('*')
+        .select(`
+          *,
+          feedback_responses(
+            id,
+            response_text,
+            created_at,
+            responded_by,
+            profiles!inner(pseudo)
+          )
+        `)
         .eq('team_id', teamId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Pour chaque feedback non-anonyme, récupérer le pseudo du joueur
-      const feedbacksWithProfiles = await Promise.all(
+      const feedbacksWithData = await Promise.all(
         (data || []).map(async (feedback) => {
-          let pseudo = undefined;
+          let pseudo = 'Anonyme';
           
           if (!feedback.is_anonymous && feedback.user_id) {
             const { data: profile } = await supabase
@@ -117,7 +134,7 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
               .eq('user_id', feedback.user_id)
               .single();
             
-            pseudo = profile?.pseudo;
+            pseudo = profile?.pseudo || 'Utilisateur inconnu';
           }
           
           return {
@@ -129,12 +146,16 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
             status: feedback.status as Feedback['status'],
             created_at: feedback.created_at,
             user_id: feedback.user_id,
-            pseudo
+            pseudo,
+            responses: feedback.feedback_responses?.map((response: any) => ({
+              ...response,
+              pseudo: response.profiles?.pseudo || 'Staff'
+            })) || []
           };
         })
       );
       
-      setFeedbacks(feedbacksWithProfiles);
+      setFeedbacks(feedbacksWithData);
     } catch (error: any) {
       console.error('Error fetching feedbacks:', error);
       toast({
@@ -184,6 +205,43 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
 
   const getStatsCount = (status: string) => {
     return feedbacks.filter(f => status === 'all' || f.status === status).length;
+  };
+
+  const handleSubmitResponse = async () => {
+    if (!selectedFeedback || !responseText.trim()) return;
+
+    try {
+      setSubmitting(true);
+      
+      const { error } = await supabase
+        .from('feedback_responses')
+        .insert({
+          feedback_id: selectedFeedback.id,
+          response_text: responseText.trim(),
+          responded_by: user?.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Réponse envoyée",
+        description: "Votre réponse a été envoyée avec succès",
+      });
+
+      setResponseText('');
+      setShowResponseModal(false);
+      setSelectedFeedback(null);
+      fetchFeedbacks(); // Refresh to show new response
+    } catch (error: any) {
+      console.error('Error submitting response:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'envoyer la réponse",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -363,6 +421,26 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
                       {feedback.content}
                     </p>
                     
+                    {/* Affichage des réponses */}
+                    {feedback.responses && feedback.responses.length > 0 && (
+                      <div className="mb-4 border-t pt-4">
+                        <h5 className="text-sm font-medium mb-3 text-muted-foreground">Réponses</h5>
+                        <div className="space-y-3">
+                          {feedback.responses.map((response) => (
+                            <div key={response.id} className="bg-muted/50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-medium">{response.pseudo}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {format(new Date(response.created_at), "d MMM yyyy 'à' HH:mm", { locale: fr })}
+                                </span>
+                              </div>
+                              <p className="text-sm">{response.response_text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                         <span>Catégorie: {categoryInfo.label}</span>
@@ -447,19 +525,10 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
                   Annuler
                 </Button>
                 <Button 
-                  onClick={() => {
-                    // TODO: Implémenter l'envoi de réponse
-                    toast({
-                      title: "Réponse envoyée",
-                      description: "La réponse sera bientôt implémentée",
-                    });
-                    setShowResponseModal(false);
-                    setResponseText('');
-                    setSelectedFeedback(null);
-                  }}
+                  onClick={handleSubmitResponse}
                   disabled={!responseText.trim() || submitting}
                 >
-                  Envoyer la réponse
+                  {submitting ? "Envoi..." : "Envoyer la réponse"}
                 </Button>
               </div>
             </div>

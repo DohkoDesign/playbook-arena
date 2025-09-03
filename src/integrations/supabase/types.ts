@@ -610,6 +610,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_email: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_intelligent_notifications: {
         Args: Record<PropertyKey, never>
         Returns: undefined

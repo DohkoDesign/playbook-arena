@@ -20,6 +20,7 @@ import {
   Bug,
   HelpCircle
 } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthGuard";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -38,6 +39,15 @@ interface Feedback {
   is_anonymous: boolean;
   status: 'pending' | 'reviewed' | 'resolved';
   created_at: string;
+  responses?: FeedbackResponse[];
+}
+
+interface FeedbackResponse {
+  id: string;
+  response_text: string;
+  created_at: string;
+  responded_by: string;
+  pseudo?: string;
 }
 
 const categoryConfig = {
@@ -82,10 +92,12 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
     title: '',
     content: '',
     category: 'suggestion' as Feedback['category'],
-    is_anonymous: false
+    is_anonymous: false,
+    contact_email: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchFeedbacks();
@@ -95,17 +107,24 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
     try {
       setLoading(true);
       
-      // Récupérer tous les feedbacks du joueur (anonymes et non-anonymes)
       const { data, error } = await supabase
         .from('player_feedbacks')
-        .select('*')
+        .select(`
+          *,
+          feedback_responses(
+            id,
+            response_text,
+            created_at,
+            responded_by,
+            profiles!inner(pseudo)
+          )
+        `)
         .eq('team_id', teamId)
-        .eq('user_id', playerId)
+        .or(`user_id.eq.${playerId},and(is_anonymous.eq.true,contact_email.eq.${user?.email})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Mapper les données pour correspondre à l'interface
       const mappedFeedbacks: Feedback[] = (data || []).map(item => ({
         id: item.id,
         title: item.title,
@@ -113,7 +132,11 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
         category: item.category as Feedback['category'],
         is_anonymous: item.is_anonymous,
         status: item.status as Feedback['status'],
-        created_at: item.created_at
+        created_at: item.created_at,
+        responses: item.feedback_responses?.map((response: any) => ({
+          ...response,
+          pseudo: response.profiles?.pseudo || 'Staff'
+        })) || []
       }));
       
       setFeedbacks(mappedFeedbacks);
@@ -146,11 +169,12 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
       
       const feedbackData = {
         team_id: teamId,
-        user_id: playerId, // Toujours associer au joueur pour qu'il puisse voir ses feedbacks
+        user_id: formData.is_anonymous ? null : playerId,
         title: formData.title.trim(),
         content: formData.content.trim(),
         category: formData.category,
-        is_anonymous: formData.is_anonymous
+        is_anonymous: formData.is_anonymous,
+        contact_email: formData.is_anonymous ? user?.email : null
       };
 
       const { error } = await supabase
@@ -171,7 +195,8 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
         title: '',
         content: '',
         category: 'suggestion',
-        is_anonymous: false
+        is_anonymous: false,
+        contact_email: ''
       });
       
       setShowCreateModal(false);
@@ -372,6 +397,26 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
                     <p className="text-sm text-muted-foreground mb-3">
                       {feedback.content}
                     </p>
+                    
+                    {/* Affichage des réponses */}
+                    {feedback.responses && feedback.responses.length > 0 && (
+                      <div className="mb-3 border-t pt-4">
+                        <h5 className="text-sm font-medium mb-3 text-muted-foreground">Réponses du staff</h5>
+                        <div className="space-y-3">
+                          {feedback.responses.map((response) => (
+                            <div key={response.id} className="bg-muted/50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-medium">{response.pseudo}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {format(new Date(response.created_at), "d MMMM yyyy 'à' HH:mm", { locale: fr })}
+                                </span>
+                              </div>
+                              <p className="text-sm">{response.response_text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Catégorie: {categoryInfo.label}</span>
