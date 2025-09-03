@@ -4,11 +4,10 @@ export const Footer = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-8 h-8 object-contain" />
+            <div className="flex items-center">
+              <div className="w-10 h-10 flex items-center justify-center">
+                <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-10 h-10 object-contain" />
               </div>
-              <span className="text-lg font-montserrat font-black tracking-tight">Core Link</span>
             </div>
             <p className="text-sm text-muted-foreground">
               La plateforme de gestion d'équipes eSport nouvelle génération.
