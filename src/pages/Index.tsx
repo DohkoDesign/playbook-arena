@@ -21,26 +21,22 @@ const Index = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isTeamSetupOpen, setIsTeamSetupOpen] = useState(false);
   const [isPlayerInviteOpen, setIsPlayerInviteOpen] = useState(false);
-  const [hasCheckedTeams, setHasCheckedTeams] = useState(false);
   const navigate = useNavigate();
   const { token } = useParams();
-  const invitationProcessed = useRef(false);
 
-  // Gestion de l'authentification
+  // Gestion de l'authentification uniquement
   useEffect(() => {
     console.log("🔄 Setting up auth listener");
     
-    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log("🔐 Auth state change:", event, session?.user?.email_confirmed_at);
+        console.log("🔐 Auth state change:", event);
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Reset le flag de vérification des équipes quand l'utilisateur change
-        if (!session?.user) {
-          setHasCheckedTeams(false);
-          invitationProcessed.current = false;
+        // Traitement après connexion réussie
+        if (session?.user && event === 'SIGNED_IN') {
+          handleUserAuthenticated(session.user);
         }
       }
     );
@@ -50,41 +46,37 @@ const Index = () => {
       console.log("📊 Initial session check:", !!session?.user);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Si utilisateur déjà connecté, traiter immédiatement
+      if (session?.user) {
+        handleUserAuthenticated(session.user);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Gestion des invitations et redirection - logique principale
-  useEffect(() => {
-    console.log("🎯 Main logic triggered:", { token: !!token, user: !!user, hasCheckedTeams, invitationProcessed: invitationProcessed.current });
-    
-    // Ne rien faire si pas d'utilisateur connecté
-    if (!user) {
-      console.log("❌ No user, skipping all logic");
-      return;
-    }
-    
-    if (token && !invitationProcessed.current) {
-      // Utilisateur connecté avec token d'invitation → traiter l'invitation
-      console.log("🔗 Processing invitation for authenticated user");
-      invitationProcessed.current = true;
-      handleInvitationJoin(token, user);
-    } else if (!token && !hasCheckedTeams) {
-      // Pas de token, utilisateur connecté → vérifier ses équipes une seule fois
-      console.log("👤 Checking user teams (first time)");
-      setHasCheckedTeams(true);
-      checkUserTeamsAndRedirect(user);
-    }
-  }, [token, user, hasCheckedTeams]);
-
-  // Gestion spéciale pour les invitations sans utilisateur connecté
+  // Gestion des invitations pour utilisateurs non connectés
   useEffect(() => {
     if (token && !user) {
       console.log("🔗 Invitation token without user, opening player signup modal");
       setIsPlayerInviteOpen(true);
     }
   }, [token, user]);
+
+  const handleUserAuthenticated = async (currentUser: User) => {
+    console.log("👤 User authenticated, processing...");
+    
+    // Si token d'invitation, traiter l'invitation
+    if (token) {
+      console.log("🔗 Processing invitation for authenticated user");
+      await handleInvitationJoin(token, currentUser);
+      return;
+    }
+    
+    // Sinon, vérifier les équipes de l'utilisateur
+    await checkUserTeamsAndRedirect(currentUser);
+  };
 
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
@@ -158,8 +150,6 @@ const Index = () => {
   const handleSignupSuccess = () => {
     console.log("🎉 Signup success");
     setIsSignupOpen(false);
-    // Reset le flag pour permettre la vérification des équipes après inscription
-    setHasCheckedTeams(false);
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
@@ -219,8 +209,6 @@ const Index = () => {
   const handleLoginSuccess = () => {
     console.log("🎉 Login success");
     setIsLoginOpen(false);
-    // Reset le flag pour permettre la vérification des équipes après connexion
-    setHasCheckedTeams(false);
   };
 
   const handleTeamCreated = () => {
