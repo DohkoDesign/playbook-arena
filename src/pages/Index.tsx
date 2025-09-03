@@ -29,18 +29,9 @@ const Index = () => {
     // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("🔐 Auth state change:", event, session?.user?.email_confirmed_at);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Vérifier automatiquement l'état de l'équipe après connexion
-        if (session?.user && event === 'SIGNED_IN') {
-          // Si il y a un token d'invitation, laisser handleInvitationJoin gérer
-          if (!token) {
-            setTimeout(() => {
-              checkUserTeamsAndRedirect(session.user);
-            }, 100);
-          }
-        }
       }
     );
 
@@ -48,44 +39,31 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      // Vérifier l'état de l'équipe si l'utilisateur est déjà connecté
-      if (session?.user && !token) {
-        checkUserTeamsAndRedirect(session.user);
-      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Vérifier s'il y a un token d'invitation dans l'URL
+  // Gestion des invitations - logique principale
   useEffect(() => {
-    if (token && !user) {
-      // Stocker le token temporairement pour après la vérification d'email
-      localStorage.setItem('pending-invitation-token', token);
-      // Ouvrir la modal d'inscription joueur si il y a un token et pas d'utilisateur connecté
-      setIsPlayerInviteOpen(true);
-    } else if (token && user) {
-      // Utilisateur connecté avec un token - traiter l'invitation automatiquement
+    if (token && user) {
+      // Utilisateur connecté avec token d'invitation → traiter l'invitation
+      console.log("🔗 User with invitation token detected, processing invitation");
       handleInvitationJoin(token, user);
+    } else if (token && !user) {
+      // Token d'invitation mais pas d'utilisateur → ouvrir modal d'inscription
+      console.log("🔗 Invitation token detected, opening player signup modal");
+      setIsPlayerInviteOpen(true);
+    } else if (!token && user) {
+      // Pas de token, utilisateur connecté → vérifier ses équipes
+      console.log("👤 No invitation token, checking user teams");
+      checkUserTeamsAndRedirect(user);
     }
   }, [token, user]);
 
-  // Vérifier s'il y a un token d'invitation en attente après connexion
-  useEffect(() => {
-    if (user && !token) {
-      const pendingToken = localStorage.getItem('pending-invitation-token');
-      if (pendingToken) {
-        console.log("🔗 Found pending invitation token after login:", pendingToken);
-        localStorage.removeItem('pending-invitation-token');
-        handleInvitationJoin(pendingToken, user);
-      }
-    }
-  }, [user, token]);
-
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
-      console.log("🔗 Traitement invitation automatique pour:", currentUser.id);
+      console.log("🔗 Processing invitation for user:", currentUser.id);
       
       // Vérifier l'invitation
       const { data: invitation, error: inviteError } = await supabase
@@ -96,11 +74,13 @@ const Index = () => {
         .single();
 
       if (inviteError || !invitation) {
+        console.error("❌ Invalid invitation:", inviteError);
         throw new Error("Invitation invalide ou expirée");
       }
 
       // Vérifier si l'invitation n'est pas expirée
       if (new Date(invitation.expires_at) < new Date()) {
+        console.error("❌ Invitation expired");
         throw new Error("Cette invitation a expiré");
       }
 
@@ -113,7 +93,7 @@ const Index = () => {
         .single();
 
       if (existingMember) {
-        console.log("✅ Utilisateur déjà membre, redirection vers player");
+        console.log("✅ User already team member, redirecting to player dashboard");
         navigate("/player");
         return;
       }
@@ -127,7 +107,10 @@ const Index = () => {
           role: invitation.role,
         });
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("❌ Error adding team member:", memberError);
+        throw memberError;
+      }
 
       // Marquer l'invitation comme utilisée
       await supabase
@@ -138,157 +121,105 @@ const Index = () => {
         })
         .eq("token", inviteToken);
 
-      console.log("✅ Invitation traitée avec succès");
-      
-      // Rediriger vers l'interface joueur
+      console.log("✅ Invitation processed successfully, redirecting to player dashboard");
       navigate("/player");
       
     } catch (error: any) {
-      console.error("Erreur lors du traitement de l'invitation:", error);
-      // En cas d'erreur, rediriger selon le rôle de l'utilisateur
-      checkUserTeamsAndRedirect(currentUser);
+      console.error("💥 Error processing invitation:", error);
+      // En cas d'erreur, rediriger selon le rôle par défaut
+      navigate("/player");
     }
   };
 
   const handleSignupSuccess = () => {
-    console.log("🎉 Signup success - determining user flow based on context");
+    console.log("🎉 Signup success");
     setIsSignupOpen(false);
     
-    // Vérifier si l'utilisateur a un token d'invitation (rejoint une équipe)
+    // Si il ya un token d'invitation, l'invitation sera traitée automatiquement 
+    // par l'useEffect principal quand user sera disponible
     if (token) {
-      console.log("🔗 User has invitation token, will auto-join team and redirect to player dashboard");
-      // Attendre que l'utilisateur soit disponible puis traiter l'invitation
-      setTimeout(() => {
-        if (user) {
-          console.log("🚀 Processing invitation for newly verified user");
-          handleInvitationJoin(token, user);
-        }
-      }, 1000);
-      return;
+      console.log("🔗 Invitation token present, will be processed automatically");
     }
-    
-    // Attendre un peu puis vérifier le statut de l'utilisateur pour déterminer la redirection
-    setTimeout(() => {
-      if (user) {
-        console.log("🔄 Checking user status after signup to determine redirect");
-        checkUserTeamsAndRedirect(user);
-      }
-    }, 1500);
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
-    console.log("🔍 Starting checkUserTeamsAndRedirect for user:", currentUser.id);
-    
-    // Si il y a un token d'invitation, ne pas traiter la redirection automatique
-    // Laisser la logique d'invitation s'occuper de ça
+    // Ne jamais traiter la redirection s'il y a un token d'invitation
     if (token) {
-      console.log("🔗 Invitation token detected, skipping automatic redirect - invitation logic will handle this");
+      console.log("🔗 Skipping team check due to invitation token");
       return;
     }
     
-    let profile = null;
+    console.log("🔍 Checking user teams for:", currentUser.id);
     
     try {
       // Vérifier le profil de l'utilisateur
-      console.log("📋 Fetching user profile...");
       const { data: profileData } = await supabase
         .from("profiles")
         .select("role")
         .eq("user_id", currentUser.id)
         .single();
-      
-      profile = profileData;
-      console.log("👤 User profile:", profile);
 
       // Vérifier si l'utilisateur a créé des équipes (propriétaire/staff)
-      console.log("🏢 Checking created teams...");
       const { data: createdTeams } = await supabase
         .from("teams")
         .select("*")
         .eq("created_by", currentUser.id);
 
       // Vérifier si l'utilisateur est membre d'une équipe
-      console.log("👥 Checking team memberships...");
       const { data: teamMembers } = await supabase
         .from("team_members")
         .select("role, team_id")
         .eq("user_id", currentUser.id);
 
-      console.log("📊 Redirection info:", { 
-        profile: profile?.role, 
+      console.log("📊 User status:", { 
+        profile: profileData?.role, 
         createdTeams: createdTeams?.length, 
-        teamMembers: teamMembers?.length,
-        profileData: profile,
-        createdTeamsData: createdTeams,
-        teamMembersData: teamMembers
+        teamMembers: teamMembers?.length 
       });
 
       // Redirection selon le rôle et le statut
-      if (profile?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
-        // Utilisateur staff ou propriétaire d'équipe -> Dashboard de gestion
-        console.log("🚀 Redirecting to dashboard (staff/owner)");
+      if (profileData?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
+        // Staff ou propriétaire d'équipe → Dashboard de gestion
+        console.log("🚀 Redirecting to management dashboard");
         navigate("/dashboard");
-      } else if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
-        // Joueur membre d'une équipe -> Interface joueur
-        console.log("🎮 Redirecting to player interface");
-        navigate("/player");
       } else if (teamMembers && teamMembers.length > 0) {
-        // Membre d'équipe avec rôle de gestion -> Dashboard
+        // Membre d'équipe → vérifier le rôle
         const hasManagementRole = teamMembers.some(tm => 
           ['owner', 'manager', 'coach'].includes(tm.role)
         );
         if (hasManagementRole) {
-          console.log("👑 Redirecting to dashboard (management role)");
+          console.log("👑 Redirecting to management dashboard");
           navigate("/dashboard");
         } else {
-          console.log("🎮 Redirecting to player interface (team member)");
+          console.log("🎮 Redirecting to player dashboard");
           navigate("/player");
         }
       } else {
-        // Nouvel utilisateur sans équipe - ouvrir la popup de création d'équipe
-        console.log("🆕 User without team, opening team setup modal");
-        
-        // Si l'utilisateur n'a pas d'équipe, il peut créer une équipe
-        // (soit il a un code beta validé, soit il s'est inscrit récemment)
-        console.log("✅ Opening team setup modal for user without team");
+        // Nouvel utilisateur sans équipe → modal de création d'équipe
+        console.log("🆕 New user without team, opening team setup modal");
         setIsTeamSetupOpen(true);
       }
     } catch (error) {
-      console.error("Erreur lors de la vérification du profil:", error);
-      
-      // En cas d'erreur, ouvrir la modal de création d'équipe pour tous les utilisateurs sans équipe
-      console.log("✅ Opening team setup modal (error fallback)");
+      console.error("💥 Error checking user teams:", error);
+      // En cas d'erreur, ouvrir la modal de création d'équipe
       setIsTeamSetupOpen(true);
     }
   };
 
-  const handleLoginSuccess = async () => {
-    console.log("🎉 Login success - starting team check process");
+  const handleLoginSuccess = () => {
+    console.log("🎉 Login success");
     setIsLoginOpen(false);
-    
-    // Attendre un peu puis forcer la vérification
-    setTimeout(() => {
-      if (user) {
-        console.log("🔄 Forcing team check after login success");
-        checkUserTeamsAndRedirect(user);
-      }
-    }, 1000);
+    // La logique de redirection se fera automatiquement via l'useEffect principal
   };
 
   const handleTeamCreated = () => {
-    console.log("🎉 Team created! Redirecting to dashboard");
+    console.log("🎉 Team created, redirecting to dashboard");
     setIsTeamSetupOpen(false);
-    
-    // Redirection immédiate vers le dashboard
     navigate("/dashboard");
-    
-    // Éviter que la vérification automatique interfère
-    setTimeout(() => {
-      console.log("✅ Team creation flow completed - user should be on dashboard");
-    }, 500);
   };
 
   const handlePlayerAdded = () => {
+    console.log("🎉 Player added via invitation");
     setIsPlayerInviteOpen(false);
     navigate("/player");
   };

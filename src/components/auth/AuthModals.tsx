@@ -71,16 +71,16 @@ export const AuthModals = ({
             setVerificationTimer(30);
             setLoading(false);
             handleClose();
+            
+            toast({
+              title: "Email vérifié !",
+              description: "Redirection en cours...",
+            });
           }
           
-          // Toujours appeler le callback de succès pour gérer la redirection
+          // Appeler le callback de succès pour gérer la redirection
           console.log("🔗 Calling signup success callback");
           onSignupSuccess();
-          
-          toast({
-            title: "Email vérifié !",
-            description: "Redirection en cours...",
-          });
         }
       }
     );
