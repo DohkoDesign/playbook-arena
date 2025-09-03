@@ -12,7 +12,7 @@ export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center">
           <div className="w-12 h-12 flex items-center justify-center">
-            <img src="/lovable-uploads/e8d1c2c5-491c-4cc6-81d7-47e510fc040d.png" alt="Core Link Logo" className="w-12 h-12 object-contain" />
+            <img src="/lovable-uploads/3f92459b-2800-40a4-a192-9ee96017f233.png" alt="Link Logo" className="w-12 h-12 object-contain" />
           </div>
         </div>
 
