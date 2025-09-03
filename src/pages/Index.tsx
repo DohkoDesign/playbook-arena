@@ -193,23 +193,49 @@ const Index = () => {
           navigate("/player");
         }
       } else {
-        // Nouvel utilisateur sans équipe
-        if (profile?.role === "staff") {
-          // Staff sans équipe -> ouvrir la modal de création d'équipe
+        // Nouvel utilisateur sans équipe - vérifier s'il a un code beta valide
+        console.log("Utilisateur sans équipe, vérification du code beta...");
+        
+        // Vérifier si l'utilisateur a utilisé un code beta (permet de créer une équipe)
+        const { data: hasBetaCode } = await supabase
+          .from("beta_codes")
+          .select("id")
+          .eq("used_by", currentUser.id)
+          .not("used_at", "is", null)
+          .limit(1)
+          .maybeSingle();
+
+        if (profile?.role === "staff" || hasBetaCode) {
+          // Staff ou utilisateur avec code beta validé -> ouvrir la modal de création d'équipe
+          console.log("Ouverture de la modal de création d'équipe");
           setIsTeamSetupOpen(true);
         } else {
-          // Joueur sans équipe -> rester sur la page d'accueil pour rejoindre une équipe
-          console.log("Joueur sans équipe, reste sur la page d'accueil pour rejoindre une équipe");
+          // Joueur sans équipe et sans code beta -> rester sur la page d'accueil pour rejoindre une équipe
+          console.log("Joueur sans équipe ni code beta, reste sur la page d'accueil pour rejoindre une équipe");
         }
       }
     } catch (error) {
       console.error("Erreur lors de la vérification du profil:", error);
-      // En cas d'erreur, ouvrir la modal de création d'équipe pour les staff seulement
-      if (profile?.role === "staff") {
-        setIsTeamSetupOpen(true);
-      } else {
-        // Pour les joueurs, on les laisse sur la page d'accueil
-        console.log("Utilisateur joueur non configuré, reste sur la page d'accueil pour rejoindre une équipe");
+      
+      // En cas d'erreur, vérifier s'il a un code beta pour décider d'ouvrir la modal
+      try {
+        const { data: hasBetaCode } = await supabase
+          .from("beta_codes")
+          .select("id")
+          .eq("used_by", currentUser.id)
+          .not("used_at", "is", null)
+          .limit(1)
+          .maybeSingle();
+
+        if (profile?.role === "staff" || hasBetaCode) {
+          console.log("Ouverture de la modal de création d'équipe (après erreur)");
+          setIsTeamSetupOpen(true);
+        } else {
+          console.log("Utilisateur sans droits de création d'équipe, reste sur la page d'accueil");
+        }
+      } catch (betaError) {
+        console.error("Erreur lors de la vérification du code beta:", betaError);
+        // En dernier recours, laisser sur la page d'accueil
       }
     }
   };
