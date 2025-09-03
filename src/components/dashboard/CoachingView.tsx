@@ -195,7 +195,7 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUs
 
       {/* Contenu principal avec onglets */}
       <Tabs defaultValue="events" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isPlayerView ? 'grid-cols-1' : 'grid-cols-2'}`}>
           <TabsTrigger value="events" className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
             Événements récents
@@ -205,15 +205,17 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUs
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="analyses" className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            Analyses créées
-            {coachingSessions.length > 0 && (
-              <Badge variant="secondary" className="ml-1">
-                {coachingSessions.length}
-              </Badge>
-            )}
-          </TabsTrigger>
+          {!isPlayerView && (
+            <TabsTrigger value="analyses" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Analyses créées
+              {coachingSessions.length > 0 && (
+                <Badge variant="secondary" className="ml-1">
+                  {coachingSessions.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="events" className="space-y-4">
@@ -255,43 +257,45 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUs
           </Card>
         </TabsContent>
 
-        <TabsContent value="analyses" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Sessions d'analyse
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {coachingSessions.length === 0 ? (
-                <div className="text-center py-8 space-y-4">
-                  <Video className="w-12 h-12 mx-auto text-muted-foreground" />
-                  <div>
-                    <p className="text-muted-foreground">
-                      Aucune analyse créée
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Commencez par analyser vos premiers événements pour améliorer vos performances
-                    </p>
+        {!isPlayerView && (
+          <TabsContent value="analyses" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Sessions d'analyse
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {coachingSessions.length === 0 ? (
+                  <div className="text-center py-8 space-y-4">
+                    <Video className="w-12 h-12 mx-auto text-muted-foreground" />
+                    <div>
+                      <p className="text-muted-foreground">
+                        Aucune analyse créée
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Commencez par analyser vos premiers événements pour améliorer vos performances
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {coachingSessions.map((session) => (
-                    <CoachingSessionCard
-                      key={session.id}
-                      session={session}
-                      onViewDetails={() => openSessionDetails(session)}
-                      onEdit={() => openCoachingSession(session.events)}
-                      isPlayerView={isPlayerView}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                ) : (
+                  <div className="space-y-4">
+                    {coachingSessions.map((session) => (
+                      <CoachingSessionCard
+                        key={session.id}
+                        session={session}
+                        onViewDetails={() => openSessionDetails(session)}
+                        onEdit={() => openCoachingSession(session.events)}
+                        isPlayerView={isPlayerView}
+                      />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Modales */}
