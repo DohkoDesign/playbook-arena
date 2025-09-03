@@ -145,10 +145,12 @@ const Index = () => {
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
+    console.log("🔍 Starting checkUserTeamsAndRedirect for user:", currentUser.id);
     let profile = null;
     
     try {
       // Vérifier le profil de l'utilisateur
+      console.log("📋 Fetching user profile...");
       const { data: profileData } = await supabase
         .from("profiles")
         .select("role")
@@ -156,14 +158,17 @@ const Index = () => {
         .single();
       
       profile = profileData;
+      console.log("👤 User profile:", profile);
 
       // Vérifier si l'utilisateur a créé des équipes (propriétaire/staff)
+      console.log("🏢 Checking created teams...");
       const { data: createdTeams } = await supabase
         .from("teams")
         .select("*")
         .eq("created_by", currentUser.id);
 
       // Vérifier si l'utilisateur est membre d'une équipe
+      console.log("👥 Checking team memberships...");
       const { data: teamMembers } = await supabase
         .from("team_members")
         .select("role, team_id")
@@ -178,9 +183,11 @@ const Index = () => {
       // Redirection selon le rôle et le statut
       if (profile?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
         // Utilisateur staff ou propriétaire d'équipe -> Dashboard de gestion
+        console.log("🚀 Redirecting to dashboard (staff/owner)");
         navigate("/dashboard");
       } else if (profile?.role === "player" && teamMembers && teamMembers.length > 0) {
         // Joueur membre d'une équipe -> Interface joueur
+        console.log("🎮 Redirecting to player interface");
         navigate("/player");
       } else if (teamMembers && teamMembers.length > 0) {
         // Membre d'équipe avec rôle de gestion -> Dashboard
@@ -194,10 +201,10 @@ const Index = () => {
         }
       } else {
         // Nouvel utilisateur sans équipe - vérifier s'il a un code beta valide
-        console.log("Utilisateur sans équipe, vérification du code beta...");
+        console.log("🆕 User without team, checking beta code eligibility...");
         
         // Vérifier si l'utilisateur a utilisé un code beta (permet de créer une équipe)
-        const { data: hasBetaCode } = await supabase
+        const { data: hasBetaCode, error: betaError } = await supabase
           .from("beta_codes")
           .select("id")
           .eq("used_by", currentUser.id)
@@ -205,13 +212,15 @@ const Index = () => {
           .limit(1)
           .maybeSingle();
 
+        console.log("🔍 Beta code check result:", { hasBetaCode, betaError });
+
         if (profile?.role === "staff" || hasBetaCode) {
           // Staff ou utilisateur avec code beta validé -> ouvrir la modal de création d'équipe
-          console.log("Ouverture de la modal de création d'équipe");
+          console.log("✅ Opening team setup modal (staff or beta code user)");
           setIsTeamSetupOpen(true);
         } else {
           // Joueur sans équipe et sans code beta -> rester sur la page d'accueil pour rejoindre une équipe
-          console.log("Joueur sans équipe ni code beta, reste sur la page d'accueil pour rejoindre une équipe");
+          console.log("❌ User without team creation rights, staying on homepage");
         }
       }
     } catch (error) {
@@ -241,8 +250,16 @@ const Index = () => {
   };
 
   const handleLoginSuccess = async () => {
+    console.log("🎉 Login success - starting team check process");
     setIsLoginOpen(false);
-    // La redirection sera gérée par checkUserTeamsAndRedirect dans onAuthStateChange
+    
+    // Attendre un peu puis forcer la vérification
+    setTimeout(() => {
+      if (user) {
+        console.log("🔄 Forcing team check after login success");
+        checkUserTeamsAndRedirect(user);
+      }
+    }, 1000);
   };
 
   const handleTeamCreated = () => {
