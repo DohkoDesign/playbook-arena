@@ -100,32 +100,43 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) return; // attendre l'auth pour que les RLS avec email s'appliquent
     fetchFeedbacks();
-  }, [teamId, playerId]);
+  }, [teamId, playerId, user]);
 
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // 1) Récupérer les feedbacks visibles via RLS (joueur connecté)
+      const { data: fb, error: fbError } = await supabase
         .from('player_feedbacks')
-        .select(`
-          *,
-          feedback_responses(
-            id,
-            response_text,
-            created_at,
-            responded_by,
-            profiles!inner(pseudo)
-          )
-        `)
+        .select('*')
         .eq('team_id', teamId)
-        .or(`user_id.eq.${playerId},and(is_anonymous.eq.true,contact_email.eq.${user?.email})`)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      const mappedFeedbacks: Feedback[] = (data || []).map(item => ({
+      if (fbError) throw fbError;
+
+      const feedbackList = fb || [];
+      const ids = feedbackList.map(f => f.id);
+
+      // 2) Récupérer toutes les réponses associées en un seul appel
+      let responsesByFeedback: Record<string, any[]> = {};
+      if (ids.length > 0) {
+        const { data: resp, error: respError } = await supabase
+          .from('feedback_responses')
+          .select('*')
+          .in('feedback_id', ids)
+          .order('created_at', { ascending: true });
+        if (respError) throw respError;
+        (resp || []).forEach(r => {
+          if (!responsesByFeedback[r.feedback_id]) responsesByFeedback[r.feedback_id] = [];
+          responsesByFeedback[r.feedback_id].push({ ...r, pseudo: 'Staff' });
+        });
+      }
+
+      // 3) Mapper le tout
+      const mappedFeedbacks: Feedback[] = feedbackList.map(item => ({
         id: item.id,
         title: item.title,
         content: item.content,
@@ -133,10 +144,7 @@ export const PlayerFeedbackView = ({ teamId, playerId }: PlayerFeedbackViewProps
         is_anonymous: item.is_anonymous,
         status: item.status as Feedback['status'],
         created_at: item.created_at,
-        responses: item.feedback_responses?.map((response: any) => ({
-          ...response,
-          pseudo: response.profiles?.pseudo || 'Staff'
-        })) || []
+        responses: responsesByFeedback[item.id] || []
       }));
       
       setFeedbacks(mappedFeedbacks);

@@ -105,56 +105,59 @@ export const StaffFeedbackView = ({ teamId }: StaffFeedbackViewProps) => {
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
-      
-      const { data, error } = await supabase
+
+      // 1) Récupérer les feedbacks de l'équipe (RLS gère l'accès)
+      const { data: fb, error: fbError } = await supabase
         .from('player_feedbacks')
-        .select(`
-          *,
-          feedback_responses(
-            id,
-            response_text,
-            created_at,
-            responded_by,
-            profiles!inner(pseudo)
-          )
-        `)
+        .select('*')
         .eq('team_id', teamId)
         .order('created_at', { ascending: false });
+      if (fbError) throw fbError;
 
-      if (error) throw error;
-      
-      const feedbacksWithData = await Promise.all(
-        (data || []).map(async (feedback) => {
-          let pseudo = 'Anonyme';
-          
-          if (!feedback.is_anonymous && feedback.user_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('pseudo')
-              .eq('user_id', feedback.user_id)
-              .single();
-            
-            pseudo = profile?.pseudo || 'Utilisateur inconnu';
-          }
-          
-          return {
-            id: feedback.id,
-            title: feedback.title,
-            content: feedback.content,
-            category: feedback.category as Feedback['category'],
-            is_anonymous: feedback.is_anonymous,
-            status: feedback.status as Feedback['status'],
-            created_at: feedback.created_at,
-            user_id: feedback.user_id,
-            pseudo,
-            responses: feedback.feedback_responses?.map((response: any) => ({
-              ...response,
-              pseudo: response.profiles?.pseudo || 'Staff'
-            })) || []
-          };
-        })
-      );
-      
+      const feedbackList = fb || [];
+      const userIds = Array.from(new Set(feedbackList.filter(f => !f.is_anonymous && f.user_id).map(f => f.user_id)));
+      const feedbackIds = feedbackList.map(f => f.id);
+
+      // 2) Récupérer les pseudos en un seul appel
+      let pseudoByUser: Record<string, string> = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profError } = await supabase
+          .from('profiles')
+          .select('user_id, pseudo')
+          .in('user_id', userIds);
+        if (profError) throw profError;
+        (profiles || []).forEach(p => { pseudoByUser[p.user_id] = p.pseudo || 'Utilisateur inconnu'; });
+      }
+
+      // 3) Récupérer toutes les réponses associées
+      let responsesByFeedback: Record<string, any[]> = {};
+      if (feedbackIds.length > 0) {
+        const { data: resp, error: respError } = await supabase
+          .from('feedback_responses')
+          .select('*')
+          .in('feedback_id', feedbackIds)
+          .order('created_at', { ascending: true });
+        if (respError) throw respError;
+        (resp || []).forEach(r => {
+          if (!responsesByFeedback[r.feedback_id]) responsesByFeedback[r.feedback_id] = [];
+          responsesByFeedback[r.feedback_id].push({ ...r, pseudo: 'Staff' });
+        });
+      }
+
+      // 4) Mapper les données
+      const feedbacksWithData: Feedback[] = feedbackList.map((feedback) => ({
+        id: feedback.id,
+        title: feedback.title,
+        content: feedback.content,
+        category: feedback.category as Feedback['category'],
+        is_anonymous: feedback.is_anonymous,
+        status: feedback.status as Feedback['status'],
+        created_at: feedback.created_at,
+        user_id: feedback.user_id,
+        pseudo: feedback.is_anonymous ? 'Anonyme' : (pseudoByUser[feedback.user_id] || 'Utilisateur inconnu'),
+        responses: responsesByFeedback[feedback.id] || []
+      }));
+
       setFeedbacks(feedbacksWithData);
     } catch (error: any) {
       console.error('Error fetching feedbacks:', error);
