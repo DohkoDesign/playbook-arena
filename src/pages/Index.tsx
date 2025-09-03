@@ -137,14 +137,21 @@ const Index = () => {
   };
 
   const handleSignupSuccess = () => {
-    console.log("🎉 Signup success - user verified email, redirecting to team creation");
+    console.log("🎉 Signup success - checking if user should create team or join existing one");
     setIsSignupOpen(false);
     
-    // Attendre un peu pour que l'état soit à jour puis ouvrir la popup de création d'équipe
+    // Si il y a un token d'invitation dans l'URL, l'utilisateur rejoint une équipe
+    if (token) {
+      console.log("🔗 User has invitation token, will join existing team");
+      // Ne pas ouvrir la popup de création, l'utilisateur va rejoindre une équipe
+      return;
+    }
+    
+    // Sinon, l'utilisateur veut créer une nouvelle équipe
     setTimeout(() => {
-      console.log("🏗️ Opening team setup modal after signup success");
+      console.log("🏗️ Opening team setup modal for team creation");
       setIsTeamSetupOpen(true);
-    }, 1000); // Délai plus long pour s'assurer que tout est synchronisé
+    }, 1000);
   };
 
   const checkUserTeamsAndRedirect = async (currentUser: User) => {
