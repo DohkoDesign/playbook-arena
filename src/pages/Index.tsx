@@ -59,22 +59,32 @@ const Index = () => {
   useEffect(() => {
     console.log("🎯 Main logic triggered:", { token: !!token, user: !!user, hasCheckedTeams, invitationProcessed: invitationProcessed.current });
     
-    if (token && user && !invitationProcessed.current) {
+    // Ne rien faire si pas d'utilisateur connecté
+    if (!user) {
+      console.log("❌ No user, skipping all logic");
+      return;
+    }
+    
+    if (token && !invitationProcessed.current) {
       // Utilisateur connecté avec token d'invitation → traiter l'invitation
       console.log("🔗 Processing invitation for authenticated user");
       invitationProcessed.current = true;
       handleInvitationJoin(token, user);
-    } else if (token && !user) {
-      // Token d'invitation mais pas d'utilisateur → ouvrir modal d'inscription
-      console.log("🔗 Opening player signup modal for invitation");
-      setIsPlayerInviteOpen(true);
-    } else if (!token && user && !hasCheckedTeams) {
+    } else if (!token && !hasCheckedTeams) {
       // Pas de token, utilisateur connecté → vérifier ses équipes une seule fois
       console.log("👤 Checking user teams (first time)");
       setHasCheckedTeams(true);
       checkUserTeamsAndRedirect(user);
     }
   }, [token, user, hasCheckedTeams]);
+
+  // Gestion spéciale pour les invitations sans utilisateur connecté
+  useEffect(() => {
+    if (token && !user) {
+      console.log("🔗 Invitation token without user, opening player signup modal");
+      setIsPlayerInviteOpen(true);
+    }
+  }, [token, user]);
 
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
