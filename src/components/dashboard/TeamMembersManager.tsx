@@ -265,36 +265,36 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
               {members.map((member) => (
                 <Card key={member.id} className="border-l-4 border-l-primary/50">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between min-h-[80px]">
                       <div className="flex items-center space-x-4">
-                         <Avatar className="w-10 h-10">
-                           <AvatarImage src={member.profiles?.photo_profil} />
-                           <AvatarFallback>
-                             {member.profiles?.pseudo?.charAt(0).toUpperCase() || "U"}
-                           </AvatarFallback>
-                         </Avatar>
+                        <Avatar className="w-12 h-12 flex-shrink-0">
+                          <AvatarImage src={member.profiles?.photo_profil} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                            {member.profiles?.pseudo?.charAt(0).toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
                         
-                        <div>
-                           <div className="flex items-center space-x-2">
-                             <h4 className="font-medium">{member.profiles?.pseudo || "Utilisateur"}</h4>
-                             <Badge className={`${getRoleColor(member.role)} text-xs`}>
-                               {getRoleIcon(member.role)}
-                               <span className="ml-1">{roleLabels[member.role as keyof typeof roleLabels] || member.role}</span>
-                             </Badge>
-                           </div>
+                        <div className="flex flex-col justify-center">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-semibold text-foreground">{member.profiles?.pseudo || "Utilisateur"}</h4>
+                            <Badge className={`${getRoleColor(member.role)} text-xs flex items-center`}>
+                              {getRoleIcon(member.role)}
+                              <span className="ml-1">{roleLabels[member.role as keyof typeof roleLabels] || member.role}</span>
+                            </Badge>
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             Membre depuis le {new Date(member.created_at).toLocaleDateString("fr-FR")}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
-                         <Select
-                           value={member.role}
-                           onValueChange={(newRole: string) => updateMemberRole(member.id, newRole)}
-                           disabled={member.role === 'owner'}
-                         >
-                          <SelectTrigger className="w-40">
+                      <div className="flex items-center space-x-3 flex-shrink-0">
+                        <Select
+                          value={member.role}
+                          onValueChange={(newRole: string) => updateMemberRole(member.id, newRole)}
+                          disabled={member.role === 'owner'}
+                        >
+                          <SelectTrigger className="w-40 h-10">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -312,7 +312,7 @@ export const TeamMembersManager = ({ teamId, onMembersUpdated }: TeamMembersMana
                               variant="outline" 
                               size="sm" 
                               disabled={member.role === 'owner'} 
-                              className="bg-background border-2 border-border hover:bg-accent hover:border-primary/20 transition-all duration-200 shadow-sm"
+                              className="h-10 w-10 bg-background border-2 border-border hover:bg-accent hover:border-primary/20 transition-all duration-200 shadow-sm"
                             >
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
