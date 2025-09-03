@@ -61,6 +61,8 @@ const Index = () => {
   // Vérifier s'il y a un token d'invitation dans l'URL
   useEffect(() => {
     if (token && !user) {
+      // Stocker le token temporairement pour après la vérification d'email
+      localStorage.setItem('pending-invitation-token', token);
       // Ouvrir la modal d'inscription joueur si il y a un token et pas d'utilisateur connecté
       setIsPlayerInviteOpen(true);
     } else if (token && user) {
@@ -68,6 +70,18 @@ const Index = () => {
       handleInvitationJoin(token, user);
     }
   }, [token, user]);
+
+  // Vérifier s'il y a un token d'invitation en attente après connexion
+  useEffect(() => {
+    if (user && !token) {
+      const pendingToken = localStorage.getItem('pending-invitation-token');
+      if (pendingToken) {
+        console.log("🔗 Found pending invitation token after login:", pendingToken);
+        localStorage.removeItem('pending-invitation-token');
+        handleInvitationJoin(pendingToken, user);
+      }
+    }
+  }, [user, token]);
 
   const handleInvitationJoin = async (inviteToken: string, currentUser: User) => {
     try {
