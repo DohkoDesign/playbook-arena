@@ -47,20 +47,7 @@ export const TeamSetupModal = ({ isOpen, user, onClose, onTeamCreated }: TeamSet
     setSubmitting(true);
 
     try {
-      // Vérifier que l'utilisateur a consommé un code bêta valide
-      const { data: hasBeta, error: betaCheckError } = await supabase
-        .from("beta_codes")
-        .select("id")
-        .eq("used_by", user.id)
-        .not("used_at", "is", null)
-        .limit(1)
-        .maybeSingle();
-
-      if (betaCheckError || !hasBeta) {
-        throw new Error("Accès bêta requis: vous devez utiliser un code bêta valide pour créer une équipe.");
-      }
-
-      // Créer l'équipe
+      // Créer l'équipe directement sans vérification de code bêta
       const { data, error } = await supabase
         .from("teams")
         .insert({

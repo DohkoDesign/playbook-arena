@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import AdminPanel from '@/components/admin/AdminPanel';
+import GeneralAdminPanel from '@/components/admin/GeneralAdminPanel';
 import { Loader2 } from 'lucide-react';
 
 const Admin = () => {
@@ -61,7 +61,7 @@ const Admin = () => {
     );
   }
 
-  return <AdminPanel />;
+  return <GeneralAdminPanel />;
 };
 
 export default Admin;

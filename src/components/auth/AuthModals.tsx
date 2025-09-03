@@ -27,7 +27,6 @@ export const AuthModals = ({
   const [password, setPassword] = useState("");
   const [pseudo, setPseudo] = useState("");
   const [age, setAge] = useState("");
-  const [betaCode, setBetaCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [waitingForVerification, setWaitingForVerification] = useState(false);
   const { toast } = useToast();
@@ -53,7 +52,7 @@ export const AuthModals = ({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !pseudo || !age || !betaCode) {
+    if (!email || !password || !pseudo || !age) {
       toast({
         title: "Erreur",
         description: "Veuillez remplir tous les champs",
@@ -92,53 +91,34 @@ export const AuthModals = ({
       return;
     }
 
-    setLoading(true);
     try {
-      // Pré-validation du code bêta
-      const { data: beta, error: betaError } = await supabase
-        .from("beta_codes")
-        .select("id")
-        .eq("code", betaCode.trim().toUpperCase())
-        .is("used_at", null)
-        .gt("expires_at", new Date().toISOString())
-        .maybeSingle();
+      setLoading(true);
 
-      if (betaError || !beta) {
-        throw new Error("Code bêta invalide ou expiré");
+      // Vérification de l'âge
+      const userAge = parseInt(age);
+      if (isNaN(userAge) || userAge < 13) {
+        throw new Error("Vous devez avoir au moins 13 ans pour vous inscrire");
       }
 
-      // Inscription
+      // Inscription de l'utilisateur
       const { data: signUpData, error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
           data: {
-            pseudo: pseudo,
-            age: ageNum,
+            pseudo: pseudo.trim(),
+            age: userAge,
           },
+          emailRedirectTo: `${window.location.origin}/`
         },
       });
 
       if (error) throw error;
 
-      // Consommation du code bêta côté serveur
-      const userId = signUpData.user?.id;
-      if (userId) {
-        const { data: rpcRes, error: rpcError } = await supabase.rpc(
-          "validate_and_use_beta_code",
-          { beta_code: betaCode.trim().toUpperCase(), user_id: userId }
-        );
-        if (rpcError || rpcRes !== true) {
-          await supabase.auth.signOut();
-          throw new Error("Impossible de valider le code bêta. Réessayez ou contactez le support.");
-        }
-      }
-
       setWaitingForVerification(true);
       toast({
-        title: "Email envoyé",
-        description: "Vérifiez votre boîte mail pour confirmer votre compte.",
+        title: "Inscription réussie !",
+        description: "Vérifiez votre email pour confirmer votre compte.",
       });
     } catch (error: any) {
       setLoading(false);
@@ -191,7 +171,6 @@ export const AuthModals = ({
     setPassword("");
     setPseudo("");
     setAge("");
-    setBetaCode("");
     setLoading(false);
     setWaitingForVerification(false);
   };
@@ -261,27 +240,14 @@ export const AuthModals = ({
                 <Input
                   id="signup-age"
                   type="number"
-                  placeholder="18"
                   min="13"
-                  max="100"
+                  placeholder="Votre âge"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
                   required
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-beta">Code bêta</Label>
-                <Input
-                  id="signup-beta"
-                  type="text"
-                  placeholder="Votre code d'accès bêta"
-                  value={betaCode}
-                  onChange={(e) => setBetaCode(e.target.value.toUpperCase())}
-                  required
-                />
                 <p className="text-xs text-muted-foreground">
-                  Contactez l'équipe pour obtenir votre code bêta
+                  Vous devez avoir au moins 13 ans
                 </p>
               </div>
 
