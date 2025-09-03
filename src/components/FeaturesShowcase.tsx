@@ -32,7 +32,7 @@ export const FeaturesShowcase = () => {
             Tout ce dont vous avez besoin pour exceller
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Shadow Hub réunit tous les outils essentiels pour transformer votre passion du gaming 
+            Core.gg réunit tous les outils essentiels pour transformer votre passion du gaming 
             en succès professionnel. Découvrez nos fonctionnalités pensées par et pour les équipes eSport.
           </p>
         </div>

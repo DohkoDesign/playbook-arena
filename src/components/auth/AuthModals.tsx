@@ -172,7 +172,7 @@ export const AuthModals = ({
       onLoginSuccess();
       toast({
         title: "Connexion réussie",
-        description: "Bienvenue sur Shadow Hub !",
+        description: "Bienvenue sur Core.gg !",
       });
     } catch (error: any) {
       toast({
@@ -208,7 +208,7 @@ export const AuthModals = ({
           <DialogHeader>
             <DialogTitle>Créer un compte</DialogTitle>
             <DialogDescription>
-              Rejoignez Shadow Hub pour gérer vos équipes esport
+              Rejoignez Core.gg pour gérer vos équipes esport
             </DialogDescription>
           </DialogHeader>
 
@@ -320,7 +320,7 @@ export const AuthModals = ({
           <DialogHeader>
             <DialogTitle>Connexion</DialogTitle>
             <DialogDescription>
-              Connectez-vous à votre compte Shadow Hub
+              Connectez-vous à votre compte Core.gg
             </DialogDescription>
           </DialogHeader>
 

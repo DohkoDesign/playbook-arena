@@ -31,7 +31,7 @@ export const Documentation = () => {
     {
       title: "Premiers pas",
       icon: Play,
-      description: "Découvrez comment démarrer avec Shadow Hub",
+      description: "Découvrez comment démarrer avec Core.gg",
       articles: [
         { title: "Créer votre première équipe", time: "5 min", description: "Guide complet pour configurer votre équipe eSport", id: "creer-equipe" },
         { title: "Inviter des joueurs", time: "3 min", description: "Ajouter des membres à votre équipe", id: "inviter-joueurs" },
@@ -165,12 +165,12 @@ export const Documentation = () => {
         <div className="container mx-auto max-w-4xl text-center">
           <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground mb-4">
             <Gamepad2 className="w-4 h-4" />
-            <span>Centre d'aide Shadow Hub</span>
+            <span>Centre d'aide Core.gg</span>
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Comment utiliser
-            <span className="text-primary"> Shadow Hub</span> ?
+            <span className="text-primary"> Core.gg</span> ?
           </h1>
           
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -280,7 +280,7 @@ export const Documentation = () => {
           <div className="bg-muted/30 rounded-2xl p-8">
             <h3 className="text-xl font-bold mb-4">Vous ne trouvez pas ce que vous cherchez ?</h3>
             <p className="text-muted-foreground mb-6">
-              Notre équipe est là pour vous aider à tirer le meilleur parti de Shadow Hub
+              Notre équipe est là pour vous aider à tirer le meilleur parti de Core.gg
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button onClick={() => navigate("/faq")} variant="outline">

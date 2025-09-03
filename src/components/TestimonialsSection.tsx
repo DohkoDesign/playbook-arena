@@ -6,7 +6,7 @@ const testimonials = [
     name: "Alexandre Martin",
     role: "Coach - Team Nexus",
     game: "Valorant",
-    content: "Shadow Hub a révolutionné notre façon de préparer les matchs. Les outils d'analyse nous permettent d'identifier précisément les points d'amélioration de chaque joueur.",
+    content: "Core.gg a révolutionné notre façon de préparer les matchs. Les outils d'analyse nous permettent d'identifier précisément les points d'amélioration de chaque joueur.",
     rating: 5
   },
   {
@@ -34,7 +34,7 @@ export const TestimonialsSection = () => {
             Ils nous font confiance
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Découvrez comment Shadow Hub transforme déjà la gestion d'équipes eSport 
+            Découvrez comment Core.gg transforme déjà la gestion d'équipes eSport 
             à travers toute la France et l'Europe.
           </p>
         </div>

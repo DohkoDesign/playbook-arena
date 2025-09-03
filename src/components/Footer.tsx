@@ -6,9 +6,9 @@ export const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 flex items-center justify-center">
-                <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Shadow Hub Logo" className="w-8 h-8 object-contain" />
+                <img src="/lovable-uploads/cec4ef83-50ee-4564-829e-31b5fea55884.png" alt="Core.gg Logo" className="w-8 h-8 object-contain" />
               </div>
-              <span className="text-lg font-montserrat font-bold tracking-tight uppercase">Shadow Hub</span>
+              <span className="text-lg font-montserrat font-black tracking-tight">Core.gg</span>
             </div>
             <p className="text-sm text-muted-foreground">
               La plateforme de gestion d'équipes eSport nouvelle génération.
@@ -49,7 +49,7 @@ export const Footer = () => {
 
         <div className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 Shadow Hub. Plateforme de gestion d'équipes eSport.
+            © 2024 Core.gg. Plateforme de gestion d'équipes eSport.
           </p>
         </div>
       </div>

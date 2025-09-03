@@ -68,47 +68,47 @@
   }
 
   .dark {
-    /* Thème bleu - mode sombre */
-    --background: 215 30% 8%; /* Bleu très foncé */
-    --foreground: 210 40% 92%; /* Bleu très clair pour le texte */
+    /* Mode sombre Core.gg (par défaut esport) */
+    --background: 215 95% 8%; /* Bleu nuit très sombre #0A0F1C */
+    --foreground: 0 0% 100%; /* Blanc */
     
-    --card: 215 28% 12%; /* Bleu foncé pour les cartes */
-    --card-foreground: 210 40% 92%;
+    --card: 215 80% 16%; /* Bleu nuit intermédiaire #10192A */
+    --card-foreground: 0 0% 100%;
     
-    --popover: 215 28% 12%;
-    --popover-foreground: 210 40% 92%;
+    --popover: 215 80% 16%;
+    --popover-foreground: 0 0% 100%;
     
-    --primary: 220 92% 70%; /* Couleur principale mode sombre */
-    --primary-foreground: 215 30% 8%;
+    --primary: 211 100% 50%; /* Bleu vif #007BFF */
+    --primary-foreground: 0 0% 100%;
     
-    --secondary: 220 92% 70%; /* Couleur secondaire mode sombre */
-    --secondary-foreground: 210 40% 92%;
+    --secondary: 215 80% 16%;
+    --secondary-foreground: 0 0% 100%;
     
-    --muted: 215 25% 18%;
-    --muted-foreground: 215 15% 60%;
+    --muted: 215 80% 16%;
+    --muted-foreground: 220 15% 74%; /* Blanc avec opacité 70% / gris clair #BFC7D5 */
     
-    --accent: 220 92% 70%; /* Couleur d'accent mode sombre */
-    --accent-foreground: 210 40% 92%;
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
     
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 92%;
+    --destructive-foreground: 0 0% 100%;
     
-    --border: 215 20% 22%; /* Bordures bleues foncées */
-    --input: 215 20% 22%;
-    --ring: 220 92% 70%;
+    --border: 215 80% 20%;
+    --input: 215 80% 20%;
+    --ring: 211 100% 50%;
     
-    --shadow-elegant: 0 4px 20px -2px rgba(29, 78, 216, 0.25);
-    --shadow-card: 0 1px 3px 0 rgba(29, 78, 216, 0.15);
-    --shadow-dropdown: 0 10px 25px -3px rgba(29, 78, 216, 0.3), 0 4px 6px -2px rgba(29, 78, 216, 0.15);
+    --shadow-elegant: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+    --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+    --shadow-dropdown: 0 10px 25px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
 
-    --sidebar-background: 215 28% 12%;
-    --sidebar-foreground: 210 40% 92%;
-    --sidebar-primary: 220 92% 70%;
-    --sidebar-primary-foreground: 215 30% 8%;
-    --sidebar-accent: 220 92% 70%;
-    --sidebar-accent-foreground: 210 40% 92%;
-    --sidebar-border: 215 20% 22%;
-    --sidebar-ring: 220 92% 70%;
+    --sidebar-background: 215 80% 16%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 211 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 211 100% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 215 80% 20%;
+    --sidebar-ring: 211 100% 50%;
   }
 }
 
