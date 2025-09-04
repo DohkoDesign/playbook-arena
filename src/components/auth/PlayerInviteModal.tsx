@@ -60,12 +60,12 @@ export const PlayerInviteModal = ({ isOpen, onClose, onPlayerAdded }: PlayerInvi
 
     setLoading(true);
     try {
-      // Créer le compte joueur avec redirection vers la même page
+      // Créer le compte joueur avec redirection vers la page de confirmation
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/join-team/${token}`,
+          emailRedirectTo: `${window.location.origin}/email-verified?token=${token}&email=${encodeURIComponent(email)}`,
           data: {
             pseudo: pseudo,
             role: 'player'

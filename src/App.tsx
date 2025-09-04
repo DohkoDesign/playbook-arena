@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
+import EmailVerified from "./pages/EmailVerified";
 import { PlayerManagement } from "./pages/PlayerManagement";
 import { Documentation } from "./pages/Documentation";
 import { FAQ } from "./pages/FAQ";
@@ -25,6 +26,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/join-team/:token" element={<Index />} />
+            <Route path="/email-verified" element={<EmailVerified />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />
             <Route path="/player-management/:teamId/:userId" element={<PlayerManagement />} />
