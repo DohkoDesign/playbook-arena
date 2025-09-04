@@ -18,11 +18,21 @@ const EmailVerified = () => {
     const handleEmailVerification = async () => {
       try {
         console.log("🔗 Processing email verification...");
+        console.log("📍 Current URL:", window.location.href);
+        console.log("📍 Hash:", window.location.hash);
+        console.log("📍 Search:", window.location.search);
         
-        // Vérifier d'abord s'il y a des erreurs dans l'URL
-        const errorCode = searchParams.get('error_code');
-        const errorDescription = searchParams.get('error_description');
-        const error = searchParams.get('error');
+        // Récupérer les paramètres depuis le hash (#) ET la query string
+        // Supabase place souvent les tokens dans le fragment d'URL
+        const hash = window.location.hash;
+        const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
+        
+        // Vérifier d'abord s'il y a des erreurs dans l'URL (query params ET hash)
+        const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
+        const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
+        const error = searchParams.get('error') || hashParams.get('error');
+        
+        console.log("❌ Error check:", { error, errorCode, errorDescription });
         
         if (error || errorCode) {
           console.log("❌ Email verification error:", { error, errorCode, errorDescription });
@@ -36,11 +46,6 @@ const EmailVerified = () => {
           
           throw new Error(friendlyError);
         }
-        
-        // Récupérer les paramètres depuis le hash (#) ET la query string
-        // Supabase place souvent les tokens dans le fragment d'URL
-        const hash = window.location.hash;
-        const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
 
         const access_token = hashParams.get('access_token') || searchParams.get('access_token');
         const refresh_token = hashParams.get('refresh_token') || searchParams.get('refresh_token');
