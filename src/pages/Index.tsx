@@ -11,11 +11,14 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  console.log("🏠 Index component rendering");
   const navigate = useNavigate();
   const { user } = useAuth();
+  console.log("👤 User from useAuth:", user);
 
   // Rediriger les utilisateurs connectés vers leur dashboard approprié
   useEffect(() => {
+    console.log("📊 useEffect triggered with user:", user);
     if (user) {
       checkUserTeamsAndRedirect(user);
     }

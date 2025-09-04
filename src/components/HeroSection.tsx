@@ -5,6 +5,7 @@ import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
 interface HeroSectionProps {}
 
 export const HeroSection = ({}: HeroSectionProps) => {
+  console.log("🦸 HeroSection rendering");
   return (
     <section className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen" style={{
       backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
