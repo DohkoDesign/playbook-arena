@@ -88,61 +88,15 @@ const Index = () => {
     try {
       console.log("🔗 Processing invitation for user:", currentUser.id);
       
-      // Vérifier l'invitation
-      const { data: invitation, error: inviteError } = await supabase
-        .from("invitations")
-        .select("team_id, role, expires_at")
-        .eq("token", inviteToken)
-        .is("used_at", null)
-        .single();
+      // Utiliser la nouvelle fonction sécurisée d'acceptation d'invitation
+      const { data: teamId, error } = await supabase.rpc('accept_invitation', {
+        p_token: inviteToken
+      });
 
-      if (inviteError || !invitation) {
-        console.error("❌ Invalid invitation:", inviteError);
-        throw new Error("Invitation invalide ou expirée");
+      if (error) {
+        console.error("❌ Error accepting invitation:", error);
+        throw error;
       }
-
-      // Vérifier si l'invitation n'est pas expirée
-      if (new Date(invitation.expires_at) < new Date()) {
-        console.error("❌ Invitation expired");
-        throw new Error("Cette invitation a expiré");
-      }
-
-      // Vérifier si l'utilisateur n'est pas déjà membre de l'équipe
-      const { data: existingMember } = await supabase
-        .from("team_members")
-        .select("id")
-        .eq("team_id", invitation.team_id)
-        .eq("user_id", currentUser.id)
-        .single();
-
-      if (existingMember) {
-        console.log("✅ User already team member, redirecting to player dashboard");
-        navigate("/player");
-        return;
-      }
-
-      // Ajouter le membre à l'équipe
-      const { error: memberError } = await supabase
-        .from("team_members")
-        .insert({
-          team_id: invitation.team_id,
-          user_id: currentUser.id,
-          role: invitation.role,
-        });
-
-      if (memberError) {
-        console.error("❌ Error adding team member:", memberError);
-        throw memberError;
-      }
-
-      // Marquer l'invitation comme utilisée
-      await supabase
-        .from("invitations")
-        .update({
-          used_at: new Date().toISOString(),
-          used_by: currentUser.id,
-        })
-        .eq("token", inviteToken);
 
       console.log("✅ Invitation processed successfully, redirecting to player dashboard");
       navigate("/player");
