@@ -32,9 +32,44 @@ const Auth = () => {
   // Rediriger si déjà connecté
   useEffect(() => {
     if (user) {
-      navigate("/");
+      // Vérifier si l'utilisateur a un code d'équipe en attente
+      const pendingCode = localStorage.getItem("pending_team_code");
+      if (pendingCode) {
+        // L'utilisateur vient de vérifier son email, rejoindre l'équipe automatiquement
+        const joinTeamAfterEmailVerification = async () => {
+          try {
+            const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
+              p_code: pendingCode
+            });
+
+            if (!joinError && joinResult?.[0]) {
+              const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+              const roleText = joinResult[0].assigned_role || 'joueur';
+              
+              // Nettoyer le localStorage
+              localStorage.removeItem("pending_team_code");
+              localStorage.removeItem("pending_team_name");
+
+              toast({
+                title: "Bienvenue !",
+                description: `Vous avez rejoint ${teamName} en tant que ${roleText} !`,
+              });
+
+              // Redirection vers le dashboard joueur
+              navigate("/player");
+              return;
+            }
+          } catch (error) {
+            console.error("Erreur jointure équipe:", error);
+          }
+        };
+        
+        joinTeamAfterEmailVerification();
+      } else {
+        navigate("/");
+      }
     }
-  }, [user, navigate]);
+  }, [user, navigate, toast]);
 
   // Valider le code d'équipe en temps réel pour les joueurs
   useEffect(() => {
