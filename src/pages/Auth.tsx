@@ -255,7 +255,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified`
+        emailRedirectTo: `${window.location.origin}/`
       },
     });
 
@@ -298,7 +298,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified?team_code=${encodeURIComponent(code.trim().toUpperCase())}&team_name=${encodeURIComponent(teamInfo?.name || '')}`,
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
 
