@@ -272,7 +272,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/`
+        emailRedirectTo: `${window.location.origin}/email-verified`
       },
     });
 
@@ -315,7 +315,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/email-verified`,
       },
     });
 
