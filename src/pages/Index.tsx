@@ -20,11 +20,15 @@ const Index = () => {
   useEffect(() => {
     console.log("📊 useEffect triggered with user:", user);
     if (user) {
+      console.log("👤 User found, checking teams for redirect");
       checkUserTeamsAndRedirect(user);
+    } else {
+      console.log("🚫 No user found, staying on Index");
     }
   }, [user]);
 
   const checkUserTeamsAndRedirect = async (currentUser: any) => {
+    console.log("🔍 Checking user teams for redirect");
     try {
       // Vérifier le profil de l'utilisateur
       const { data: profileData } = await supabase
@@ -33,11 +37,15 @@ const Index = () => {
         .eq("user_id", currentUser.id)
         .single();
 
+      console.log("👤 Profile data:", profileData);
+
       // Vérifier si l'utilisateur a créé des équipes
       const { data: createdTeams } = await supabase
         .from("teams")
         .select("*")
         .eq("created_by", currentUser.id);
+
+      console.log("🏗️ Created teams:", createdTeams);
 
       // Vérifier si l'utilisateur est membre d'une équipe
       const { data: teamMembers } = await supabase
@@ -45,21 +53,28 @@ const Index = () => {
         .select("role, team_id")
         .eq("user_id", currentUser.id);
 
+      console.log("👥 Team members:", teamMembers);
+
       // Redirection selon le rôle et le statut
       if (profileData?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
+        console.log("🚀 Redirecting to management dashboard");
         navigate("/dashboard");
       } else if (teamMembers && teamMembers.length > 0) {
         const hasManagementRole = teamMembers.some(tm => 
           ['owner', 'manager', 'coach'].includes(tm.role)
         );
         if (hasManagementRole) {
+          console.log("👑 Redirecting to management dashboard");
           navigate("/dashboard");
         } else {
+          console.log("🎮 Redirecting to player dashboard");
           navigate("/player");
         }
+      } else {
+        console.log("🆕 New user without team, staying on Index");
       }
     } catch (error) {
-      console.error("Error checking user teams:", error);
+      console.error("💥 Error checking user teams:", error);
     }
   };
 

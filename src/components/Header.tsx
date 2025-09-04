@@ -7,6 +7,16 @@ interface HeaderProps {}
 export const Header = ({}: HeaderProps) => {
   const navigate = useNavigate();
 
+  const handleAuthClick = () => {
+    console.log("🔗 Header: Auth button clicked, navigating to /auth");
+    try {
+      navigate("/auth");
+      console.log("✅ Header: Navigation completed");
+    } catch (error) {
+      console.error("❌ Header: Navigation failed:", error);
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/15 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -20,7 +30,7 @@ export const Header = ({}: HeaderProps) => {
           <ThemeToggle />
           <Button 
             className="bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => navigate("/auth")}
+            onClick={handleAuthClick}
           >
             Connexion / Inscription
           </Button>

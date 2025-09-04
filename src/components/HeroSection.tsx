@@ -8,6 +8,16 @@ export const HeroSection = ({}: HeroSectionProps) => {
   console.log("🦸 HeroSection rendering");
   const navigate = useNavigate();
   
+  const handleAuthClick = () => {
+    console.log("🔗 Hero: Auth button clicked, navigating to /auth");
+    try {
+      navigate("/auth");
+      console.log("✅ Hero: Navigation completed");
+    } catch (error) {
+      console.error("❌ Hero: Navigation failed:", error);
+    }
+  };
+  
   return (
     <section className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen" style={{
       backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
@@ -67,7 +77,7 @@ export const HeroSection = ({}: HeroSectionProps) => {
           <Button 
             size="lg" 
             className="bg-blue-600 text-white hover:bg-blue-700 group"
-            onClick={() => navigate("/auth")}
+            onClick={handleAuthClick}
           >
             Commencer gratuitement
             <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
