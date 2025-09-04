@@ -84,6 +84,7 @@ export const TeamCodeModal = ({ isOpen, onClose, teamId, teamName }: TeamCodeMod
           team_id: teamId,
           code,
           created_by: user.id,
+          role: selectedRole as any,
           max_uses: maxUses === "" ? null : Number(maxUses),
         })
         .select()
@@ -345,7 +346,7 @@ export const TeamCodeModal = ({ isOpen, onClose, teamId, teamName }: TeamCodeMod
                             </Button>
                           </div>
                           <Badge variant="secondary" className="text-xs">
-                            {ROLES.find(r => r.value === "joueur")?.label || "Rôle"}
+                            {ROLES.find(r => r.value === code.role)?.label || code.role}
                           </Badge>
                         </div>
                         <div className="flex items-center space-x-4 text-xs text-muted-foreground">
