@@ -166,11 +166,28 @@ const Auth = () => {
       
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Erreur de connexion",
-        description: error.message,
-        variant: "destructive",
-      });
+      const msg = (error?.message || '').toString();
+      if (msg.toLowerCase().includes('email not confirmed') || error?.code === 'email_not_confirmed') {
+        try {
+          await supabase.auth.resend({ type: 'signup', email: email.trim() });
+          toast({
+            title: "Confirmation requise",
+            description: "Email de confirmation renvoyé. Vérifiez votre boîte mail et vos spams.",
+          });
+        } catch (e: any) {
+          toast({
+            title: "Impossible d'envoyer l'email",
+            description: e?.message || 'Veuillez réessayer dans quelques minutes.',
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Erreur de connexion",
+          description: msg,
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
