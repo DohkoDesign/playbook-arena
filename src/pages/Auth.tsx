@@ -24,7 +24,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
-  const [teamInfo, setTeamInfo] = useState<{id: string, name: string} | null>(null);
+  const [teamInfo, setTeamInfo] = useState<{id: string, name: string, role?: string} | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +46,11 @@ const Auth = () => {
           });
 
           if (data && data.length > 0) {
-            setTeamInfo({ id: data[0].team_id, name: data[0].team_name });
+            setTeamInfo({ 
+              id: data[0].team_id, 
+              name: data[0].team_name,
+              role: data[0].role 
+            });
           } else {
             setTeamInfo(null);
           }
@@ -224,7 +228,7 @@ const Auth = () => {
 
     if (signUpData.user?.id) {
       // Rejoindre l'équipe avec le code
-      const { error: joinError } = await supabase.rpc('join_team_with_code', {
+      const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
         p_code: code.trim().toUpperCase()
       });
 
@@ -233,9 +237,12 @@ const Auth = () => {
         throw new Error("Impossible de rejoindre l'équipe: " + joinError.message);
       }
 
+      const roleInfo = joinResult?.[0];
+      const roleText = roleInfo?.assigned_role || 'joueur';
+
       toast({
         title: "Inscription réussie !",
-        description: `Bienvenue dans l'équipe ${teamInfo.name} !`,
+        description: `Bienvenue dans l'équipe ${teamInfo.name} en tant que ${roleText} !`,
       });
 
       // Redirection vers le dashboard joueur
@@ -483,6 +490,7 @@ const Auth = () => {
                         <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-md">
                           <p className="text-sm text-green-700 dark:text-green-300">
                             ✓ Équipe trouvée: <span className="font-medium">{teamInfo.name}</span>
+                            {teamInfo.role && <span className="ml-2 text-xs">({teamInfo.role})</span>}
                           </p>
                         </div>
                       )}

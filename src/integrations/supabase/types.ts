@@ -477,6 +477,7 @@ export type Database = {
           id: string
           is_active: boolean
           max_uses: number | null
+          role: Database["public"]["Enums"]["player_role"]
           team_id: string
           used_by: string[] | null
         }
@@ -488,6 +489,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          role?: Database["public"]["Enums"]["player_role"]
           team_id: string
           used_by?: string[] | null
         }
@@ -499,6 +501,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          role?: Database["public"]["Enums"]["player_role"]
           team_id?: string
           used_by?: string[] | null
         }
@@ -696,7 +699,10 @@ export type Database = {
       }
       join_team_with_code: {
         Args: { p_code: string }
-        Returns: string
+        Returns: {
+          assigned_role: Database["public"]["Enums"]["player_role"]
+          team_id: string
+        }[]
       }
       log_admin_action: {
         Args: {
@@ -738,6 +744,7 @@ export type Database = {
       validate_team_code: {
         Args: { p_code: string }
         Returns: {
+          role: Database["public"]["Enums"]["player_role"]
           team_id: string
           team_name: string
         }[]

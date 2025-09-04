@@ -120,7 +120,7 @@ export const TeamCodeModal = ({ isOpen, onClose, teamId, teamName }: TeamCodeMod
     try {
       const { data, error } = await supabase
         .from("team_codes")
-        .select("*")
+        .select("*, role")
         .eq("team_id", teamId)
         .eq("is_active", true)
         .gt("expires_at", new Date().toISOString())
