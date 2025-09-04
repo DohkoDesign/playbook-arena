@@ -391,32 +391,66 @@ const Auth = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="signup-birth">Date de naissance</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !birthDate && "text-muted-foreground"
-                            )}
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {birthDate ? format(birthDate, "dd/MM/yyyy") : "Sélectionner une date"}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={birthDate}
-                            onSelect={setBirthDate}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
+                      <div className="flex gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "flex-1 justify-start text-left font-normal",
+                                !birthDate && "text-muted-foreground"
+                              )}
+                            >
+                              <Calendar className="mr-2 h-4 w-4" />
+                              {birthDate ? format(birthDate, "dd/MM/yyyy") : "Sélectionner"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={birthDate}
+                              onSelect={setBirthDate}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <span className="text-muted-foreground self-center">ou</span>
+                        <Input
+                          type="text"
+                          placeholder="JJ/MM/AAAA"
+                          className="flex-1"
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Format automatique pendant la saisie
+                            let formatted = value.replace(/\D/g, '');
+                            if (formatted.length >= 2) {
+                              formatted = formatted.slice(0, 2) + '/' + formatted.slice(2);
                             }
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
+                            if (formatted.length >= 5) {
+                              formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
+                            }
+                            e.target.value = formatted;
+                            
+                            // Essayer de parser la date si elle est complète
+                            if (formatted.length === 10) {
+                              const [day, month, year] = formatted.split('/').map(Number);
+                              if (day && month && year && year >= 1900 && year <= new Date().getFullYear()) {
+                                const date = new Date(year, month - 1, day);
+                                if (date.getDate() === day && date.getMonth() === month - 1) {
+                                  setBirthDate(date);
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Vous devez avoir au moins 13 ans pour vous inscrire
+                      </p>
                     </div>
 
                     <div className="space-y-2">
