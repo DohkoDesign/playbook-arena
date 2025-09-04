@@ -675,6 +675,10 @@ export type Database = {
         Args: { code_input: string }
         Returns: boolean
       }
+      validate_invitation_token: {
+        Args: { p_team_id: string; p_token: string }
+        Returns: boolean
+      }
       validate_password: {
         Args: { password: string }
         Returns: boolean
