@@ -391,38 +391,11 @@ const Auth = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="signup-birth">Date de naissance</Label>
-                      <div className="flex gap-2">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "flex-1 justify-start text-left font-normal",
-                                !birthDate && "text-muted-foreground"
-                              )}
-                            >
-                              <Calendar className="mr-2 h-4 w-4" />
-                              {birthDate ? format(birthDate, "dd/MM/yyyy") : "Sélectionner"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <CalendarComponent
-                              mode="single"
-                              selected={birthDate}
-                              onSelect={setBirthDate}
-                              disabled={(date) =>
-                                date > new Date() || date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                        <span className="text-muted-foreground self-center">ou</span>
+                      <div className="relative">
                         <Input
                           type="text"
                           placeholder="JJ/MM/AAAA"
-                          className="flex-1"
+                          value={birthDate ? format(birthDate, "dd/MM/yyyy") : ""}
                           onChange={(e) => {
                             const value = e.target.value;
                             // Format automatique pendant la saisie
@@ -444,9 +417,36 @@ const Auth = () => {
                                   setBirthDate(date);
                                 }
                               }
+                            } else if (formatted === "") {
+                              setBirthDate(undefined);
                             }
                           }}
+                          className="pr-10"
                         />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            >
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <CalendarComponent
+                              mode="single"
+                              selected={birthDate}
+                              onSelect={setBirthDate}
+                              disabled={(date) =>
+                                date > new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Vous devez avoir au moins 13 ans pour vous inscrire
