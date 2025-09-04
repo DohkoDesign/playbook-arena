@@ -221,13 +221,14 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
+        emailRedirectTo: `${window.location.origin}/email-verified`,
       },
     });
 
     if (error) throw error;
 
-    if (signUpData.user?.id) {
-      // Rejoindre l'équipe avec le code
+    if (signUpData.session?.user?.id) {
+      // Session active: rejoindre directement l'équipe
       const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
         p_code: code.trim().toUpperCase()
       });
@@ -247,6 +248,15 @@ const Auth = () => {
 
       // Redirection vers le dashboard joueur
       navigate("/player");
+    } else {
+      // Pas de session car email à confirmer: on stocke le code et on demande vérification email
+      localStorage.setItem("pending_team_code", code.trim().toUpperCase());
+      if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
+
+      toast({
+        title: "Confirmez votre email",
+        description: "Ouvrez le lien reçu par email. Votre équipe sera rejointe automatiquement après confirmation.",
+      });
     }
   };
 

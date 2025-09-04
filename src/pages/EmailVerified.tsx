@@ -1,7 +1,9 @@
 import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import { CheckCircle, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const EmailVerified = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +18,37 @@ const EmailVerified = () => {
       window.location.href = "/";
     }
   };
+
+  // Si un code d'équipe a été stocké pendant l'inscription, on rejoint automatiquement après vérification email
+  useEffect(() => {
+    const pendingCode = localStorage.getItem("pending_team_code");
+    if (!pendingCode) return;
+
+    const tryJoin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase.rpc("join_team_with_code", {
+        p_code: pendingCode
+      });
+      if (!error) {
+        localStorage.removeItem("pending_team_code");
+        localStorage.removeItem("pending_team_name");
+        window.location.href = "/player";
+      }
+    };
+
+    // Tente une première fois et écoute les changements d'auth
+    const t = setTimeout(tryJoin, 300);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      tryJoin();
+    });
+
+    return () => {
+      clearTimeout(t);
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
