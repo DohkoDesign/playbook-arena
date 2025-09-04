@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
 
@@ -6,6 +6,8 @@ interface HeroSectionProps {}
 
 export const HeroSection = ({}: HeroSectionProps) => {
   console.log("🦸 HeroSection rendering");
+  const navigate = useNavigate();
+  
   return (
     <section className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen" style={{
       backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
@@ -62,12 +64,14 @@ export const HeroSection = ({}: HeroSectionProps) => {
 
         {/* Call-to-action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Link to="/auth">
-            <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group">
-              Commencer gratuitement
-              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
+          <Button 
+            size="lg" 
+            className="bg-blue-600 text-white hover:bg-blue-700 group"
+            onClick={() => navigate("/auth")}
+          >
+            Commencer gratuitement
+            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
           <Button size="lg" className="bg-slate-800 text-white border-2 border-white/30 hover:bg-slate-700 hover:text-white" onClick={() => document.getElementById('features-detail')?.scrollIntoView({
           behavior: 'smooth'
         })}>

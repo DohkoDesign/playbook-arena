@@ -1,10 +1,12 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 
 interface HeaderProps {}
 
 export const Header = ({}: HeaderProps) => {
+  const navigate = useNavigate();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/15 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -16,11 +18,12 @@ export const Header = ({}: HeaderProps) => {
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <Link to="/auth">
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-              Connexion / Inscription
-            </Button>
-          </Link>
+          <Button 
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            onClick={() => navigate("/auth")}
+          >
+            Connexion / Inscription
+          </Button>
         </div>
       </div>
     </header>
