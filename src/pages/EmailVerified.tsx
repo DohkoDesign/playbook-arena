@@ -19,6 +19,24 @@ const EmailVerified = () => {
       try {
         console.log("🔗 Processing email verification...");
         
+        // Vérifier d'abord s'il y a des erreurs dans l'URL
+        const errorCode = searchParams.get('error_code');
+        const errorDescription = searchParams.get('error_description');
+        const error = searchParams.get('error');
+        
+        if (error || errorCode) {
+          console.log("❌ Email verification error:", { error, errorCode, errorDescription });
+          
+          let friendlyError = "Le lien de vérification est invalide ou a expiré.";
+          if (errorCode === 'otp_expired') {
+            friendlyError = "Le lien de vérification a expiré. Veuillez vous inscrire à nouveau.";
+          } else if (error === 'access_denied') {
+            friendlyError = "Accès refusé. Le lien de vérification est invalide.";
+          }
+          
+          throw new Error(friendlyError);
+        }
+        
         // Récupérer les paramètres de l'URL
         const access_token = searchParams.get('access_token');
         const refresh_token = searchParams.get('refresh_token');
