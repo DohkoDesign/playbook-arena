@@ -212,7 +212,11 @@ const Auth = () => {
       throw new Error("Code d'équipe invalide");
     }
 
-    // Inscription
+    // Stocker le code d'équipe pour après vérification email
+    localStorage.setItem("pending_team_code", code.trim().toUpperCase());
+    if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
+
+    // Inscription avec redirection vers une page dédiée
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -221,43 +225,16 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified`,
+        emailRedirectTo: `${window.location.origin}/email-verified?team_code=${encodeURIComponent(code.trim().toUpperCase())}`,
       },
     });
 
     if (error) throw error;
 
-    if (signUpData.session?.user?.id) {
-      // Session active: rejoindre directement l'équipe
-      const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
-        p_code: code.trim().toUpperCase()
-      });
-
-      if (joinError) {
-        await supabase.auth.signOut();
-        throw new Error("Impossible de rejoindre l'équipe: " + joinError.message);
-      }
-
-      const roleInfo = joinResult?.[0];
-      const roleText = roleInfo?.assigned_role || 'joueur';
-
-      toast({
-        title: "Inscription réussie !",
-        description: `Bienvenue dans l'équipe ${teamInfo.name} en tant que ${roleText} !`,
-      });
-
-      // Redirection vers le dashboard joueur
-      navigate("/player");
-    } else {
-      // Pas de session car email à confirmer: on stocke le code et on demande vérification email
-      localStorage.setItem("pending_team_code", code.trim().toUpperCase());
-      if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
-
-      toast({
-        title: "Confirmez votre email",
-        description: "Ouvrez le lien reçu par email. Votre équipe sera rejointe automatiquement après confirmation.",
-      });
-    }
+    toast({
+      title: "Email envoyé !",
+      description: "Vérifiez votre boîte mail et cliquez sur le lien pour finaliser votre inscription.",
+    });
   };
 
   const resetForm = () => {
