@@ -31,12 +31,12 @@ const Auth = () => {
 
   // Rediriger si déjà connecté
   useEffect(() => {
-    if (user) {
-      // Vérifier si l'utilisateur a un code d'équipe en attente
-      const pendingCode = localStorage.getItem("pending_team_code");
-      if (pendingCode) {
-        // L'utilisateur vient de vérifier son email, rejoindre l'équipe automatiquement
-        const joinTeamAfterEmailVerification = async () => {
+    const checkAuthStatusAndRedirect = async () => {
+      if (user) {
+        // Vérifier si l'utilisateur a un code d'équipe en attente
+        const pendingCode = localStorage.getItem("pending_team_code");
+        if (pendingCode) {
+          // L'utilisateur vient de vérifier son email, rejoindre l'équipe automatiquement
           try {
             const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
               p_code: pendingCode
@@ -62,14 +62,52 @@ const Auth = () => {
           } catch (error) {
             console.error("Erreur jointure équipe:", error);
           }
-        };
-        
-        joinTeamAfterEmailVerification();
-      } else {
-        navigate("/");
+        } else {
+          navigate("/");
+        }
       }
-    }
+    };
+
+    checkAuthStatusAndRedirect();
   }, [user, navigate, toast]);
+
+  // Écouter les changements d'auth pour détecter la vérification email
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // L'utilisateur vient de se connecter (probablement via email verification)
+        const pendingCode = localStorage.getItem("pending_team_code");
+        if (pendingCode) {
+          try {
+            const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
+              p_code: pendingCode
+            });
+
+            if (!joinError && joinResult?.[0]) {
+              const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+              const roleText = joinResult[0].assigned_role || 'joueur';
+              
+              // Nettoyer le localStorage
+              localStorage.removeItem("pending_team_code");
+              localStorage.removeItem("pending_team_name");
+
+              toast({
+                title: "Inscription réussie !",
+                description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !`,
+              });
+
+              // Redirection vers le dashboard joueur
+              navigate("/player");
+            }
+          } catch (error) {
+            console.error("Erreur jointure équipe après vérification:", error);
+          }
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
 
   // Valider le code d'équipe en temps réel pour les joueurs
   useEffect(() => {
@@ -251,7 +289,7 @@ const Auth = () => {
     localStorage.setItem("pending_team_code", code.trim().toUpperCase());
     if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
 
-    // Inscription avec redirection vers une page dédiée
+    // Inscription sans emailRedirectTo pour éviter les problèmes de redirection
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -260,7 +298,6 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified?team_code=${encodeURIComponent(code.trim().toUpperCase())}`,
       },
     });
 
@@ -268,7 +305,7 @@ const Auth = () => {
 
     toast({
       title: "Email envoyé !",
-      description: "Vérifiez votre boîte mail et cliquez sur le lien pour finaliser votre inscription.",
+      description: "Vérifiez votre boîte mail et cliquez sur le lien pour finaliser votre inscription. Vous serez automatiquement redirigé ici.",
     });
   };
 
