@@ -37,50 +37,39 @@ const EmailVerified = () => {
           throw new Error(friendlyError);
         }
         
-        // Récupérer les paramètres de l'URL
-        const access_token = searchParams.get('access_token');
-        const refresh_token = searchParams.get('refresh_token');
-        const type = searchParams.get('type');
+        // Récupérer les paramètres depuis le hash (#) ET la query string
+        // Supabase place souvent les tokens dans le fragment d'URL
+        const hash = window.location.hash;
+        const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
 
-        if (type === 'signup' && access_token && refresh_token) {
-          console.log("📧 Setting session from email verification");
-          
-          // Définir la session avec les tokens
-          const { data: { user }, error: sessionError } = await supabase.auth.setSession({
-            access_token,
-            refresh_token
-          });
+        const access_token = hashParams.get('access_token') || searchParams.get('access_token');
+        const refresh_token = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+        const type = hashParams.get('type') || searchParams.get('type');
+        const code = searchParams.get('code') || hashParams.get('code');
 
-          if (sessionError) {
-            throw sessionError;
+        // 1) Nouveau flux OAuth/PKCE: échange du "code" contre une session
+        if (code && (!access_token || !refresh_token)) {
+          console.log("🔄 Exchanging code for session...");
+          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+            throw exchangeError;
           }
 
-          if (user) {
-            console.log("✅ User verified successfully", user.id);
+          if (data?.user) {
+            console.log("✅ User verified via code exchange", data.user.id);
             setVerified(true);
-            
-            // Vérifier si l'utilisateur doit rejoindre une équipe
+
             const pendingCode = localStorage.getItem("pending_team_code");
             if (pendingCode) {
               console.log("🏃 Joining team with code:", pendingCode);
-              
-              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
-                p_code: pendingCode
-              });
+              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { p_code: pendingCode });
 
               if (!joinError && joinResult?.[0]) {
                 const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
                 const roleText = joinResult[0].assigned_role || 'joueur';
-                
-                // Nettoyer le localStorage
                 localStorage.removeItem("pending_team_code");
                 localStorage.removeItem("pending_team_name");
-
-                toast({
-                  title: "Inscription réussie !",
-                  description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !`,
-                });
-
+                toast({ title: "Inscription réussie !", description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` });
                 setTimeout(() => navigate("/player"), 2000);
                 return;
               } else {
@@ -88,11 +77,44 @@ const EmailVerified = () => {
               }
             }
 
-            toast({
-              title: "Email vérifié !",
-              description: "Votre compte a été créé avec succès.",
-            });
+            toast({ title: "Email vérifié !", description: "Votre compte a été créé avec succès." });
+            setTimeout(() => navigate("/"), 2000);
+            return;
+          }
+        }
 
+        // 2) Ancien flux: tokens directement dans l'URL
+        if (type === 'signup' && access_token && refresh_token) {
+          console.log("📧 Setting session from email verification");
+          const { data: { user }, error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (sessionError) {
+            throw sessionError;
+          }
+
+          if (user) {
+            console.log("✅ User verified successfully", user.id);
+            setVerified(true);
+
+            // Vérifier si l'utilisateur doit rejoindre une équipe
+            const pendingCode = localStorage.getItem("pending_team_code");
+            if (pendingCode) {
+              console.log("🏃 Joining team with code:", pendingCode);
+              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { p_code: pendingCode });
+
+              if (!joinError && joinResult?.[0]) {
+                const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+                const roleText = joinResult[0].assigned_role || 'joueur';
+                localStorage.removeItem("pending_team_code");
+                localStorage.removeItem("pending_team_name");
+                toast({ title: "Inscription réussie !", description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` });
+                setTimeout(() => navigate("/player"), 2000);
+                return;
+              } else {
+                console.error("❌ Failed to join team:", joinError);
+              }
+            }
+
+            toast({ title: "Email vérifié !", description: "Votre compte a été créé avec succès." });
             setTimeout(() => navigate("/"), 2000);
           } else {
             throw new Error("Aucun utilisateur trouvé après vérification");
