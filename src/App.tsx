@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import PlayerDashboard from "./pages/PlayerDashboard";
 import EmailVerified from "./pages/EmailVerified";
@@ -25,7 +26,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/join-team/:token" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/email-verified" element={<EmailVerified />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/player" element={<PlayerDashboard />} />

@@ -1,12 +1,10 @@
+import { Link } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 
-interface HeaderProps {
-  onOpenSignup: () => void;
-  onOpenLogin: () => void;
-}
+interface HeaderProps {}
 
-export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
+export const Header = ({}: HeaderProps) => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/15 backdrop-blur-sm border-b border-white/10">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -18,12 +16,11 @@ export const Header = ({ onOpenSignup, onOpenLogin }: HeaderProps) => {
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />
-          <Button variant="ghost" className="hidden sm:inline-flex text-white hover:bg-white/10" onClick={onOpenLogin}>
-            Connexion
-          </Button>
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={onOpenSignup}>
-            Créer un compte
-          </Button>
+          <Link to="/auth">
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              Connexion / Inscription
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

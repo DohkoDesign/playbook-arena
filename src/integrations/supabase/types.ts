@@ -468,6 +468,42 @@ export type Database = {
         }
         Relationships: []
       }
+      team_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          team_id: string
+          used_by: string[] | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          team_id: string
+          used_by?: string[] | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          team_id?: string
+          used_by?: string[] | null
+        }
+        Relationships: []
+      }
       team_members: {
         Row: {
           created_at: string
@@ -658,6 +694,10 @@ export type Database = {
         Args: { team_uuid: string; user_uuid?: string }
         Returns: boolean
       }
+      join_team_with_code: {
+        Args: { p_code: string }
+        Returns: string
+      }
       log_admin_action: {
         Args: {
           action_type: string
@@ -694,6 +734,13 @@ export type Database = {
           target_user_id: string
         }
         Returns: boolean
+      }
+      validate_team_code: {
+        Args: { p_code: string }
+        Returns: {
+          team_id: string
+          team_name: string
+        }[]
       }
     }
     Enums: {

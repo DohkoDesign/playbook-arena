@@ -1,19 +1,17 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, Calendar, Target, TrendingUp } from "lucide-react";
-interface HeroSectionProps {
-  onOpenSignup: () => void;
-  onOpenLogin: () => void;
-}
-export const HeroSection = ({
-  onOpenSignup,
-  onOpenLogin
-}: HeroSectionProps) => {
-  return <section className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen" style={{
-    backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat'
-  }}>
+
+interface HeroSectionProps {}
+
+export const HeroSection = ({}: HeroSectionProps) => {
+  return (
+    <section className="pt-20 pb-20 px-6 relative overflow-hidden min-h-screen" style={{
+      backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.4), rgba(30, 41, 59, 0.6)), url(/lovable-uploads/4cdcee5e-b388-44ce-8e7e-4856988404be.png)`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat'
+    }}>
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-slate-900/60"></div>
       
@@ -63,10 +61,12 @@ export const HeroSection = ({
 
         {/* Call-to-action buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group" onClick={onOpenSignup}>
-            Commencer gratuitement
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link to="/auth">
+            <Button size="lg" className="bg-blue-600 text-white hover:bg-blue-700 group">
+              Commencer gratuitement
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
           <Button size="lg" className="bg-slate-800 text-white border-2 border-white/30 hover:bg-slate-700 hover:text-white" onClick={() => document.getElementById('features-detail')?.scrollIntoView({
           behavior: 'smooth'
         })}>
@@ -117,5 +117,6 @@ export const HeroSection = ({
           </article>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
