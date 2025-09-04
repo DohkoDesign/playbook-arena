@@ -219,7 +219,7 @@ export const AuthModals = ({
       onLoginSuccess();
       toast({
         title: "Connexion réussie",
-        description: "Bienvenue sur Core.gg !",
+        description: "Bienvenue sur Core Link !",
       });
     } catch (error: any) {
       toast({

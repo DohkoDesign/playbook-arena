@@ -546,7 +546,7 @@ export const guideContents = {
       {
         title: "Comprendre le système de rôles",
         content: `
-          <p>Core.gg utilise un système de rôles hiérarchique flexible qui s'adapte à tous types d'organisations eSport :</p>
+          <p>Core Link utilise un système de rôles hiérarchique flexible qui s'adapte à tous types d'organisations eSport :</p>
           <h4>Rôles prédéfinis :</h4>
           <ul>
             <li><strong>Owner/Propriétaire :</strong> Contrôle total, gestion financière, dissolution d'équipe</li>
@@ -601,7 +601,7 @@ export const guideContents = {
       {
         title: "Permissions avancées et personnalisation",
         content: `
-          <p>Pour les équipes avec des besoins spécifiques, Core.gg offre une granularité fine dans la gestion des permissions :</p>
+          <p>Pour les équipes avec des besoins spécifiques, Core Link offre une granularité fine dans la gestion des permissions :</p>
           <h4>Permissions granulaires :</h4>
           <ul>
             <li><strong>Gestion sélective :</strong> Activez/désactivez chaque permission individuellement</li>
@@ -657,7 +657,7 @@ export const guideContents = {
         `
       },
       {
-        title: "Configuration dans Core.gg",
+        title: "Configuration dans Core Link",
         content: `
           <p>Organisez vos remplaçants pour une gestion optimale et une intégration fluide :</p>
           <h4>Setup initial :</h4>
@@ -877,7 +877,7 @@ export const guideContents = {
       {
         title: "Types d'événements disponibles",
         content: `
-          <p>Core.gg propose plusieurs types d'événements adaptés à tous vos besoins organisationnels :</p>
+          <p>Core Link propose plusieurs types d'événements adaptés à tous vos besoins organisationnels :</p>
           <h4>Événements de compétition :</h4>
           <ul>
             <li><strong>Match officiel :</strong> Compétitions avec enjeu, classement, prize pool</li>
@@ -942,7 +942,7 @@ export const guideContents = {
           </ul>
           <h4>Canaux de notification :</h4>
           <ul>
-            <li><strong>In-app :</strong> Notifications dans Core.gg</li>
+            <li><strong>In-app :</strong> Notifications dans Core Link</li>
             <li><strong>Email :</strong> Récapitulatifs détaillés</li>
             <li><strong>Discord :</strong> Messages automatiques sur les channels équipe</li>
             <li><strong>SMS :</strong> Pour les événements critiques (selon abonnement)</li>
@@ -1160,7 +1160,7 @@ export const guideContents = {
         `
       },
       {
-        title: "Outils de documentation dans Core.gg",
+        title: "Outils de documentation dans Core Link",
         content: `
           <p>Utilisez les fonctionnalités intégrées pour un suivi professionnel :</p>
           <h4>Templates de feedback :</h4>

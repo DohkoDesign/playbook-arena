@@ -107,7 +107,7 @@ export const Documentation = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Documentation</h1>
-                <p className="text-sm text-muted-foreground">Centre d'aide Core.gg</p>
+                <p className="text-sm text-muted-foreground">Centre d'aide Core Link</p>
               </div>
             </div>
           </div>
@@ -118,7 +118,7 @@ export const Documentation = () => {
       <section className="py-16 px-6">
         <div className="container mx-auto max-w-4xl text-center">
           <h1 className="text-4xl font-bold mb-4">
-            Documentation Core.gg
+            Documentation Core Link
           </h1>
           <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
             Guides essentiels pour maîtriser votre plateforme eSport
