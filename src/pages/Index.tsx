@@ -74,8 +74,56 @@ const Index = () => {
       return;
     }
     
-    // Sinon, vérifier les équipes de l'utilisateur
+    // Sinon, vérifier s'il y a des invitations en attente pour cet email
+    await checkPendingInvitations(currentUser);
+    
+    // Ensuite, vérifier les équipes de l'utilisateur
     await checkUserTeamsAndRedirect(currentUser);
+  };
+
+  const checkPendingInvitations = async (currentUser: User) => {
+    try {
+      console.log("🔍 Checking pending invitations for email:", currentUser.email);
+      
+      // Chercher des invitations basées sur l'email de l'utilisateur
+      // On va utiliser une approche différente - chercher les invitations pour des équipes
+      // puis vérifier si l'utilisateur n'est pas déjà membre
+      const { data: pendingInvitations, error } = await supabase
+        .from("invitations")
+        .select("token, team_id, role")
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString());
+
+      if (error || !pendingInvitations?.length) {
+        console.log("📭 No pending invitations found");
+        return;
+      }
+
+      // Pour chaque invitation, vérifier si l'utilisateur n'est pas déjà membre de cette équipe
+      for (const invitation of pendingInvitations) {
+        const { data: existingMember } = await supabase
+          .from("team_members")
+          .select("id")
+          .eq("team_id", invitation.team_id)
+          .eq("user_id", currentUser.id)
+          .single();
+
+        // Si pas déjà membre, accepter automatiquement l'invitation
+        if (!existingMember) {
+          console.log("🎯 Auto-accepting invitation for team:", invitation.team_id);
+          try {
+            await supabase.rpc('accept_invitation', {
+              p_token: invitation.token
+            });
+            console.log("✅ Auto-accepted invitation successfully");
+          } catch (inviteError) {
+            console.error("❌ Error auto-accepting invitation:", inviteError);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("💥 Error checking pending invitations:", error);
+    }
   };
 
   const handlePlayerAdded = () => {
@@ -157,12 +205,15 @@ const Index = () => {
           navigate("/player");
         }
       } else {
-        console.log("🆕 New user without team, opening team setup modal");
-        setIsTeamSetupOpen(true);
+        console.log("🆕 New user without team, will show team setup modal");
+        // Ne pas ouvrir automatiquement, attendre que l'utilisateur reste connecté
+        setTimeout(() => {
+          setIsTeamSetupOpen(true);
+        }, 1000);
       }
     } catch (error) {
       console.error("💥 Error checking user teams:", error);
-      setIsTeamSetupOpen(true);
+      // En cas d'erreur, ne pas forcer l'ouverture du modal
     }
   };
 
@@ -175,6 +226,12 @@ const Index = () => {
     console.log("🎉 Team created, redirecting to dashboard");
     setIsTeamSetupOpen(false);
     navigate("/dashboard");
+  };
+
+  const handleTeamSetupClose = () => {
+    console.log("🚪 Team setup modal closed by user");
+    setIsTeamSetupOpen(false);
+    // Ne pas déconnecter l'utilisateur, juste fermer le modal
   };
 
   const closeAllModals = () => {
@@ -216,7 +273,7 @@ const Index = () => {
         <TeamSetupModal
           isOpen={isTeamSetupOpen}
           user={user}
-          onClose={() => setIsTeamSetupOpen(false)}
+          onClose={handleTeamSetupClose}
           onTeamCreated={handleTeamCreated}
         />
       )}

@@ -1,43 +1,19 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { CheckCircle, ArrowRight, Loader2 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { CheckCircle, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const EmailVerified = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(5);
   
   const token = searchParams.get("token");
   const email = searchParams.get("email");
 
-  useEffect(() => {
-    // Décompte automatique pour la redirection
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Rediriger vers la page d'accueil avec le token d'invitation
-          if (token) {
-            navigate(`/join-team/${token}`);
-          } else {
-            navigate("/");
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [navigate, token]);
-
-  const handleContinueNow = () => {
+  const handleContinue = () => {
     if (token) {
-      navigate(`/join-team/${token}`);
+      window.location.href = `/join-team/${token}`;
     } else {
-      navigate("/");
+      window.location.href = "/";
     }
   };
 
@@ -68,24 +44,19 @@ const EmailVerified = () => {
           {token && (
             <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
               <p className="text-sm text-primary font-medium">
-                🎮 Vous allez maintenant rejoindre votre équipe !
+                🎮 Cliquez ci-dessous pour rejoindre votre équipe !
               </p>
             </div>
           )}
 
-          {/* Redirection automatique */}
+          {/* Bouton de continuation */}
           <div className="space-y-4">
-            <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Redirection automatique dans {countdown} seconde{countdown > 1 ? 's' : ''}...</span>
-            </div>
-
             <Button 
-              onClick={handleContinueNow}
+              onClick={handleContinue}
               className="w-full"
               size="lg"
             >
-              Continuer maintenant
+              {token ? "Rejoindre l'équipe" : "Retourner à l'accueil"}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
