@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Users, UserPlus, Target, TrendingUp, TrendingDown, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { InvitationModal } from "./InvitationModal";
+import { TeamCodeModal } from "./TeamCodeModal";
 
 interface PlayersViewProps {
   teamId: string;
@@ -138,7 +138,7 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
         {!isPlayerView && (
           <Button onClick={() => setShowInviteModal(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
-            Inviter un joueur
+            Générer un code d'équipe
           </Button>
         )}
       </div>
@@ -155,7 +155,7 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
               {!isPlayerView && (
                 <Button onClick={() => setShowInviteModal(true)} className="mt-4">
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Inviter un joueur
+                  Générer un code d'équipe
                 </Button>
               )}
             </CardContent>
@@ -255,9 +255,9 @@ export const PlayersView = ({ teamId, isPlayerView = false }: PlayersViewProps) 
         )}
       </div>
 
-      {/* Modal d'invitation */}
+      {/* Modal de code d'équipe */}
       {showInviteModal && team && (
-        <InvitationModal
+        <TeamCodeModal
           isOpen={showInviteModal}
           onClose={() => setShowInviteModal(false)}
           teamId={teamId}
