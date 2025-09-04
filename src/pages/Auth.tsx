@@ -289,7 +289,7 @@ const Auth = () => {
     localStorage.setItem("pending_team_code", code.trim().toUpperCase());
     if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
 
-    // Inscription sans emailRedirectTo pour éviter les problèmes de redirection
+    // Inscription avec redirection vers email-verified
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -298,6 +298,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
+        emailRedirectTo: `${window.location.origin}/email-verified?team_code=${encodeURIComponent(code.trim().toUpperCase())}&team_name=${encodeURIComponent(teamInfo?.name || '')}`,
       },
     });
 
@@ -305,7 +306,7 @@ const Auth = () => {
 
     toast({
       title: "Email envoyé !",
-      description: "Vérifiez votre boîte mail et cliquez sur le lien pour finaliser votre inscription. Vous serez automatiquement redirigé ici.",
+      description: "Vérifiez votre boîte mail et cliquez sur le lien pour créer votre compte et rejoindre l'équipe.",
     });
   };
 

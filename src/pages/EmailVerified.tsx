@@ -11,14 +11,19 @@ const EmailVerified = () => {
   const { toast } = useToast();
   const [isJoiningTeam, setIsJoiningTeam] = useState(false);
   const [teamJoined, setTeamJoined] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
   
   const token = searchParams.get("token");
   const email = searchParams.get("email");
   const teamCode = searchParams.get("team_code");
+  const teamName = searchParams.get("team_name");
 
   const handleContinue = () => {
     if (teamJoined) {
       window.location.href = "/player";
+    } else if (accountCreated) {
+      // Le compte est créé, rediriger vers la connexion
+      window.location.href = "/auth";
     } else if (token) {
       window.location.href = `/join-team/${token}`;
     } else {
@@ -31,7 +36,12 @@ const EmailVerified = () => {
     const joinTeamAfterVerification = async () => {
       // Vérifier si on a un code d'équipe (URL params ou localStorage)
       const codeToUse = teamCode || localStorage.getItem("pending_team_code");
-      if (!codeToUse) return;
+      const nameToUse = teamName || localStorage.getItem("pending_team_name");
+      
+      if (!codeToUse) {
+        setAccountCreated(true);
+        return;
+      }
 
       setIsJoiningTeam(true);
 
@@ -53,11 +63,11 @@ const EmailVerified = () => {
             description: "Impossible de rejoindre l'équipe: " + joinError.message,
             variant: "destructive",
           });
+          setAccountCreated(true);
           return;
         }
 
         const roleInfo = joinResult?.[0];
-        const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
         
         // Nettoyer le localStorage
         localStorage.removeItem("pending_team_code");
@@ -66,22 +76,23 @@ const EmailVerified = () => {
         setTeamJoined(true);
         
         toast({
-          title: "Bienvenue !",
-          description: `Vous avez rejoint ${teamName} en tant que ${roleInfo?.assigned_role || 'joueur'} !`,
+          title: "Compte créé et équipe rejointe !",
+          description: `Bienvenue dans ${nameToUse || "votre équipe"} en tant que ${roleInfo?.assigned_role || 'joueur'} !`,
         });
 
-        // Redirection automatique après 2 secondes
+        // Redirection automatique après 3 secondes
         setTimeout(() => {
           window.location.href = "/player";
-        }, 2000);
+        }, 3000);
 
       } catch (error) {
         console.error("Erreur lors de la jointure d'équipe:", error);
         toast({
-          title: "Erreur",
-          description: "Une erreur s'est produite lors de la jointure de l'équipe",
+          title: "Compte créé",
+          description: "Votre compte a été créé mais une erreur s'est produite lors de la jointure de l'équipe",
           variant: "destructive",
         });
+        setAccountCreated(true);
       } finally {
         setIsJoiningTeam(false);
       }
@@ -98,7 +109,7 @@ const EmailVerified = () => {
     joinTeamAfterVerification();
 
     return () => subscription.unsubscribe();
-  }, [teamCode, toast]);
+  }, [teamCode, teamName, toast]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -112,10 +123,14 @@ const EmailVerified = () => {
           {/* Titre et message */}
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-foreground">
-              Email vérifié !
+              {teamJoined ? "Équipe rejointe !" : accountCreated ? "Compte créé !" : "Email vérifié !"}
             </h1>
             <p className="text-muted-foreground">
-              {email ? (
+              {teamJoined ? (
+                <>Votre compte a été créé et vous avez rejoint votre équipe avec succès !</>
+              ) : accountCreated ? (
+                <>Votre compte a été créé. Vous pouvez maintenant vous connecter pour accéder au site.</>
+              ) : email ? (
                 <>Votre adresse <strong>{email}</strong> a été confirmée avec succès.</>
               ) : (
                 "Votre adresse email a été confirmée avec succès."
@@ -129,7 +144,7 @@ const EmailVerified = () => {
               <div className="flex items-center justify-center space-x-2">
                 <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
                 <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                  Jonction à votre équipe en cours...
+                  Création du compte et jonction à votre équipe...
                 </p>
               </div>
             </div>
@@ -138,12 +153,20 @@ const EmailVerified = () => {
           {teamJoined && (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                ✅ Équipe rejointe avec succès ! Redirection automatique...
+                ✅ Équipe rejointe avec succès ! Redirection automatique vers votre dashboard...
               </p>
             </div>
           )}
 
-          {token && !isJoiningTeam && !teamJoined && (
+          {accountCreated && !teamJoined && (
+            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm text-primary font-medium">
+                🎮 Votre compte est maintenant créé ! Cliquez ci-dessous pour vous connecter.
+              </p>
+            </div>
+          )}
+
+          {token && !isJoiningTeam && !teamJoined && !accountCreated && (
             <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
               <p className="text-sm text-primary font-medium">
                 🎮 Cliquez ci-dessous pour rejoindre votre équipe !
@@ -162,11 +185,16 @@ const EmailVerified = () => {
               {isJoiningTeam ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Jonction en cours...
+                  Création en cours...
                 </>
               ) : teamJoined ? (
                 <>
                   Accéder au dashboard
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </>
+              ) : accountCreated ? (
+                <>
+                  Se connecter
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </>
               ) : token ? (
