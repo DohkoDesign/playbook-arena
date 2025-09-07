@@ -384,15 +384,17 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
 
       {/* Modal pour gérer ses disponibilités */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Gérer mes disponibilités</DialogTitle>
           </DialogHeader>
-          <SimpleAvailabilityManager 
-            teamId={teamId}
-            playerId={playerId}
-            onSaveSuccess={fetchData}
-          />
+          <div className="flex-1 overflow-y-auto px-1">
+            <SimpleAvailabilityManager 
+              teamId={teamId}
+              playerId={playerId}
+              onSaveSuccess={fetchData}
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

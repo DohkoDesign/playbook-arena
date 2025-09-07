@@ -208,25 +208,27 @@ export const YouTubePlayer = ({
                 onValueChange={(value) => seekTo(value[0])}
                 className="w-full slider-enhanced"
               />
-            {/* Markers dans la timeline */}
-            {timestamps.map((timestamp) => {
+            {/* Markers dans la timeline - Améliorés pour plus de visibilité */}
+            {timestamps && timestamps.length > 0 && timestamps.map((timestamp) => {
               const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
               const markerColors = {
-                important: "bg-primary border-3 border-background shadow-xl",
-                error: "bg-destructive border-3 border-background shadow-xl", 
-                success: "bg-green-500 border-3 border-background shadow-xl",
-                strategy: "bg-yellow-500 border-3 border-background shadow-xl",
-                "player-specific": "bg-orange-500 border-3 border-background shadow-xl"
+                important: "bg-blue-600 border-2 border-white",
+                error: "bg-red-600 border-2 border-white", 
+                success: "bg-green-600 border-2 border-white",
+                strategy: "bg-yellow-600 border-2 border-white",
+                "player-specific": "bg-orange-600 border-2 border-white"
               };
               
               return (
                 <div
                   key={timestamp.id}
-                  className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-10 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-125 transition-all duration-200 z-30 shadow-xl`}
-                  style={{ left: `${position}%`, marginLeft: '-8px' }}
+                  className={`absolute top-0 w-3 h-full ${markerColors[timestamp.type]} cursor-pointer hover:scale-110 transition-all duration-200 z-40 shadow-lg rounded-sm`}
+                  style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
                   onClick={() => seekTo(timestamp.time)}
                   title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
-                />
+                >
+                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rounded-full border border-white"></div>
+                </div>
               );
               })}
             </div>
