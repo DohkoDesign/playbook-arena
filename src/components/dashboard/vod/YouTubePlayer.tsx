@@ -212,18 +212,18 @@ export const YouTubePlayer = ({
             {timestamps.map((timestamp) => {
               const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
               const markerColors = {
-                important: "bg-primary border-2 border-background shadow-lg",
-                error: "bg-destructive border-2 border-background shadow-lg", 
-                success: "bg-green-500 border-2 border-background shadow-lg",
-                strategy: "bg-yellow-500 border-2 border-background shadow-lg",
-                "player-specific": "bg-orange-500 border-2 border-background shadow-lg"
+                important: "bg-primary border-3 border-background shadow-xl",
+                error: "bg-destructive border-3 border-background shadow-xl", 
+                success: "bg-green-500 border-3 border-background shadow-xl",
+                strategy: "bg-yellow-500 border-3 border-background shadow-xl",
+                "player-specific": "bg-orange-500 border-3 border-background shadow-xl"
               };
               
               return (
                 <div
                   key={timestamp.id}
-                  className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-8 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-110 transition-all duration-200 z-20 shadow-lg`}
-                  style={{ left: `${position}%`, marginLeft: '-6px' }}
+                  className={`absolute top-1/2 transform -translate-y-1/2 w-4 h-10 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-125 transition-all duration-200 z-30 shadow-xl`}
+                  style={{ left: `${position}%`, marginLeft: '-8px' }}
                   onClick={() => seekTo(timestamp.time)}
                   title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
                 />
