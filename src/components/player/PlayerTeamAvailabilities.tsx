@@ -245,9 +245,14 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
-              <span>Planning hebdomadaire</span>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5" />
+                <span>Planning hebdomadaire</span>
+              </div>
+              <Badge variant="outline" className="text-sm">
+                {players.length} membre{players.length > 1 ? 's' : ''} • {availabilities.length} créneaux
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -264,60 +269,68 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
                 </div>
               ))}
               
-              {/* Lignes pour chaque joueur */}
-              {players.map(player => (
-                <div key={player.id} className="contents">
-                  {/* Colonne du joueur */}
-                  <div className="p-3 border rounded-lg bg-card">
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage src={player.photo_profil} alt={player.pseudo} />
-                        <AvatarFallback className="text-xs">
-                          {player.pseudo.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-sm leading-tight">{player.pseudo}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {getPlayerAvailabilities(player.id).length} créneaux
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Colonnes pour chaque jour */}
-                  {[1, 2, 3, 4, 5, 6, 0].map(dayOfWeek => {
-                    const dayAvails = calendarData[dayOfWeek === 0 ? 7 : dayOfWeek][player.id] || [];
-                    const adjustedDayOfWeek = dayOfWeek === 0 ? 0 : dayOfWeek;
-                    
-                    return (
-                      <div key={`${player.id}-${dayOfWeek}`} className="p-2 border rounded-lg bg-card min-h-[80px]">
-                        <div className="space-y-1">
-                          {dayAvails.length === 0 ? (
-                            <div className="text-xs text-muted-foreground text-center py-2">
-                              Indisponible
-                            </div>
-                          ) : (
-                            dayAvails.map((avail, index) => (
-                              <div 
-                                key={avail.id}
-                                className={`text-xs px-2 py-1 rounded border ${getTimeSlotColor(avail.start_time)}`}
-                              >
-                                <div className="flex items-center space-x-1">
-                                  {getTimeSlotIcon(avail.start_time)}
-                                  <span className="font-medium">
-                                    {formatTime(avail.start_time)}-{formatTime(avail.end_time)}
-                                  </span>
-                                </div>
-                              </div>
-                            ))
-                          )}
+              {/* Lignes pour chaque joueur - TOUS les joueurs de l'équipe */}
+              {players.map(player => {
+                const playerAvailabilities = getPlayerAvailabilities(player.id);
+                
+                return (
+                  <div key={player.id} className="contents">
+                    {/* Colonne du joueur */}
+                    <div className="p-3 border rounded-lg bg-card">
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={player.photo_profil} alt={player.pseudo} />
+                          <AvatarFallback className="text-xs">
+                            {player.pseudo.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium text-sm leading-tight">{player.pseudo}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {playerAvailabilities.length > 0 
+                              ? `${playerAvailabilities.length} créneaux`
+                              : "Aucune dispo"
+                            }
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ))}
+                    </div>
+                    
+                    {/* Colonnes pour chaque jour */}
+                    {[1, 2, 3, 4, 5, 6, 0].map(dayOfWeek => {
+                      const dayAvails = playerAvailabilities
+                        .filter(avail => avail.day_of_week === dayOfWeek)
+                        .sort((a, b) => a.start_time.localeCompare(b.start_time));
+                      
+                      return (
+                        <div key={`${player.id}-${dayOfWeek}`} className="p-2 border rounded-lg bg-card min-h-[80px]">
+                          <div className="space-y-1">
+                            {dayAvails.length === 0 ? (
+                              <div className="text-xs text-muted-foreground text-center py-2 italic">
+                                Non renseigné
+                              </div>
+                            ) : (
+                              dayAvails.map((avail) => (
+                                <div 
+                                  key={avail.id}
+                                  className={`text-xs px-2 py-1 rounded border ${getTimeSlotColor(avail.start_time)}`}
+                                >
+                                  <div className="flex items-center space-x-1">
+                                    {getTimeSlotIcon(avail.start_time)}
+                                    <span className="font-medium">
+                                      {formatTime(avail.start_time)}-{formatTime(avail.end_time)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
