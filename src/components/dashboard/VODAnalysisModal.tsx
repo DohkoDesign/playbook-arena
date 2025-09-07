@@ -254,6 +254,7 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                               <YouTubePlayer
                                 videoId={getYouTubeVideoId(selectedVOD.url)!}
                                 timestamps={parsedTimestamps}
+                                isPlayerView={isPlayerView}
                               />
                                 )}
                                 {selectedVOD.platform === 'twitch' && (
@@ -281,17 +282,17 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                                     <div className="space-y-2">
                                       {parsedTimestamps.map((timestamp: any, index: number) => (
                                         <Card key={index} className="p-3">
-                                          <div className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                              <Badge variant="outline">
-                                                {Math.floor(timestamp.time / 60)}:{String(timestamp.time % 60).padStart(2, '0')}
-                                              </Badge>
-                                              {timestamp.type && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                  {timestamp.type}
-                                                </Badge>
-                                              )}
-                                            </div>
+                                         <div className="space-y-2">
+                                           <div className="flex items-center justify-between">
+                                             <Badge variant="default" className="bg-primary text-primary-foreground font-mono">
+                                               {Math.floor(timestamp.time / 60)}:{String(timestamp.time % 60).padStart(2, '0')}
+                                             </Badge>
+                                             {timestamp.type && (
+                                               <Badge variant="secondary" className="text-xs">
+                                                 {timestamp.type}
+                                               </Badge>
+                                             )}
+                                           </div>
                                             <p className="text-sm">{timestamp.comment}</p>
                                             {timestamp.player && (
                                               <p className="text-xs text-muted-foreground">
@@ -336,6 +337,7 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                               <YouTubePlayer
                                 videoId={getYouTubeVideoId(selectedVOD.url)!}
                                 timestamps={[]}
+                                isPlayerView={isPlayerView}
                               />
                             )}
                             {selectedVOD.platform === 'twitch' && (

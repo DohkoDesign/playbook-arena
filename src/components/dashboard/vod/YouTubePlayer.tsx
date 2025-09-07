@@ -31,6 +31,7 @@ interface YouTubePlayerProps {
   onSeekTo?: (time: number) => void;
   timestamps?: Timestamp[];
   onPlayerReady?: (playerInstance: any) => void;
+  isPlayerView?: boolean;
 }
 
 export const YouTubePlayer = ({ 
@@ -40,7 +41,8 @@ export const YouTubePlayer = ({
   onAddTimestamp, 
   onSeekTo,
   timestamps = [],
-  onPlayerReady
+  onPlayerReady,
+  isPlayerView = false
 }: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -210,18 +212,18 @@ export const YouTubePlayer = ({
             {timestamps.map((timestamp) => {
               const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
               const markerColors = {
-                important: "bg-blue-500",
-                error: "bg-red-500", 
-                success: "bg-green-500",
-                strategy: "bg-primary",
-                "player-specific": "bg-orange-500"
+                important: "bg-primary border-2 border-primary-foreground",
+                error: "bg-destructive border-2 border-destructive-foreground", 
+                success: "bg-green-500 border-2 border-white",
+                strategy: "bg-accent border-2 border-accent-foreground",
+                "player-specific": "bg-orange-500 border-2 border-white"
               };
               
               return (
                 <div
                   key={timestamp.id}
-                  className={`absolute top-1/2 transform -translate-y-1/2 w-1 h-6 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-110 transition-transform z-10 shadow-lg`}
-                  style={{ left: `${position}%` }}
+                  className={`absolute top-1/2 transform -translate-y-1/2 w-3 h-8 ${markerColors[timestamp.type]} rounded-full cursor-pointer hover:scale-110 transition-all duration-200 z-20 shadow-lg`}
+                  style={{ left: `${position}%`, marginLeft: '-6px' }}
                   onClick={() => seekTo(timestamp.time)}
                   title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
                 />
@@ -309,49 +311,81 @@ export const YouTubePlayer = ({
         </div>
 
         {/* Actions rapides pour le coaching */}
-        <div className="border-t pt-4">
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-muted-foreground">Actions rapides:</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => seekTo(Math.max(0, currentTime - 5))}
-            >
-              -5s
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => seekTo(Math.max(0, currentTime - 15))}
-            >
-              -15s
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => seekTo(Math.min(duration, currentTime + 15))}
-            >
-              +15s
-            </Button>
-            <Button
-              onClick={() => {
-                // Récupérer le temps actuel exact du lecteur
-                const exactTime = player ? player.getCurrentTime() : currentTime;
-                
-                // Mettre en pause avant d'ouvrir le modal
-                if (player && isPlaying) {
-                  player.pauseVideo();
-                }
-                
-                // Utiliser la fonction callback pour ajouter un marqueur avec le temps exact
-                onAddTimestamp?.(exactTime);
-              }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              📍 Ajouter Marker
-            </Button>
+        {!isPlayerView && (
+          <div className="border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-muted-foreground">Actions rapides:</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.max(0, currentTime - 5))}
+              >
+                -5s
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.max(0, currentTime - 15))}
+              >
+                -15s
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.min(duration, currentTime + 15))}
+              >
+                +15s
+              </Button>
+              <Button
+                onClick={() => {
+                  // Récupérer le temps actuel exact du lecteur
+                  const exactTime = player ? player.getCurrentTime() : currentTime;
+                  
+                  // Mettre en pause avant d'ouvrir le modal
+                  if (player && isPlaying) {
+                    player.pauseVideo();
+                  }
+                  
+                  // Utiliser la fonction callback pour ajouter un marqueur avec le temps exact
+                  onAddTimestamp?.(exactTime);
+                }}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                📍 Ajouter Marker
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Navigation rapide pour les joueurs */}
+        {isPlayerView && (
+          <div className="border-t pt-4">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-muted-foreground">Navigation rapide:</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.max(0, currentTime - 5))}
+              >
+                -5s
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.max(0, currentTime - 15))}
+              >
+                -15s
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => seekTo(Math.min(duration, currentTime + 15))}
+              >
+                +15s
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
