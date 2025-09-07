@@ -85,7 +85,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   const [loading, setLoading] = useState(false);
   
   const [showFilters, setShowFilters] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [currentPlayerTime, setCurrentPlayerTime] = useState(0);
   const [showMarkerModal, setShowMarkerModal] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
@@ -349,119 +348,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
   };
 
-  if (isFullscreen && selectedVOD && getCurrentVOD()) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black flex flex-col">
-        {/* Header pleine page */}
-        <div className="bg-gradient-to-r from-background/95 to-background/80 backdrop-blur-sm border-b p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsFullscreen(false)}
-              className="text-white hover:bg-white/10"
-            >
-              <ChevronDown className="w-4 h-4 mr-2" />
-              Retour
-            </Button>
-            <div>
-              <h2 className="text-lg font-semibold text-white">{selectedVOD.events?.titre}</h2>
-              <p className="text-sm text-white/70">{getCurrentVOD()?.title || getCurrentVOD()?.player || 'VOD'}</p>
-            </div>
-          </div>
-          
-          {selectedVOD.vods.length > 1 && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-white/70">VOD:</span>
-              <Select 
-                value={selectedVODIndex.toString()} 
-                onValueChange={(value) => setSelectedVODIndex(parseInt(value))}
-              >
-                <SelectTrigger className="w-48 bg-white/10 border-white/20 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {selectedVOD.vods.map((vod, index) => (
-                    <SelectItem key={index} value={index.toString()}>
-                      {vod.title || vod.player || `VOD ${index + 1}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        {/* Lecteur pleine page */}
-        <div className="flex-1 flex">
-          <div className="flex-1 bg-black">
-            <div className="w-full h-full">
-              <YouTubePlayer
-                videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}  
-                onTimeUpdate={setCurrentPlayerTime}
-                onAddTimestamp={handleAddTimestamp}
-                onSeekTo={(time) => setCurrentPlayerTime(time)}
-                timestamps={currentReview?.timestamps || []}
-                onPlayerReady={(playerInstance) => setYoutubePlayer(playerInstance)}
-              />
-            </div>
-          </div>
-          
-          {/* Panel d'annotations latéral */}
-          <div className="w-96 bg-background border-l flex flex-col max-h-screen">
-            <div className="p-4 border-b">
-              <h3 className="font-semibold">Annotations en Direct</h3>
-            </div>
-            <div className="flex-1 overflow-auto p-4">
-              <Tabs defaultValue="timestamps" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="timestamps" className="text-xs">
-                    <Clock className="w-3 h-3 mr-1" />
-                    Timestamps
-                  </TabsTrigger>
-                  <TabsTrigger value="notes" className="text-xs">
-                    <FileText className="w-3 h-3 mr-1" />
-                    Notes
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="timestamps" className="mt-4">
-                  <div className="space-y-2">
-                    <TimestampManager 
-                      timestamps={currentReview?.timestamps || []}
-                      onTimestampsChange={(timestamps) => {
-                        if (currentReview) {
-                          const updated = { ...currentReview, timestamps };
-                          setCurrentReview(updated);
-                          saveReviewSession({ timestamps });
-                        }
-                      }}
-                      teamId={teamId}
-                    />
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="notes" className="mt-4">
-                  <div className="space-y-2">
-                    <CoachingNotes 
-                      notes={currentReview?.notes || ""}
-                      onNotesChange={(notes) => {
-                        if (currentReview) {
-                          const updated = { ...currentReview, notes };
-                          setCurrentReview(updated);
-                          saveReviewSession({ notes });
-                        }
-                      }}
-                    />
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -588,15 +474,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
                     </div>
                   )}
                   
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsFullscreen(true)}
-                    className="flex items-center space-x-2"
-                  >
-                    <Maximize className="w-4 h-4" />
-                    <span>Plein Écran</span>
-                  </Button>
                   
                   <div className="flex items-center space-x-2">
                     <Badge variant="outline">
