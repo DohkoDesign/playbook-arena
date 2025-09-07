@@ -342,6 +342,7 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUs
           session={selectedSession}
           teamId={teamId}
           currentUserId={currentUserId}
+          isPlayerView={isPlayerView}
         />
       )}
     </div>

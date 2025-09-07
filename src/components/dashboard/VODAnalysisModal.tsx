@@ -16,6 +16,7 @@ interface VODAnalysisModalProps {
   session: any;
   teamId: string;
   currentUserId?: string;
+  isPlayerView?: boolean;
 }
 
 interface VODReview {
@@ -27,7 +28,7 @@ interface VODReview {
   team_id: string;
 }
 
-export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUserId }: VODAnalysisModalProps) => {
+export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUserId, isPlayerView = false }: VODAnalysisModalProps) => {
   const [vodReviews, setVodReviews] = useState<VODReview[]>([]);
   const [selectedVOD, setSelectedVOD] = useState<any>(null);
   const [selectedReview, setSelectedReview] = useState<VODReview | null>(null);
@@ -250,10 +251,10 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                             <TabsContent value="viewer" className="flex-1 mt-4">
                               <div className="h-full">
                                 {selectedVOD.platform === 'youtube' && getYouTubeVideoId(selectedVOD.url) && (
-                                  <YouTubePlayer
-                                    videoId={getYouTubeVideoId(selectedVOD.url)!}
-                                    timestamps={parsedTimestamps}
-                                  />
+                              <YouTubePlayer
+                                videoId={getYouTubeVideoId(selectedVOD.url)!}
+                                timestamps={parsedTimestamps}
+                              />
                                 )}
                                 {selectedVOD.platform === 'twitch' && (
                                   <div className="aspect-video">

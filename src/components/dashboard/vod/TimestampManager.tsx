@@ -35,6 +35,7 @@ interface TimestampManagerProps {
   onTimestampsChange: (timestamps: Timestamp[]) => void;
   teamId: string;
   onJumpToTime?: (time: number) => void;
+  isPlayerView?: boolean;
 }
 
 const timestampTypes = {
@@ -45,7 +46,7 @@ const timestampTypes = {
   "player-specific": { icon: User, color: "bg-orange-100 text-orange-800", label: "Joueur spécifique" }
 };
 
-export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJumpToTime }: TimestampManagerProps) => {
+export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJumpToTime, isPlayerView = false }: TimestampManagerProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingTimestamp, setEditingTimestamp] = useState({
@@ -193,17 +194,19 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
             Timeline & Timestamps ({timestamps.length})
           </h3>
         </div>
-        <Button 
-          onClick={() => setIsAdding(true)}
-          className="flex items-center space-x-2"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Ajouter</span>
-        </Button>
+        {!isPlayerView && (
+          <Button 
+            onClick={() => setIsAdding(true)}
+            className="flex items-center space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Ajouter</span>
+          </Button>
+        )}
       </div>
 
       {/* Formulaire d'ajout */}
-      {isAdding && (
+      {!isPlayerView && isAdding && (
         <Card className="border-primary/20">
           <CardHeader>
             <CardTitle className="text-lg">Nouveau Timestamp</CardTitle>
@@ -446,23 +449,25 @@ export const TimestampManager = ({ timestamps, onTimestampsChange, teamId, onJum
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => startEditing(timestamp)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteTimestamp(timestamp.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    {!isPlayerView && (
+                      <div className="flex items-center space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditing(timestamp)}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteTimestamp(timestamp.id)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
