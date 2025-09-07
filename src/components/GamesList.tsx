@@ -12,7 +12,7 @@ const POPULAR_GAMES = [
 
 export const GamesList = () => {
   return (
-    <section id="games" className="py-20 px-6 bg-muted/30">
+    <section id="games" className="py-20 px-6 bg-white dark:bg-card">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
