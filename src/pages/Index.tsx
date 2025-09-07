@@ -56,21 +56,30 @@ const Index = () => {
       console.log("👥 Team members:", teamMembers);
 
       // Redirection selon le rôle et le statut
-      if (profileData?.role === "staff" || (createdTeams && createdTeams.length > 0)) {
-        console.log("🚀 Redirecting to management dashboard");
+      // Priorité 1: Si l'utilisateur a créé des équipes (owner)
+      if (createdTeams && createdTeams.length > 0) {
+        console.log("🚀 Redirecting to management dashboard (team owner)");
         navigate("/dashboard");
-      } else if (teamMembers && teamMembers.length > 0) {
+      } 
+      // Priorité 2: Si l'utilisateur est membre d'une équipe
+      else if (teamMembers && teamMembers.length > 0) {
         const hasManagementRole = teamMembers.some(tm => 
           ['owner', 'manager', 'coach'].includes(tm.role)
         );
         if (hasManagementRole) {
-          console.log("👑 Redirecting to management dashboard");
+          console.log("👑 Redirecting to management dashboard (management role)");
           navigate("/dashboard");
         } else {
           console.log("🎮 Redirecting to player dashboard");
           navigate("/player");
         }
-      } else {
+      } 
+      // Priorité 3: Si l'utilisateur est staff mais sans équipe
+      else if (profileData?.role === "staff") {
+        console.log("🚀 Redirecting to management dashboard (staff role)");
+        navigate("/dashboard");
+      } 
+      else {
         console.log("🆕 New user without team, staying on Index");
       }
     } catch (error) {
