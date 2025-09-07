@@ -60,7 +60,7 @@ export class TeamStatsService {
         // Membres de l'équipe
         supabase
           .from("team_members")
-          .select("id, role, created_at, profiles(pseudo)")
+          .select("id, role, created_at")
           .eq("team_id", teamId),
         
         // Événements

@@ -58,11 +58,8 @@ export const YouTubePlayer = ({
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
-  const [hoveredTimestamp, setHoveredTimestamp] = useState<Timestamp | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showControls, setShowControls] = useState(true);
   const [mouseTimer, setMouseTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isHoveringTooltip, setIsHoveringTooltip] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
@@ -310,24 +307,6 @@ export const YouTubePlayer = ({
                         className={`absolute top-0 w-4 h-6 ${markerColors[timestamp.type]} cursor-pointer hover:scale-125 transition-all duration-200 z-50 shadow-lg rounded-sm border-2 border-white`}
                         style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
                         onClick={() => seekTo(timestamp.time)}
-                        onMouseEnter={(e) => {
-                          setHoveredTimestamp(timestamp);
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setTooltipPosition({
-                            x: rect.left + rect.width / 2,
-                            y: rect.top - 10
-                          });
-                        }}
-                        onMouseLeave={(e) => {
-                          const relatedTarget = e.relatedTarget as HTMLElement;
-                          if (!relatedTarget || !relatedTarget.closest('[data-tooltip]')) {
-                            setTimeout(() => {
-                              if (!isHoveringTooltip) {
-                                setHoveredTimestamp(null);
-                              }
-                            }, 100);
-                          }
-                        }}
                       >
                         <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
                       </div>
@@ -423,65 +402,6 @@ export const YouTubePlayer = ({
           </div>
         </div>
 
-        {/* Tooltip pour les markers en mode plein écran */}
-        {hoveredTimestamp && (
-          <div 
-            className="fixed z-[100] bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs"
-            style={{
-              left: tooltipPosition.x - 150,
-              top: tooltipPosition.y - 120,
-              transform: 'translateX(-50%)'
-            }}
-          >
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {formatTime(hoveredTimestamp.time)}
-                </span>
-                <span className={`text-xs px-2 py-1 rounded-full capitalize ${
-                  hoveredTimestamp.type === 'important' ? 'bg-blue-100 text-blue-700' :
-                  hoveredTimestamp.type === 'error' ? 'bg-red-100 text-red-700' :
-                  hoveredTimestamp.type === 'success' ? 'bg-green-100 text-green-700' :
-                  hoveredTimestamp.type === 'strategy' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-orange-100 text-orange-700'
-                }`}>
-                  {hoveredTimestamp.type}
-                </span>
-              </div>
-              <p className="text-sm font-medium">{hoveredTimestamp.comment}</p>
-              {hoveredTimestamp.player && (
-                <p className="text-xs text-muted-foreground">
-                  Joueur: {hoveredTimestamp.player}
-                </p>
-              )}
-              {hoveredTimestamp.category && (
-                <p className="text-xs text-muted-foreground">
-                  Catégorie: {hoveredTimestamp.category}
-                </p>
-              )}
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => seekTo(hoveredTimestamp.time)}
-                  className="text-xs"
-                >
-                  Aller au moment
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={() => {
-                    console.log("Afficher détails pour:", hoveredTimestamp.id);
-                  }}
-                  className="text-xs"
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  Détails
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     );
   }
@@ -530,26 +450,7 @@ export const YouTubePlayer = ({
                     key={timestamp.id}
                     className={`absolute top-0 w-4 h-6 ${markerColors[timestamp.type]} cursor-pointer hover:scale-125 transition-all duration-200 z-50 shadow-lg rounded-sm border-2 border-white`}
                     style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
-                    onClick={() => seekTo(timestamp.time)}
-                    onMouseEnter={(e) => {
-                      setHoveredTimestamp(timestamp);
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setTooltipPosition({
-                        x: rect.left + rect.width / 2,
-                        y: rect.top - 10
-                      });
-                    }}
-                    onMouseLeave={(e) => {
-                      // Ne fermer que si on ne va pas vers la tooltip
-                      const relatedTarget = e.relatedTarget as HTMLElement;
-                      if (!relatedTarget || !relatedTarget.closest('[data-tooltip]')) {
-                        setTimeout(() => {
-                          if (!isHoveringTooltip) {
-                            setHoveredTimestamp(null);
-                          }
-                        }, 100);
-                      }
-                    }}
+                        onClick={() => seekTo(timestamp.time)}
                   >
                     {/* Petit triangle en haut */}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
@@ -628,14 +529,6 @@ export const YouTubePlayer = ({
             ))}
           </div>
 
-          {/* Plein écran */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleFullscreen}
-          >
-            <Maximize className="w-4 h-4" />
-          </Button>
         </div>
 
         {/* Actions rapides pour le coaching */}
@@ -715,77 +608,6 @@ export const YouTubePlayer = ({
           </div>
         )}
       </div>
-      
-      {/* Tooltip pour les markers */}
-      {hoveredTimestamp && (
-        <div 
-          data-tooltip
-          className="fixed z-[100] bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs"
-          style={{
-            left: tooltipPosition.x - 150,
-            top: tooltipPosition.y - 120,
-            transform: 'translateX(-50%)'
-          }}
-          onMouseEnter={() => setIsHoveringTooltip(true)}
-          onMouseLeave={() => {
-            setIsHoveringTooltip(false);
-            setTimeout(() => {
-              if (!isHoveringTooltip) {
-                setHoveredTimestamp(null);
-              }
-            }, 100);
-          }}
-        >
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">
-                {formatTime(hoveredTimestamp.time)}
-              </span>
-              <span className={`text-xs px-2 py-1 rounded-full capitalize ${
-                hoveredTimestamp.type === 'important' ? 'bg-blue-100 text-blue-700' :
-                hoveredTimestamp.type === 'error' ? 'bg-red-100 text-red-700' :
-                hoveredTimestamp.type === 'success' ? 'bg-green-100 text-green-700' :
-                hoveredTimestamp.type === 'strategy' ? 'bg-yellow-100 text-yellow-700' :
-                'bg-orange-100 text-orange-700'
-              }`}>
-                {hoveredTimestamp.type}
-              </span>
-            </div>
-            <p className="text-sm font-medium">{hoveredTimestamp.comment}</p>
-            {hoveredTimestamp.player && (
-              <p className="text-xs text-muted-foreground">
-                Joueur: {hoveredTimestamp.player}
-              </p>
-            )}
-            {hoveredTimestamp.category && (
-              <p className="text-xs text-muted-foreground">
-                Catégorie: {hoveredTimestamp.category}
-              </p>
-            )}
-            <div className="flex gap-2 pt-2">
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => seekTo(hoveredTimestamp.time)}
-                className="text-xs"
-              >
-                Aller au moment
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={() => {
-                  // Ajouter logique pour afficher les détails
-                  console.log("Afficher détails pour:", hoveredTimestamp.id);
-                }}
-                className="text-xs"
-              >
-                <Eye className="w-3 h-3 mr-1" />
-                Détails
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

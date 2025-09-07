@@ -302,19 +302,19 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                               <div className="h-full">
                                 {selectedVOD.platform === 'youtube' && getYouTubeVideoId(selectedVOD.url) && (
                                   <div className="space-y-2">
-                                    {/* Bouton éditeur plein écran pour les joueurs */}
-                                    {isPlayerView && (
-                                      <div className="flex justify-end">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => setShowFullscreenEditor(true)}
-                                          className="mb-2"
-                                        >
-                                          🎬 Éditeur plein écran
-                                        </Button>
-                                      </div>
-                                    )}
+                                     {/* Bouton éditeur plein écran pour le staff seulement */}
+                                     {!isPlayerView && (
+                                       <div className="flex justify-end">
+                                         <Button
+                                           variant="outline"
+                                           size="sm"
+                                           onClick={() => setShowFullscreenEditor(true)}
+                                           className="mb-2"
+                                         >
+                                           🎬 Éditeur plein écran
+                                         </Button>
+                                       </div>
+                                     )}
                                     <YouTubePlayer
                                       videoId={getYouTubeVideoId(selectedVOD.url)!}
                                       timestamps={parsedTimestamps}
