@@ -40,9 +40,9 @@ export const PlayerSidebar = ({
     }
   ];
   
-  // Récupérer le logo de l'organisation depuis localStorage
-  const organizationLogo = localStorage.getItem("organization_logo");
-  const organizationName = localStorage.getItem("organization_name") || "Esport Manager";
+  // Utiliser les données de l'équipe
+  const teamLogo = teamData?.logo;
+  const teamName = teamData?.nom || "Équipe non assignée";
 
   // Obtenir le nom du jeu pour l'équipe
   const getGameDisplayName = (gameType: string) => {
@@ -60,12 +60,12 @@ export const PlayerSidebar = ({
 
   return (
     <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-8">
-      {/* Header avec logo de l'organisation */}
+      {/* Header avec logo de l'équipe */}
       <div className="flex items-center space-x-3">
-        {organizationLogo ? (
+        {teamLogo ? (
           <img 
-            src={organizationLogo} 
-            alt="Logo de l'organisation" 
+            src={teamLogo} 
+            alt={`Logo de ${teamName}`} 
             className="w-10 h-10 rounded-2xl object-cover shadow-md"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
@@ -73,12 +73,16 @@ export const PlayerSidebar = ({
           />
         ) : (
           <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg">EM</span>
+            <span className="text-white font-bold text-lg">
+              {teamName.charAt(0).toUpperCase()}
+            </span>
           </div>
         )}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{organizationName}</h1>
-          <p className="text-xs text-muted-foreground">Esport Manager</p>
+          <h1 className="text-xl font-semibold tracking-tight">{teamName}</h1>
+          <p className="text-xs text-muted-foreground">
+            {teamData ? getGameDisplayName(teamData.jeu) : "Esport Manager"}
+          </p>
         </div>
       </div>
 
