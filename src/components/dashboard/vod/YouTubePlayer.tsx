@@ -212,11 +212,11 @@ export const YouTubePlayer = ({
             {timestamps.map((timestamp) => {
               const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
               const markerColors = {
-                important: "bg-primary border-2 border-primary-foreground",
-                error: "bg-destructive border-2 border-destructive-foreground", 
-                success: "bg-green-500 border-2 border-white",
-                strategy: "bg-accent border-2 border-accent-foreground",
-                "player-specific": "bg-orange-500 border-2 border-white"
+                important: "bg-primary border-2 border-background shadow-lg",
+                error: "bg-destructive border-2 border-background shadow-lg", 
+                success: "bg-green-500 border-2 border-background shadow-lg",
+                strategy: "bg-yellow-500 border-2 border-background shadow-lg",
+                "player-specific": "bg-orange-500 border-2 border-background shadow-lg"
               };
               
               return (
