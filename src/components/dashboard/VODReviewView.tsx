@@ -94,8 +94,17 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
 
   // Fonction utilitaire pour obtenir la VOD courante
   const getCurrentVOD = () => {
-    if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
-    return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
+    console.log('getCurrentVOD called - selectedVOD:', selectedVOD);
+    console.log('selectedVODIndex:', selectedVODIndex);
+    
+    if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) {
+      console.log('getCurrentVOD returning null - no valid selectedVOD');
+      return null;
+    }
+    
+    const vod = selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
+    console.log('getCurrentVOD returning:', vod);
+    return vod;
   };
 
   useEffect(() => {
@@ -300,13 +309,35 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     }
   };
 
-  const getYouTubeVideoId = (url: string | undefined | null): string | null => {
-    if (!url || typeof url !== 'string') {
+  const getYouTubeVideoId = (url: any): string | null => {
+    console.log('getYouTubeVideoId called with:', url, typeof url);
+    
+    // Gestion robuste de tous les types d'entrées
+    if (url === null || url === undefined) {
+      console.log('url is null or undefined');
       return null;
     }
-    const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
+    
+    if (typeof url !== 'string') {
+      console.log('url is not a string, type:', typeof url);
+      return null;
+    }
+    
+    if (url.trim() === '') {
+      console.log('url is empty string');
+      return null;
+    }
+    
+    try {
+      const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
+      const match = url.match(regex);
+      const result = match ? match[1] : null;
+      console.log('getYouTubeVideoId result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in getYouTubeVideoId:', error);
+      return null;
+    }
   };
 
   const filteredVODs = vodSessions.filter(vod => {
