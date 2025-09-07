@@ -90,40 +90,26 @@ export const PlayerSidebar = ({
 
   return (
     <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-6">
-      {/* Header avec photo de profil joueur */}
+      {/* Header avec logo de l'équipe */}
       <div className="flex items-center space-x-3">
-        <Avatar className="w-10 h-10 ring-2 ring-border">
-          <AvatarImage src={userAvatar} />
-          <AvatarFallback className="bg-gradient-brand text-white font-medium">
-            {userName ? userName.charAt(0).toUpperCase() : "J"}
-          </AvatarFallback>
-        </Avatar>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight">{userName || "Joueur"}</h1>
-          <p className="text-xs text-muted-foreground">Joueur</p>
-        </div>
-      </div>
-
-      {/* Team info */}
-      <div className="flex items-center space-x-3 p-3 bg-accent/30 rounded-xl border border-border/50">
         {teamLogo ? (
           <img 
             src={teamLogo} 
             alt={`Logo de ${teamName}`} 
-            className="w-8 h-8 rounded-xl object-cover shadow-sm"
+            className="w-10 h-10 rounded-xl object-cover ring-2 ring-border shadow-sm"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
           />
         ) : (
-          <div className="w-8 h-8 bg-gradient-brand rounded-xl flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-sm">
+          <div className="w-10 h-10 bg-gradient-brand rounded-xl flex items-center justify-center ring-2 ring-border shadow-sm">
+            <span className="text-white font-bold text-lg">
               {teamName.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
         <div>
-          <h2 className="text-sm font-medium">{teamName}</h2>
+          <h1 className="text-lg font-semibold tracking-tight">{teamName}</h1>
           <p className="text-xs text-muted-foreground">
             {teamData ? getGameDisplayName(teamData.jeu) : "Esport Manager"}
           </p>
