@@ -25,10 +25,11 @@ const Index = () => {
     } else {
       console.log("🚫 No user found, staying on Index");
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const checkUserTeamsAndRedirect = async (currentUser: any) => {
     console.log("🔍 Checking user teams for redirect");
+    console.log("🔍 Current user ID:", currentUser.id);
     try {
       // Vérifier le profil de l'utilisateur
       const { data: profileData, error: profileError } = await supabase
@@ -63,7 +64,9 @@ const Index = () => {
       // Priorité 1: Si l'utilisateur a créé des équipes (owner)
       if (createdTeams && createdTeams.length > 0) {
         console.log("🚀 Redirecting to management dashboard (team owner)");
+        console.log("🚀 Navigation called with /dashboard");
         navigate("/dashboard");
+        return; // Important: arrêter l'exécution après redirection
       } 
       // Priorité 2: Si l'utilisateur est membre d'une équipe
       else if (teamMembers && teamMembers.length > 0) {
@@ -72,16 +75,22 @@ const Index = () => {
         );
         if (hasManagementRole) {
           console.log("👑 Redirecting to management dashboard (management role)");
+          console.log("👑 Navigation called with /dashboard");
           navigate("/dashboard");
+          return;
         } else {
           console.log("🎮 Redirecting to player dashboard");
+          console.log("🎮 Navigation called with /player");
           navigate("/player");
+          return;
         }
       } 
       // Priorité 3: Si l'utilisateur est staff mais sans équipe
       else if (profileData?.role === "staff") {
         console.log("👔 Staff detected without teams, redirecting to dashboard");
+        console.log("👔 Navigation called with /dashboard");
         navigate("/dashboard");
+        return;
       } 
       else {
         console.log("🆕 New user without team, staying on Index");
