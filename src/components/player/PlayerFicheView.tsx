@@ -166,7 +166,7 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
         <h1 className="text-2xl font-bold">Ma Fiche</h1>
       </div>
 
-      <div className="max-w-4xl space-y-6">
+      <div className="space-y-6">
         {/* Profil principal */}
         <Card>
           <CardContent className="p-8">
@@ -275,34 +275,6 @@ export const PlayerFicheView = ({ teamId, playerId, userProfile, teamData }: Pla
             </CardContent>
           </Card>
         </div>
-
-        {/* Objectifs individuels */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingUp className="w-5 h-5 mr-2 text-primary" />
-              Objectifs Individuels
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {profile.objectifs_individuels.length > 0 ? (
-              <div className="space-y-3">
-                {profile.objectifs_individuels.map((objectif, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/30">
-                    <div className="w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-primary font-semibold text-xs">{index + 1}</span>
-                    </div>
-                    <p className="text-sm">{objectif}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                Aucun objectif défini par le staff
-              </p>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Notes du staff */}
         {profile.notes && (
