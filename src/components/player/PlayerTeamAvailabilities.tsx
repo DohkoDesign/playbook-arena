@@ -77,6 +77,8 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     try {
       setLoading(true);
       
+      console.log("🔍 Fetching team data for team:", teamId);
+      
       // Récupérer les membres avec leurs profils
       const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
@@ -84,16 +86,28 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         .eq("team_id", teamId)
         .in("role", ["joueur", "remplacant", "capitaine", "owner"]);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("❌ Error fetching team members:", membersError);
+        throw membersError;
+      }
+      
+      console.log("✅ Team members found:", teamMembers?.length || 0);
 
       // Récupérer les profils séparément
       const userIds = teamMembers?.map(m => m.user_id) || [];
+      console.log("👥 Fetching profiles for userIds:", userIds);
+      
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, pseudo, photo_profil")
         .in("user_id", userIds);
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("❌ Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
+      
+      console.log("✅ Profiles found:", profiles?.length || 0, profiles);
 
       const playersData: PlayerInfo[] = teamMembers?.map(member => {
         const profile = profiles?.find(p => p.user_id === member.user_id);
@@ -104,21 +118,29 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         };
       }) || [];
 
+      console.log("🎯 Final players data:", playersData);
       setPlayers(playersData);
 
       // Récupérer les disponibilités
       const weekStart = getWeekStart(selectedWeek);
+      console.log("📅 Fetching availabilities for week:", weekStart);
+      
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
         .from("player_availabilities")
         .select("*")
         .eq("team_id", teamId)
         .eq("week_start", weekStart);
 
-      if (availabilitiesError) throw availabilitiesError;
+      if (availabilitiesError) {
+        console.error("❌ Error fetching availabilities:", availabilitiesError);
+        throw availabilitiesError;
+      }
+      
+      console.log("✅ Availabilities found:", availabilitiesData?.length || 0);
       setAvailabilities(availabilitiesData || []);
 
     } catch (error: any) {
-      console.error("Erreur chargement:", error);
+      console.error("❌ Error in fetchData:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les disponibilités",
