@@ -9,7 +9,8 @@ import {
   Youtube,
   Twitch,
   Video,
-  User
+  User,
+  Edit
 } from "lucide-react";
 import { YouTubePlayer } from "./vod/YouTubePlayer";
 
@@ -31,6 +32,7 @@ interface VODViewerProps {
 
 export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VODViewerProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showFullscreenEditor, setShowFullscreenEditor] = useState(false);
 
   const getYouTubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
@@ -50,6 +52,22 @@ export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VOD
 
   const isYouTube = vod.platform === 'youtube' || vod.url.includes('youtube.com') || vod.url.includes('youtu.be');
   const videoId = isYouTube ? getYouTubeVideoId(vod.url) : null;
+
+  // Mode éditeur plein écran
+  if (showFullscreenEditor) {
+    return (
+      <YouTubePlayer
+        videoId={videoId || ''}
+        showFullscreenEditor={true}
+        onCloseFullscreen={() => setShowFullscreenEditor(false)}
+        onTimeUpdate={() => {}}
+        onAddTimestamp={() => {}}
+        onSeekTo={() => {}}
+        timestamps={[]}
+        onPlayerReady={() => {}}
+      />
+    );
+  }
 
   if (isFullscreen) {
     return (
@@ -151,14 +169,24 @@ export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VOD
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsFullscreen(true)}
+                title="Mode cinéma"
               >
                 <PlayCircle className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFullscreenEditor(true)}
+                title="Éditeur plein écran"
+              >
+                <Edit className="w-4 h-4" />
               </Button>
               {showExternalLink && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => window.open(vod.url, '_blank')}
+                  title="Ouvrir l'original"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </Button>
@@ -181,16 +209,18 @@ export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VOD
             </div>
           )}
 
-          <div className="aspect-video bg-black rounded-lg overflow-hidden">
+          <div className="aspect-video bg-black rounded-lg overflow-hidden max-h-[50vh]">
             {isYouTube && videoId ? (
-              <YouTubePlayer
-                videoId={videoId}
-                onTimeUpdate={() => {}}
-                onAddTimestamp={() => {}}
-                onSeekTo={() => {}}
-                timestamps={[]}
-                onPlayerReady={() => {}}
-              />
+              <div className="h-full overflow-y-auto">
+                <YouTubePlayer
+                  videoId={videoId}
+                  onTimeUpdate={() => {}}
+                  onAddTimestamp={() => {}}
+                  onSeekTo={() => {}}
+                  timestamps={[]}
+                  onPlayerReady={() => {}}
+                />
+              </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <div className="text-center text-white">

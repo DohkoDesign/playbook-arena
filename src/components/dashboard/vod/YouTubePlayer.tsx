@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import YouTube, { YouTubeProps } from "react-youtube";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -11,7 +11,9 @@ import {
   VolumeX,
   Maximize,
   Settings,
-  Eye
+  Eye,
+  Minimize,
+  X
 } from "lucide-react";
 
 interface Timestamp {
@@ -33,6 +35,8 @@ interface YouTubePlayerProps {
   timestamps?: Timestamp[];
   onPlayerReady?: (playerInstance: any) => void;
   isPlayerView?: boolean;
+  showFullscreenEditor?: boolean;
+  onCloseFullscreen?: () => void;
 }
 
 export const YouTubePlayer = ({ 
@@ -43,7 +47,9 @@ export const YouTubePlayer = ({
   onSeekTo,
   timestamps = [],
   onPlayerReady,
-  isPlayerView = false
+  isPlayerView = false,
+  showFullscreenEditor = false,
+  onCloseFullscreen
 }: YouTubePlayerProps) => {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -54,10 +60,13 @@ export const YouTubePlayer = ({
   const [playbackRate, setPlaybackRate] = useState(1);
   const [hoveredTimestamp, setHoveredTimestamp] = useState<Timestamp | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [showControls, setShowControls] = useState(true);
+  const [mouseTimer, setMouseTimer] = useState<NodeJS.Timeout | null>(null);
   const intervalRef = useRef<NodeJS.Timeout>();
+  const fullscreenRef = useRef<HTMLDivElement>(null);
 
   const opts: YouTubeProps['opts'] = {
-    height: '320',
+    height: showFullscreenEditor ? '100vh' : '320',
     width: '100%',
     playerVars: {
       autoplay: 0,
@@ -98,13 +107,47 @@ export const YouTubePlayer = ({
     }
   };
 
+  // Gestion du mouvement de souris pour les contrôles en mode plein écran
+  const handleMouseMove = useCallback(() => {
+    if (!showFullscreenEditor) return;
+    
+    setShowControls(true);
+    
+    if (mouseTimer) {
+      clearTimeout(mouseTimer);
+    }
+    
+    const timer = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+    
+    setMouseTimer(timer);
+  }, [showFullscreenEditor, mouseTimer]);
+
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      if (mouseTimer) {
+        clearTimeout(mouseTimer);
+      }
     };
-  }, []);
+  }, [mouseTimer]);
+
+  // Gérer les événements de souris en mode plein écran
+  useEffect(() => {
+    if (showFullscreenEditor && fullscreenRef.current) {
+      const element = fullscreenRef.current;
+      element.addEventListener('mousemove', handleMouseMove);
+      element.addEventListener('mouseenter', handleMouseMove);
+      
+      return () => {
+        element.removeEventListener('mousemove', handleMouseMove);
+        element.removeEventListener('mouseenter', handleMouseMove);
+      };
+    }
+  }, [showFullscreenEditor, handleMouseMove]);
 
   // Debug: Afficher les timestamps reçus
   useEffect(() => {
@@ -191,8 +234,251 @@ export const YouTubePlayer = ({
     );
   }
 
+  // Mode plein écran
+  if (showFullscreenEditor) {
+    return (
+      <div 
+        ref={fullscreenRef}
+        className="fixed inset-0 z-50 bg-black cursor-none"
+        onMouseMove={handleMouseMove}
+      >
+        {/* Lecteur YouTube en plein écran */}
+        <div className="w-full h-full">
+          <YouTube
+            videoId={videoId}
+            opts={opts}
+            onReady={onPlayerReadyHandler}
+            onStateChange={onPlayerStateChange}
+            className="w-full h-full"
+          />
+        </div>
+
+        {/* Contrôles overlay avec animation de fondu */}
+        <div 
+          className={`absolute inset-0 transition-opacity duration-300 ${
+            showControls ? 'opacity-100' : 'opacity-0'
+          }`}
+          style={{ pointerEvents: showControls ? 'auto' : 'none' }}
+        >
+          {/* Header avec bouton fermer */}
+          <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-6">
+            <div className="flex justify-between items-center">
+              <div className="text-white">
+                <h3 className="text-lg font-semibold">Éditeur VOD</h3>
+                <p className="text-sm text-white/70">{formatTime(currentTime)} / {formatTime(duration)}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCloseFullscreen}
+                className="text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Timeline et contrôles en bas */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+            <div className="space-y-4">
+              {/* Timeline avec markers */}
+              <div className="relative">
+                <Slider
+                  value={[currentTime]}
+                  max={duration}
+                  step={1}
+                  onValueChange={(value) => seekTo(value[0])}
+                  className="w-full slider-enhanced"
+                />
+                
+                {/* Markers dans la timeline */}
+                <div className="relative w-full h-6 mt-2">
+                  {timestamps && timestamps.length > 0 && timestamps.map((timestamp) => {
+                    const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
+                    const markerColors = {
+                      important: "bg-blue-500 hover:bg-blue-600",
+                      error: "bg-red-500 hover:bg-red-600", 
+                      success: "bg-green-500 hover:bg-green-600",
+                      strategy: "bg-yellow-500 hover:bg-yellow-600",
+                      "player-specific": "bg-orange-500 hover:bg-orange-600"
+                    };
+                    
+                    return (
+                      <div
+                        key={timestamp.id}
+                        className={`absolute top-0 w-4 h-6 ${markerColors[timestamp.type]} cursor-pointer hover:scale-125 transition-all duration-200 z-50 shadow-lg rounded-sm border-2 border-white`}
+                        style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                        onClick={() => seekTo(timestamp.time)}
+                        onMouseEnter={(e) => {
+                          setHoveredTimestamp(timestamp);
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setTooltipPosition({
+                            x: rect.left + rect.width / 2,
+                            y: rect.top - 10
+                          });
+                        }}
+                        onMouseLeave={() => setHoveredTimestamp(null)}
+                      >
+                        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Contrôles principaux */}
+              <div className="flex items-center justify-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={skipBackward}
+                  className="text-white hover:bg-white/10"
+                >
+                  <SkipBack className="w-6 h-6" />
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={togglePlayPause}
+                  className="text-white hover:bg-white/10"
+                >
+                  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  onClick={skipForward}
+                  className="text-white hover:bg-white/10"
+                >
+                  <SkipForward className="w-6 h-6" />
+                </Button>
+
+                {/* Actions rapides */}
+                {!isPlayerView && (
+                  <Button
+                    onClick={() => {
+                      const exactTime = player ? player.getCurrentTime() : currentTime;
+                      if (player && isPlaying) {
+                        player.pauseVideo();
+                      }
+                      onAddTimestamp?.(exactTime);
+                    }}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground ml-8"
+                  >
+                    📍 Ajouter Marker
+                  </Button>
+                )}
+              </div>
+
+              {/* Volume et vitesse */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleMute}
+                    className="text-white hover:bg-white/10"
+                  >
+                    {isMuted || volume === 0 ? 
+                      <VolumeX className="w-4 h-4" /> : 
+                      <Volume2 className="w-4 h-4" />
+                    }
+                  </Button>
+                  <Slider
+                    value={[isMuted ? 0 : volume]}
+                    max={100}
+                    step={5}
+                    onValueChange={handleVolumeChange}
+                    className="w-24"
+                  />
+                </div>
+
+                <div className="flex items-center space-x-1">
+                  {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                    <Button
+                      key={rate}
+                      variant={playbackRate === rate ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => changePlaybackRate(rate)}
+                      className="text-xs px-2 text-white hover:bg-white/10"
+                    >
+                      {rate}x
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tooltip pour les markers en mode plein écran */}
+        {hoveredTimestamp && (
+          <div 
+            className="fixed z-[100] bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs"
+            style={{
+              left: tooltipPosition.x - 150,
+              top: tooltipPosition.y - 120,
+              transform: 'translateX(-50%)'
+            }}
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {formatTime(hoveredTimestamp.time)}
+                </span>
+                <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                  hoveredTimestamp.type === 'important' ? 'bg-blue-100 text-blue-700' :
+                  hoveredTimestamp.type === 'error' ? 'bg-red-100 text-red-700' :
+                  hoveredTimestamp.type === 'success' ? 'bg-green-100 text-green-700' :
+                  hoveredTimestamp.type === 'strategy' ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-orange-100 text-orange-700'
+                }`}>
+                  {hoveredTimestamp.type}
+                </span>
+              </div>
+              <p className="text-sm font-medium">{hoveredTimestamp.comment}</p>
+              {hoveredTimestamp.player && (
+                <p className="text-xs text-muted-foreground">
+                  Joueur: {hoveredTimestamp.player}
+                </p>
+              )}
+              {hoveredTimestamp.category && (
+                <p className="text-xs text-muted-foreground">
+                  Catégorie: {hoveredTimestamp.category}
+                </p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => seekTo(hoveredTimestamp.time)}
+                  className="text-xs"
+                >
+                  Aller au moment
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => {
+                    console.log("Afficher détails pour:", hoveredTimestamp.id);
+                  }}
+                  className="text-xs"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  Détails
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Mode popup normal avec scroll
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 max-h-[80vh] overflow-y-auto">
       {/* Lecteur YouTube */}
       <div className="relative">
         <YouTube
