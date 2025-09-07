@@ -205,10 +205,10 @@ export const YouTubePlayer = ({
       </div>
 
         {/* Contrôles personnalisés avec fond plus visible */}
-        <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
-        {/* Timeline avec markers - fond plus contrasté */}
-        <div className="space-y-2">
-          <div className="relative bg-secondary/40 p-4 rounded-lg border border-border/30">
+        <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
+          {/* Timeline avec markers - fond plus contrasté */}
+        <div className="space-y-1">
+          <div className="relative bg-secondary/40 p-2 rounded-lg border border-border/30">
             <Slider
               value={[currentTime]}
               max={duration}
@@ -218,7 +218,7 @@ export const YouTubePlayer = ({
             />
             
             {/* Markers dans la timeline - Version améliorée */}
-            <div className="relative w-full h-6 mt-2">
+            <div className="relative w-full h-6 mt-1">
               {timestamps && timestamps.length > 0 && timestamps.map((timestamp) => {
                 const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
                 const markerColors = {
@@ -252,7 +252,7 @@ export const YouTubePlayer = ({
               })}
             </div>
           </div>
-          <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-muted-foreground mt-1">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -334,7 +334,7 @@ export const YouTubePlayer = ({
 
         {/* Actions rapides pour le coaching */}
         {!isPlayerView && (
-          <div className="border-t pt-4">
+          <div className="border-t pt-2">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-muted-foreground">Actions rapides:</span>
               <Button
@@ -381,7 +381,7 @@ export const YouTubePlayer = ({
 
         {/* Navigation rapide pour les joueurs */}
         {isPlayerView && (
-          <div className="border-t pt-4">
+          <div className="border-t pt-2">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-muted-foreground">Navigation rapide:</span>
               <Button
