@@ -84,7 +84,7 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         .from("team_members")
         .select("user_id, role")
         .eq("team_id", teamId)
-        .in("role", ["joueur", "remplacant", "capitaine", "owner"]);
+        .in("role", ["joueur", "remplacant", "capitaine"]); // Exclure le staff (owner, manager, coach)
 
       if (membersError) {
         console.error("❌ Error fetching team members:", membersError);
