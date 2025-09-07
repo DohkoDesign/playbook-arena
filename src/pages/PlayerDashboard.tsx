@@ -69,18 +69,39 @@ const PlayerDashboard = () => {
     try {
       console.log("📊 Loading player data for:", user.id);
 
-      // 1. Charger le profil utilisateur complet
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+      // Requête optimisée : récupérer profil ET données d'équipe en une seule fois
+      const [profileResult, teamMemberResult] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", user.id)
+          .single(),
+        supabase
+          .from("team_members")
+          .select(`
+            role,
+            team_id,
+            teams:team_id (
+              id,
+              nom,
+              jeu
+            )
+          `)
+          .eq("user_id", user.id)
+          .limit(1)
+          .single()
+      ]);
 
-      if (profileError) {
-        console.error("❌ Profile error:", profileError);
+      // Vérifier le profil
+      if (profileResult.error) {
+        console.error("❌ Profile error:", profileResult.error);
+        if (profileResult.error.code === 'PGRST116') {
+          throw new Error("Profil utilisateur non trouvé");
+        }
         throw new Error("Impossible de charger votre profil");
       }
 
+      const profile = profileResult.data;
       console.log("👤 Profile loaded:", profile);
 
       // Vérifier que c'est bien un joueur
@@ -92,46 +113,29 @@ const PlayerDashboard = () => {
 
       setUserProfile(profile);
 
-      // 2. Charger les données de l'équipe (requête simplifiée)
-      console.log("🔍 Recherche des équipes...");
-      const { data: teamMembers, error: teamError } = await supabase
-        .from("team_members")
-        .select("role, team_id")
-        .eq("user_id", user.id);
-
-      if (teamError) {
-        console.error("❌ Team error:", teamError);
+      // Vérifier les données d'équipe
+      if (teamMemberResult.error) {
+        console.error("❌ Team error:", teamMemberResult.error);
+        if (teamMemberResult.error.code === 'PGRST116') {
+          throw new Error("Vous n'êtes membre d'aucune équipe");
+        }
         throw new Error("Impossible de charger vos équipes");
       }
 
-      console.log("🏆 Team members data:", JSON.stringify(teamMembers, null, 2));
+      const teamMember = teamMemberResult.data;
+      const teamInfo = teamMember.teams;
 
-      if (!teamMembers || teamMembers.length === 0) {
-        throw new Error("Vous n'êtes membre d'aucune équipe");
+      if (!teamInfo) {
+        throw new Error("Informations d'équipe manquantes");
       }
 
-      // 3. Charger les infos de la première équipe
-      const firstTeamMember = teamMembers[0];
-      console.log("🎯 First team member:", JSON.stringify(firstTeamMember, null, 2));
-      
-      const { data: teamInfo, error: teamInfoError } = await supabase
-        .from("teams")
-        .select("id, nom, jeu")
-        .eq("id", firstTeamMember.team_id)
-        .single();
-
-      if (teamInfoError || !teamInfo) {
-        console.error("❌ Team info error:", teamInfoError);
-        throw new Error("Impossible de charger les informations de l'équipe");
-      }
-
-      console.log("📋 Team info:", JSON.stringify(teamInfo, null, 2));
+      console.log("🏆 Team data loaded:", teamInfo);
 
       setTeamData({
         id: teamInfo.id,
         nom: teamInfo.nom,
         jeu: teamInfo.jeu,
-        role: firstTeamMember.role
+        role: teamMember.role
       });
 
       console.log("✅ Player data loaded successfully");
@@ -143,6 +147,11 @@ const PlayerDashboard = () => {
         description: error.message || "Impossible de charger vos données",
         variant: "destructive",
       });
+      
+      // En cas d'erreur, rediriger vers l'authentification après un délai
+      setTimeout(() => {
+        navigate("/auth");
+      }, 3000);
     }
   };
 
