@@ -439,6 +439,7 @@ export type Database = {
           photo_profil: string | null
           pseudo: string
           role: Database["public"]["Enums"]["user_role"] | null
+          theme: string | null
           updated_at: string
           user_id: string
         }
@@ -451,6 +452,7 @@ export type Database = {
           photo_profil?: string | null
           pseudo: string
           role?: Database["public"]["Enums"]["user_role"] | null
+          theme?: string | null
           updated_at?: string
           user_id: string
         }
@@ -463,6 +465,7 @@ export type Database = {
           photo_profil?: string | null
           pseudo?: string
           role?: Database["public"]["Enums"]["user_role"] | null
+          theme?: string | null
           updated_at?: string
           user_id?: string
         }
