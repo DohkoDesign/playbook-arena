@@ -682,6 +682,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_user_team_ids: {
+        Args: { user_uuid?: string }
+        Returns: string[]
+      }
       has_admin_role: {
         Args: { team_uuid: string; user_uuid?: string }
         Returns: boolean
