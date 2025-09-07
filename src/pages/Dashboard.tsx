@@ -107,8 +107,24 @@ const Dashboard = () => {
       console.log("✅ All teams loaded:", allTeams.length);
       
       if (!allTeams || allTeams.length === 0) {
-        console.log("🚨 No teams found, opening team setup modal");
-        setShowTeamSetup(true);
+        console.log("🚨 No management teams found. Checking if user is a player to redirect to /player...");
+        const { data: anyMembership, error: membershipError } = await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", userId)
+          .limit(1);
+
+        if (membershipError) {
+          console.error("❌ Error checking membership:", membershipError);
+          setShowTeamSetup(true);
+        } else if (anyMembership && anyMembership.length > 0) {
+          console.log("🎮 Player membership detected. Redirecting to /player");
+          navigate("/player");
+          return;
+        } else {
+          console.log("🚨 No teams found at all, opening team setup modal");
+          setShowTeamSetup(true);
+        }
       } else {
         const savedTeam = localStorage.getItem('dashboard-selected-team');
         const teamToSelect = savedTeam && allTeams.find(t => t.id === savedTeam) 

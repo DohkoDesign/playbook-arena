@@ -51,16 +51,23 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
         id: vod.id || `vod_${session.id}_${index}`
       }));
 
-      // Récupérer les reviews existantes pour ces VODs
-      const { data: reviews, error } = await supabase
-        .from("vod_reviews")
-        .select("*")
-        .eq("team_id", teamId)
-        .in("vod_id", vodsWithIds.map((v: any) => v.id));
+      // Filtrer uniquement les IDs valides UUID pour éviter les erreurs côté DB
+      const isValidUUID = (id: string) =>
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+      const validVodIds = vodsWithIds.map((v: any) => v.id).filter(isValidUUID);
 
-      if (error) throw error;
+      let reviews: VODReview[] = [];
+      if (validVodIds.length > 0) {
+        const { data, error } = await supabase
+          .from("vod_reviews")
+          .select("*")
+          .eq("team_id", teamId)
+          .in("vod_id", validVodIds);
+        if (error) throw error;
+        reviews = data || [];
+      }
 
-      setVodReviews(reviews || []);
+      setVodReviews(reviews);
     } catch (error: any) {
       console.error("Erreur chargement reviews:", error);
       toast({
