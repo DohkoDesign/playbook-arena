@@ -136,6 +136,8 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🚀 Starting signup process...");
+    
     if (!pseudo || !email || !birthDate || !password || !code) {
       toast({
         title: "Erreur",
@@ -177,12 +179,17 @@ const Auth = () => {
 
     setLoading(true);
     try {
+      console.log(`📝 Signing up as ${userType}...`);
+      
       if (userType === 'staff') {
         await handleStaffSignup();
       } else {
         await handlePlayerSignup();
       }
+      
+      console.log("✅ Signup completed successfully");
     } catch (error: any) {
+      console.error("❌ Signup error:", error);
       toast({
         title: "Erreur d'inscription",
         description: error.message,
@@ -274,9 +281,11 @@ const Auth = () => {
   };
 
   const showEmailConfirmationPopup = () => {
+    console.log("📧 Showing email confirmation popup");
     setShowEmailPopup(true);
     // Auto-fermeture après 5 secondes
     setTimeout(() => {
+      console.log("⏰ Auto-closing popup after 5 seconds");
       setShowEmailPopup(false);
       setIsLogin(true); // Basculer vers l'onglet connexion
       resetForm(); // Nettoyer le formulaire
@@ -543,6 +552,39 @@ const Auth = () => {
             </Tabs>
           </CardContent>
         </Card>
+
+        {/* Popup de confirmation email */}
+        <AlertDialog open={showEmailPopup} onOpenChange={setShowEmailPopup}>
+          <AlertDialogContent className="max-w-md">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <Mail className="w-5 h-5 text-blue-500" />
+                Email de vérification envoyé
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <p>
+                  Un email de confirmation vient d'être envoyé à <strong>{email}</strong>.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Vérifiez votre boîte de réception et cliquez sur le lien de validation pour activer votre compte.
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction 
+                onClick={() => {
+                  setShowEmailPopup(false);
+                  setIsLogin(true);
+                  resetForm();
+                }}
+                className="w-full"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Compris
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
