@@ -10,7 +10,8 @@ import {
   Volume2, 
   VolumeX,
   Maximize,
-  Settings
+  Settings,
+  Eye
 } from "lucide-react";
 
 interface Timestamp {
@@ -51,6 +52,8 @@ export const YouTubePlayer = ({
   const [volume, setVolume] = useState(50);
   const [isMuted, setIsMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [hoveredTimestamp, setHoveredTimestamp] = useState<Timestamp | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const opts: YouTubeProps['opts'] = {
@@ -102,6 +105,11 @@ export const YouTubePlayer = ({
       }
     };
   }, []);
+
+  // Debug: Afficher les timestamps reçus
+  useEffect(() => {
+    console.log("🎯 YouTubePlayer - Timestamps reçus:", timestamps?.length || 0, timestamps);
+  }, [timestamps]);
 
   const togglePlayPause = () => {
     if (player) {
@@ -198,40 +206,52 @@ export const YouTubePlayer = ({
 
         {/* Contrôles personnalisés avec fond plus visible */}
         <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
-          {/* Timeline avec markers - fond plus contrasté */}
-          <div className="space-y-2">
-            <div className="relative bg-secondary/40 p-2 rounded-lg border border-border/30">
-              <Slider
-                value={[currentTime]}
-                max={duration}
-                step={1}
-                onValueChange={(value) => seekTo(value[0])}
-                className="w-full slider-enhanced"
-              />
-            {/* Markers dans la timeline - Améliorés pour plus de visibilité */}
-            {timestamps && timestamps.length > 0 && timestamps.map((timestamp) => {
-              const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
-              const markerColors = {
-                important: "bg-blue-600 border-2 border-white",
-                error: "bg-red-600 border-2 border-white", 
-                success: "bg-green-600 border-2 border-white",
-                strategy: "bg-yellow-600 border-2 border-white",
-                "player-specific": "bg-orange-600 border-2 border-white"
-              };
-              
-              return (
-                <div
-                  key={timestamp.id}
-                  className={`absolute top-0 w-3 h-full ${markerColors[timestamp.type]} cursor-pointer hover:scale-110 transition-all duration-200 z-40 shadow-lg rounded-sm`}
-                  style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
-                  onClick={() => seekTo(timestamp.time)}
-                  title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
-                >
-                  <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rounded-full border border-white"></div>
-                </div>
-              );
+        {/* Timeline avec markers - fond plus contrasté */}
+        <div className="space-y-2">
+          <div className="relative bg-secondary/40 p-4 rounded-lg border border-border/30">
+            <Slider
+              value={[currentTime]}
+              max={duration}
+              step={1}
+              onValueChange={(value) => seekTo(value[0])}
+              className="w-full slider-enhanced mb-2"
+            />
+            
+            {/* Markers dans la timeline - Version améliorée */}
+            <div className="relative w-full h-6 mt-2">
+              {timestamps && timestamps.length > 0 && timestamps.map((timestamp) => {
+                const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
+                const markerColors = {
+                  important: "bg-blue-500 hover:bg-blue-600",
+                  error: "bg-red-500 hover:bg-red-600", 
+                  success: "bg-green-500 hover:bg-green-600",
+                  strategy: "bg-yellow-500 hover:bg-yellow-600",
+                  "player-specific": "bg-orange-500 hover:bg-orange-600"
+                };
+                
+                return (
+                  <div
+                    key={timestamp.id}
+                    className={`absolute top-0 w-4 h-6 ${markerColors[timestamp.type]} cursor-pointer hover:scale-125 transition-all duration-200 z-50 shadow-lg rounded-sm border-2 border-white`}
+                    style={{ left: `${position}%`, transform: 'translateX(-50%)' }}
+                    onClick={() => seekTo(timestamp.time)}
+                    onMouseEnter={(e) => {
+                      setHoveredTimestamp(timestamp);
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setTooltipPosition({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top - 10
+                      });
+                    }}
+                    onMouseLeave={() => setHoveredTimestamp(null)}
+                  >
+                    {/* Petit triangle en haut */}
+                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
+                  </div>
+                );
               })}
             </div>
+          </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
@@ -389,6 +409,67 @@ export const YouTubePlayer = ({
           </div>
         )}
       </div>
+      
+      {/* Tooltip pour les markers */}
+      {hoveredTimestamp && (
+        <div 
+          className="fixed z-[100] bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs"
+          style={{
+            left: tooltipPosition.x - 150,
+            top: tooltipPosition.y - 120,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">
+                {formatTime(hoveredTimestamp.time)}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                hoveredTimestamp.type === 'important' ? 'bg-blue-100 text-blue-700' :
+                hoveredTimestamp.type === 'error' ? 'bg-red-100 text-red-700' :
+                hoveredTimestamp.type === 'success' ? 'bg-green-100 text-green-700' :
+                hoveredTimestamp.type === 'strategy' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-orange-100 text-orange-700'
+              }`}>
+                {hoveredTimestamp.type}
+              </span>
+            </div>
+            <p className="text-sm font-medium">{hoveredTimestamp.comment}</p>
+            {hoveredTimestamp.player && (
+              <p className="text-xs text-muted-foreground">
+                Joueur: {hoveredTimestamp.player}
+              </p>
+            )}
+            {hoveredTimestamp.category && (
+              <p className="text-xs text-muted-foreground">
+                Catégorie: {hoveredTimestamp.category}
+              </p>
+            )}
+            <div className="flex gap-2 pt-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => seekTo(hoveredTimestamp.time)}
+                className="text-xs"
+              >
+                Aller au moment
+              </Button>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  // Ajouter logique pour afficher les détails
+                  console.log("Afficher détails pour:", hoveredTimestamp.id);
+                }}
+                className="text-xs"
+              >
+                <Eye className="w-3 h-3 mr-1" />
+                Détails
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
