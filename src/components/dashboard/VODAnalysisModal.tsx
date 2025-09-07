@@ -35,6 +35,7 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
   const [selectedVOD, setSelectedVOD] = useState<any>(null);
   const [selectedReview, setSelectedReview] = useState<VODReview | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showFullscreenEditor, setShowFullscreenEditor] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -144,6 +145,26 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
     ...vod,
     id: vod.id || `vod_${session.id}_${index}`
   })) || [];
+
+  // Mode éditeur plein écran
+  if (showFullscreenEditor && selectedVOD) {
+    const videoId = getYouTubeVideoId(selectedVOD.url);
+    if (videoId) {
+      return (
+        <YouTubePlayer
+          videoId={videoId}
+          showFullscreenEditor={true}
+          onCloseFullscreen={() => setShowFullscreenEditor(false)}
+          timestamps={parsedTimestamps}
+          isPlayerView={isPlayerView}
+          onTimeUpdate={() => {}}
+          onAddTimestamp={() => {}}
+          onSeekTo={() => {}}
+          onPlayerReady={() => {}}
+        />
+      );
+    }
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -280,11 +301,26 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                             <TabsContent value="viewer" className="flex-1 mt-4">
                               <div className="h-full">
                                 {selectedVOD.platform === 'youtube' && getYouTubeVideoId(selectedVOD.url) && (
-                              <YouTubePlayer
-                                videoId={getYouTubeVideoId(selectedVOD.url)!}
-                                timestamps={parsedTimestamps}
-                                isPlayerView={isPlayerView}
-                              />
+                                  <div className="space-y-2">
+                                    {/* Bouton éditeur plein écran pour les joueurs */}
+                                    {isPlayerView && (
+                                      <div className="flex justify-end">
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => setShowFullscreenEditor(true)}
+                                          className="mb-2"
+                                        >
+                                          🎬 Éditeur plein écran
+                                        </Button>
+                                      </div>
+                                    )}
+                                    <YouTubePlayer
+                                      videoId={getYouTubeVideoId(selectedVOD.url)!}
+                                      timestamps={parsedTimestamps}
+                                      isPlayerView={isPlayerView}
+                                    />
+                                  </div>
                                 )}
                                 {selectedVOD.platform === 'twitch' && (
                                   <div className="aspect-video">

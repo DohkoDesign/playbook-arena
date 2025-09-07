@@ -28,11 +28,12 @@ interface VODViewerProps {
   isOpen: boolean;
   onClose: () => void;
   showExternalLink?: boolean;
+  isPlayerView?: boolean;
+  onOpenFullscreenEditor?: () => void;
 }
 
-export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VODViewerProps) => {
+export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true, isPlayerView = false, onOpenFullscreenEditor }: VODViewerProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showFullscreenEditor, setShowFullscreenEditor] = useState(false);
 
   const getYouTubeVideoId = (url: string) => {
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
@@ -52,22 +53,6 @@ export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VOD
 
   const isYouTube = vod.platform === 'youtube' || vod.url.includes('youtube.com') || vod.url.includes('youtu.be');
   const videoId = isYouTube ? getYouTubeVideoId(vod.url) : null;
-
-  // Mode éditeur plein écran
-  if (showFullscreenEditor) {
-    return (
-      <YouTubePlayer
-        videoId={videoId || ''}
-        showFullscreenEditor={true}
-        onCloseFullscreen={() => setShowFullscreenEditor(false)}
-        onTimeUpdate={() => {}}
-        onAddTimestamp={() => {}}
-        onSeekTo={() => {}}
-        timestamps={[]}
-        onPlayerReady={() => {}}
-      />
-    );
-  }
 
   if (isFullscreen) {
     return (
@@ -173,14 +158,17 @@ export const VODViewer = ({ vod, isOpen, onClose, showExternalLink = true }: VOD
               >
                 <PlayCircle className="w-4 h-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowFullscreenEditor(true)}
-                title="Éditeur plein écran"
-              >
-                <Edit className="w-4 h-4" />
-              </Button>
+              {/* Éditeur plein écran uniquement pour les joueurs */}
+              {isPlayerView && onOpenFullscreenEditor && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onOpenFullscreenEditor}
+                  title="Éditeur plein écran"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              )}
               {showExternalLink && (
                 <Button
                   variant="ghost"

@@ -62,6 +62,7 @@ export const YouTubePlayer = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showControls, setShowControls] = useState(true);
   const [mouseTimer, setMouseTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isHoveringTooltip, setIsHoveringTooltip] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
@@ -317,7 +318,16 @@ export const YouTubePlayer = ({
                             y: rect.top - 10
                           });
                         }}
-                        onMouseLeave={() => setHoveredTimestamp(null)}
+                        onMouseLeave={(e) => {
+                          const relatedTarget = e.relatedTarget as HTMLElement;
+                          if (!relatedTarget || !relatedTarget.closest('[data-tooltip]')) {
+                            setTimeout(() => {
+                              if (!isHoveringTooltip) {
+                                setHoveredTimestamp(null);
+                              }
+                            }, 100);
+                          }
+                        }}
                       >
                         <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
                       </div>
@@ -529,7 +539,17 @@ export const YouTubePlayer = ({
                         y: rect.top - 10
                       });
                     }}
-                    onMouseLeave={() => setHoveredTimestamp(null)}
+                    onMouseLeave={(e) => {
+                      // Ne fermer que si on ne va pas vers la tooltip
+                      const relatedTarget = e.relatedTarget as HTMLElement;
+                      if (!relatedTarget || !relatedTarget.closest('[data-tooltip]')) {
+                        setTimeout(() => {
+                          if (!isHoveringTooltip) {
+                            setHoveredTimestamp(null);
+                          }
+                        }, 100);
+                      }
+                    }}
                   >
                     {/* Petit triangle en haut */}
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-inherit rotate-45 border-l border-t border-white"></div>
@@ -699,11 +719,21 @@ export const YouTubePlayer = ({
       {/* Tooltip pour les markers */}
       {hoveredTimestamp && (
         <div 
+          data-tooltip
           className="fixed z-[100] bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs"
           style={{
             left: tooltipPosition.x - 150,
             top: tooltipPosition.y - 120,
             transform: 'translateX(-50%)'
+          }}
+          onMouseEnter={() => setIsHoveringTooltip(true)}
+          onMouseLeave={() => {
+            setIsHoveringTooltip(false);
+            setTimeout(() => {
+              if (!isHoveringTooltip) {
+                setHoveredTimestamp(null);
+              }
+            }, 100);
           }}
         >
           <div className="space-y-2">
