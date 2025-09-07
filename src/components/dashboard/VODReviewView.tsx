@@ -248,6 +248,8 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
 
       const reviewToSave = {
         vod_id: updatedReview.vod_id,
+        vod_url: selectedVOD?.vods?.[selectedVODIndex]?.url || getCurrentVOD()?.url,
+        session_id: selectedVOD?.id,
         coach_id: user.user.id,
         team_id: teamId,
         notes: updatedReview.notes || "",

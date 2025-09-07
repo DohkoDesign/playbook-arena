@@ -581,32 +581,46 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
+          session_id: string | null
           team_id: string | null
           timestamps: Json | null
           updated_at: string
           vod_id: string
+          vod_url: string | null
         }
         Insert: {
           coach_id: string
           created_at?: string
           id?: string
           notes?: string | null
+          session_id?: string | null
           team_id?: string | null
           timestamps?: Json | null
           updated_at?: string
           vod_id: string
+          vod_url?: string | null
         }
         Update: {
           coach_id?: string
           created_at?: string
           id?: string
           notes?: string | null
+          session_id?: string | null
           team_id?: string | null
           timestamps?: Json | null
           updated_at?: string
           vod_id?: string
+          vod_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vod_reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "coaching_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vod_shares: {
         Row: {

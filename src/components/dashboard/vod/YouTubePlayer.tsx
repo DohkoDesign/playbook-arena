@@ -196,18 +196,18 @@ export const YouTubePlayer = ({
         />
       </div>
 
-      {/* Contrôles personnalisés */}
-      <div className="space-y-4 p-4 bg-card rounded-lg border">
-        {/* Timeline avec markers */}
-        <div className="space-y-2">
-          <div className="relative">
-            <Slider
-              value={[currentTime]}
-              max={duration}
-              step={1}
-              onValueChange={(value) => seekTo(value[0])}
-              className="w-full"
-            />
+        {/* Contrôles personnalisés avec fond plus visible */}
+        <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
+          {/* Timeline avec markers - fond plus contrasté */}
+          <div className="space-y-2">
+            <div className="relative bg-secondary/40 p-2 rounded-lg border border-border/30">
+              <Slider
+                value={[currentTime]}
+                max={duration}
+                step={1}
+                onValueChange={(value) => seekTo(value[0])}
+                className="w-full slider-enhanced"
+              />
             {/* Markers dans la timeline */}
             {timestamps.map((timestamp) => {
               const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
@@ -228,8 +228,8 @@ export const YouTubePlayer = ({
                   title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
                 />
               );
-            })}
-          </div>
+              })}
+            </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>

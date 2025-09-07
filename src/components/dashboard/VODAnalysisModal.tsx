@@ -26,6 +26,8 @@ interface VODReview {
   timestamps: any;
   notes: string;
   team_id: string;
+  vod_url?: string;
+  session_id?: string;
 }
 
 export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUserId, isPlayerView = false }: VODAnalysisModalProps) => {
@@ -46,33 +48,60 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
 
     setLoading(true);
     try {
-      // Créer des IDs fictifs pour les VODs si elles n'en ont pas
+      // Créer des IDs fictifs pour les VODs si elles n'en ont pas et stocker les URLs
       const vodsWithIds = session.vods.map((vod: any, index: number) => ({
         ...vod,
         id: vod.id || `vod_${session.id}_${index}`
       }));
 
-      // Filtrer uniquement les IDs valides UUID pour éviter les erreurs côté DB
-      const isValidUUID = (id: string) =>
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
-      const validVodIds = vodsWithIds.map((v: any) => v.id).filter(isValidUUID);
-
+      // Récupérer toutes les reviews de l'équipe pour cette session
       let reviews: VODReview[] = [];
-      if (validVodIds.length > 0) {
-        const { data, error } = await supabase
-          .from("vod_reviews")
-          .select("*")
-          .eq("team_id", teamId)
-          .in("vod_id", validVodIds);
-        if (error) throw error;
-        reviews = data || [];
+      
+      // Première tentative : chercher par session_id si disponible
+      const { data: sessionReviews, error: sessionError } = await supabase
+        .from("vod_reviews")
+        .select("*")
+        .eq("team_id", teamId)
+        .eq("session_id", session.id);
+
+      if (sessionError) {
+        console.warn("Erreur lors de la récupération par session_id:", sessionError);
+      } else {
+        reviews = sessionReviews || [];
       }
 
-      setVodReviews(reviews);
+      // Deuxième tentative : chercher par vod_url pour les VODs existantes
+      if (reviews.length === 0) {
+        const vodUrls = vodsWithIds.map(v => v.url).filter(Boolean);
+        if (vodUrls.length > 0) {
+          const { data: urlReviews, error: urlError } = await supabase
+            .from("vod_reviews")
+            .select("*")
+            .eq("team_id", teamId)
+            .in("vod_url", vodUrls);
+
+          if (!urlError) {
+            reviews = urlReviews || [];
+          }
+        }
+      }
+
+      // Associer les reviews aux VODs
+      const updatedReviews = reviews.map(review => {
+        const matchingVod = vodsWithIds.find(vod => 
+          vod.url === review.vod_url || vod.id === review.vod_id
+        );
+        if (matchingVod && !review.vod_id) {
+          review.vod_id = matchingVod.id;
+        }
+        return review;
+      });
+
+      setVodReviews(updatedReviews);
     } catch (error: any) {
       console.error("Erreur chargement reviews:", error);
       toast({
-        title: "Erreur",
+        title: "Erreur", 
         description: "Impossible de charger les analyses VOD",
         variant: "destructive",
       });
