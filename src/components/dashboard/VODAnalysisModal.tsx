@@ -8,7 +8,6 @@ import { Video, Play, Clock, MessageSquare, Eye, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { YouTubePlayer } from "./vod/YouTubePlayer";
-import { NewFullscreenPlayer } from "./vod/NewFullscreenPlayer";
 
 interface VODAnalysisModalProps {
   isOpen: boolean;
@@ -35,7 +34,6 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
   const [selectedVOD, setSelectedVOD] = useState<any>(null);
   const [selectedReview, setSelectedReview] = useState<VODReview | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showFullscreenEditor, setShowFullscreenEditor] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -146,21 +144,6 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
     id: vod.id || `vod_${session.id}_${index}`
   })) || [];
 
-  // Mode éditeur plein écran NOUVEAU
-  if (showFullscreenEditor && selectedVOD) {
-    const videoId = getYouTubeVideoId(selectedVOD.url);
-    if (videoId) {
-      return (
-        <NewFullscreenPlayer
-          videoId={videoId}
-          onClose={() => setShowFullscreenEditor(false)}
-          timestamps={parsedTimestamps}
-          isPlayerView={isPlayerView}
-          onAddTimestamp={() => {}}
-        />
-      );
-    }
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -297,32 +280,11 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                             <TabsContent value="viewer" className="flex-1 mt-4">
                               <div className="h-full">
                                  {selectedVOD.platform === 'youtube' && getYouTubeVideoId(selectedVOD.url) && (
-                                   <div className="space-y-2">
-                                      {/* Bouton éditeur plein écran pour le staff seulement */}
-                                      {!isPlayerView && (
-                                        <div className="flex justify-end">
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowFullscreenEditor(true)}
-                                            className="mb-2"
-                                          >
-                                            🎬 NOUVEAU Plein Écran
-                                          </Button>
-                                        </div>
-                                      )}
-                                     <div 
-                                       className="cursor-pointer"
-                                       onDoubleClick={() => setShowFullscreenEditor(true)}
-                                       title="Double-cliquez pour passer en plein écran"
-                                     >
-                                       <YouTubePlayer
-                                         videoId={getYouTubeVideoId(selectedVOD.url)!}
-                                         timestamps={parsedTimestamps}
-                                         isPlayerView={isPlayerView}
-                                       />
-                                     </div>
-                                   </div>
+                                   <YouTubePlayer
+                                     videoId={getYouTubeVideoId(selectedVOD.url)!}
+                                     timestamps={parsedTimestamps}
+                                     isPlayerView={isPlayerView}
+                                   />
                                  )}
                                 {selectedVOD.platform === 'twitch' && (
                                   <div className="aspect-video">
