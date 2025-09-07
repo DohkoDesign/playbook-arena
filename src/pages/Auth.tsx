@@ -433,60 +433,19 @@ const Auth = () => {
                       <Label htmlFor="signup-birth">Date de naissance</Label>
                       <div className="relative">
                         <Input
-                          type="text"
-                          placeholder="JJ/MM/AAAA"
-                          value={birthDate ? format(birthDate, "dd/MM/yyyy") : ""}
+                          type="date"
+                          value={birthDate ? format(birthDate, "yyyy-MM-dd") : ""}
                           onChange={(e) => {
-                            const value = e.target.value;
-                            // Format automatique pendant la saisie
-                            let formatted = value.replace(/\D/g, '');
-                            if (formatted.length >= 2) {
-                              formatted = formatted.slice(0, 2) + '/' + formatted.slice(2);
-                            }
-                            if (formatted.length >= 5) {
-                              formatted = formatted.slice(0, 5) + '/' + formatted.slice(5, 9);
-                            }
-                            e.target.value = formatted;
-                            
-                            // Essayer de parser la date si elle est complète
-                            if (formatted.length === 10) {
-                              const [day, month, year] = formatted.split('/').map(Number);
-                              if (day && month && year && year >= 1900 && year <= new Date().getFullYear()) {
-                                const date = new Date(year, month - 1, day);
-                                if (date.getDate() === day && date.getMonth() === month - 1) {
-                                  setBirthDate(date);
-                                }
-                              }
-                            } else if (formatted === "") {
+                            if (e.target.value) {
+                              setBirthDate(new Date(e.target.value));
+                            } else {
                               setBirthDate(undefined);
                             }
                           }}
+                          max={format(new Date(), "yyyy-MM-dd")}
+                          min="1900-01-01"
                           className="pr-10"
                         />
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            >
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <CalendarComponent
-                              mode="single"
-                              selected={birthDate}
-                              onSelect={setBirthDate}
-                              disabled={(date) =>
-                                date > new Date() || date < new Date("1900-01-01")
-                              }
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Vous devez avoir au moins 13 ans pour vous inscrire
