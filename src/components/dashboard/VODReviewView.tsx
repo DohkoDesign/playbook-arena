@@ -300,7 +300,10 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     }
   };
 
-  const getYouTubeVideoId = (url: string) => {
+  const getYouTubeVideoId = (url: string | undefined | null): string | null => {
+    if (!url || typeof url !== 'string') {
+      return null;
+    }
     const regex = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/;
     const match = url.match(regex);
     return match ? match[1] : null;

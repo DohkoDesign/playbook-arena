@@ -207,6 +207,11 @@ export const FullscreenVideoPlayer = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Ne pas afficher le composant si pas de videoId
+  if (!videoId || videoId.trim() === '') {
+    return null;
+  }
+
   return (
     <div 
       className="fixed inset-0 bg-black z-[9999]"
