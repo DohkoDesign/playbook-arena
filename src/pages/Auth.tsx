@@ -181,10 +181,22 @@ const Auth = () => {
             variant: "destructive",
           });
         }
+      } else if (msg.toLowerCase().includes('invalid credentials') || msg.toLowerCase().includes('invalid login credentials')) {
+        toast({
+          title: "Identifiants incorrects",
+          description: "Email ou mot de passe incorrect. Vérifiez vos informations.",
+          variant: "destructive",
+        });
+      } else if (msg.toLowerCase().includes('too many requests')) {
+        toast({
+          title: "Trop de tentatives",
+          description: "Veuillez attendre quelques minutes avant de réessayer.",
+          variant: "destructive",
+        });
       } else {
         toast({
           title: "Erreur de connexion",
-          description: msg,
+          description: msg || "Une erreur est survenue lors de la connexion.",
           variant: "destructive",
         });
       }
@@ -272,7 +284,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified`
+        emailRedirectTo: `${window.location.origin}/`
       },
     });
 
@@ -306,7 +318,7 @@ const Auth = () => {
     localStorage.setItem("pending_team_code", code.trim().toUpperCase());
     if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
 
-    // Inscription avec redirection vers email-verified
+    // Inscription avec redirection vers l'accueil
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -315,7 +327,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/email-verified`,
+        emailRedirectTo: `${window.location.origin}/`,
       },
     });
 

@@ -19,27 +19,22 @@ const EmailVerified = () => {
       try {
         console.log("🔗 Processing email verification...");
         console.log("📍 Current URL:", window.location.href);
-        console.log("📍 Hash:", window.location.hash);
-        console.log("📍 Search:", window.location.search);
         
         // Récupérer les paramètres depuis le hash (#) ET la query string
-        // Supabase place souvent les tokens dans le fragment d'URL
         const hash = window.location.hash;
         const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
         
-        // Vérifier d'abord s'il y a des erreurs dans l'URL (query params ET hash)
+        // Vérifier d'abord s'il y a des erreurs dans l'URL
         const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
         const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
         const error = searchParams.get('error') || hashParams.get('error');
-        
-        console.log("❌ Error check:", { error, errorCode, errorDescription });
         
         if (error || errorCode) {
           console.log("❌ Email verification error:", { error, errorCode, errorDescription });
           
           let friendlyError = "Le lien de vérification est invalide ou a expiré.";
           if (errorCode === 'otp_expired') {
-            friendlyError = "Le lien de vérification a expiré. Veuillez vous inscrire à nouveau.";
+            friendlyError = "Le lien de vérification a expiré. Veuillez vous réinscrire.";
           } else if (error === 'access_denied') {
             friendlyError = "Accès refusé. Le lien de vérification est invalide.";
           }
@@ -47,86 +42,52 @@ const EmailVerified = () => {
           throw new Error(friendlyError);
         }
 
-        const access_token = hashParams.get('access_token') || searchParams.get('access_token');
-        const refresh_token = hashParams.get('refresh_token') || searchParams.get('refresh_token');
-        const type = hashParams.get('type') || searchParams.get('type');
+        // Vérifier le code d'échange (nouveau système OAuth/PKCE)
         const code = searchParams.get('code') || hashParams.get('code');
-
-        // 1) Nouveau flux OAuth/PKCE: échange du "code" contre une session
-        if (code && (!access_token || !refresh_token)) {
+        
+        if (code) {
           console.log("🔄 Exchanging code for session...");
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          
           if (exchangeError) {
+            console.error("❌ Code exchange error:", exchangeError);
             throw exchangeError;
           }
 
           if (data?.user) {
-            console.log("✅ User verified via code exchange", data.user.id);
-            setVerified(true);
-
-            const pendingCode = localStorage.getItem("pending_team_code");
-            if (pendingCode) {
-              console.log("🏃 Joining team with code:", pendingCode);
-              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { p_code: pendingCode });
-
-              if (!joinError && joinResult?.[0]) {
-                const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
-                const roleText = joinResult[0].assigned_role || 'joueur';
-                localStorage.removeItem("pending_team_code");
-                localStorage.removeItem("pending_team_name");
-                toast({ title: "Inscription réussie !", description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` });
-                setTimeout(() => navigate("/player"), 2000);
-                return;
-              } else {
-                console.error("❌ Failed to join team:", joinError);
-              }
-            }
-
-            toast({ title: "Email vérifié !", description: "Votre compte a été créé avec succès." });
-            setTimeout(() => navigate("/"), 2000);
+            console.log("✅ User verified via code exchange:", data.user.id);
+            await handleSuccessfulVerification(data.user.id);
             return;
           }
         }
 
-        // 2) Ancien flux: tokens directement dans l'URL
+        // Vérifier les tokens directs (ancien système)
+        const access_token = hashParams.get('access_token') || searchParams.get('access_token');
+        const refresh_token = hashParams.get('refresh_token') || searchParams.get('refresh_token');
+        const type = hashParams.get('type') || searchParams.get('type');
+
         if (type === 'signup' && access_token && refresh_token) {
-          console.log("📧 Setting session from email verification");
-          const { data: { user }, error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+          console.log("📧 Setting session from email verification tokens");
+          const { data: { user }, error: sessionError } = await supabase.auth.setSession({ 
+            access_token, 
+            refresh_token 
+          });
+          
           if (sessionError) {
+            console.error("❌ Session error:", sessionError);
             throw sessionError;
           }
 
           if (user) {
-            console.log("✅ User verified successfully", user.id);
-            setVerified(true);
-
-            // Vérifier si l'utilisateur doit rejoindre une équipe
-            const pendingCode = localStorage.getItem("pending_team_code");
-            if (pendingCode) {
-              console.log("🏃 Joining team with code:", pendingCode);
-              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { p_code: pendingCode });
-
-              if (!joinError && joinResult?.[0]) {
-                const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
-                const roleText = joinResult[0].assigned_role || 'joueur';
-                localStorage.removeItem("pending_team_code");
-                localStorage.removeItem("pending_team_name");
-                toast({ title: "Inscription réussie !", description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` });
-                setTimeout(() => navigate("/player"), 2000);
-                return;
-              } else {
-                console.error("❌ Failed to join team:", joinError);
-              }
-            }
-
-            toast({ title: "Email vérifié !", description: "Votre compte a été créé avec succès." });
-            setTimeout(() => navigate("/"), 2000);
-          } else {
-            throw new Error("Aucun utilisateur trouvé après vérification");
+            console.log("✅ User verified successfully:", user.id);
+            await handleSuccessfulVerification(user.id);
+            return;
           }
-        } else {
-          throw new Error("Paramètres de vérification manquants ou invalides");
         }
+        
+        // Si aucun paramètre valide n'est trouvé
+        throw new Error("Aucun paramètre de validation valide trouvé dans l'URL.");
+        
       } catch (error: any) {
         console.error("❌ Email verification failed:", error);
         setError(error.message || "Erreur lors de la vérification");
@@ -134,6 +95,47 @@ const EmailVerified = () => {
       } finally {
         setLoading(false);
       }
+    };
+
+    const handleSuccessfulVerification = async (userId: string) => {
+      setVerified(true);
+
+      // Vérifier si l'utilisateur doit rejoindre une équipe
+      const pendingCode = localStorage.getItem("pending_team_code");
+      if (pendingCode) {
+        console.log("🏃 Joining team with code:", pendingCode);
+        try {
+          const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { 
+            p_code: pendingCode 
+          });
+
+          if (!joinError && joinResult?.[0]) {
+            const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+            const roleText = joinResult[0].assigned_role || 'joueur';
+            localStorage.removeItem("pending_team_code");
+            localStorage.removeItem("pending_team_name");
+            
+            toast({ 
+              title: "Inscription réussie !", 
+              description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` 
+            });
+            
+            setTimeout(() => navigate("/player"), 2000);
+            return;
+          } else {
+            console.error("❌ Failed to join team:", joinError);
+          }
+        } catch (error) {
+          console.error("❌ Error joining team:", error);
+        }
+      }
+
+      toast({ 
+        title: "Email vérifié !", 
+        description: "Votre compte a été créé avec succès." 
+      });
+      
+      setTimeout(() => navigate("/"), 2000);
     };
 
     handleEmailVerification();
