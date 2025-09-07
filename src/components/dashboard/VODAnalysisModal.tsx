@@ -8,7 +8,7 @@ import { Video, Play, Clock, MessageSquare, Eye, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { YouTubePlayer } from "./vod/YouTubePlayer";
-import { FullscreenVODEditor } from "./vod/FullscreenVODEditor";
+import { NewFullscreenPlayer } from "./vod/NewFullscreenPlayer";
 
 interface VODAnalysisModalProps {
   isOpen: boolean;
@@ -146,12 +146,12 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
     id: vod.id || `vod_${session.id}_${index}`
   })) || [];
 
-  // Mode éditeur plein écran
+  // Mode éditeur plein écran NOUVEAU
   if (showFullscreenEditor && selectedVOD) {
     const videoId = getYouTubeVideoId(selectedVOD.url);
     if (videoId) {
       return (
-        <FullscreenVODEditor
+        <NewFullscreenPlayer
           videoId={videoId}
           onClose={() => setShowFullscreenEditor(false)}
           timestamps={parsedTimestamps}
@@ -307,7 +307,7 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                                             onClick={() => setShowFullscreenEditor(true)}
                                             className="mb-2"
                                           >
-                                            🎬 Mode Plein Écran
+                                            🎬 NOUVEAU Plein Écran
                                           </Button>
                                         </div>
                                       )}
