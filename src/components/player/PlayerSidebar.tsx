@@ -1,48 +1,18 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Users, BookOpen, Video, Settings, Target, TrendingUp, User, MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PlayerSidebarProps {
   teamData: any;
   currentView: string;
   onViewChange: (view: string) => void;
-  userId?: string;
-  userName?: string;
 }
 
 export const PlayerSidebar = ({
   teamData,
   currentView,
   onViewChange,
-  userId,
-  userName,
 }: PlayerSidebarProps) => {
-  const [userAvatar, setUserAvatar] = useState("");
-
-  useEffect(() => {
-    const loadUserAvatar = async () => {
-      if (!userId) return;
-      
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("photo_profil")
-          .eq("user_id", userId)
-          .single();
-
-        if (data?.photo_profil) {
-          setUserAvatar(data.photo_profil);
-        }
-      } catch (error) {
-        console.log("Could not load user avatar:", error);
-      }
-    };
-
-    loadUserAvatar();
-  }, [userId]);
   // Navigation pour les joueurs avec sections personnelles
   const navigationSections = [
     {

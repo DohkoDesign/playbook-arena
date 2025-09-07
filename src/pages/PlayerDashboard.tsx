@@ -86,6 +86,7 @@ const PlayerDashboard = () => {
             teams:team_id (
               id,
               nom,
+              logo,
               jeu
             )
           `)
@@ -268,8 +269,6 @@ const PlayerDashboard = () => {
             setCurrentView(playerView);
             localStorage.setItem('player-dashboard-current-view', playerView);
           }}
-          userId={user?.id}
-          userName={userName}
         />
         
         <div className="flex-1 ml-72">

@@ -275,7 +275,6 @@ const Dashboard = () => {
           }}
           onNewTeam={() => setShowTeamSetup(true)}
           currentUserId={user?.id}
-          userName={userName}
         />
         
         <div className="flex-1 ml-72">

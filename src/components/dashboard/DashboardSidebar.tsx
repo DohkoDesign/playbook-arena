@@ -1,10 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Users, BookOpen, Video, Plus, UserSearch, MessageSquare, Clock, TrendingUp, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface DashboardSidebarProps {
   teams: any[];
@@ -14,7 +11,6 @@ interface DashboardSidebarProps {
   onViewChange: (view: string) => void;
   onNewTeam: () => void;
   currentUserId?: string;
-  userName?: string;
 }
 
 export const DashboardSidebar = ({
@@ -25,31 +21,7 @@ export const DashboardSidebar = ({
   onViewChange,
   onNewTeam,
   currentUserId,
-  userName,
 }: DashboardSidebarProps) => {
-  const [userAvatar, setUserAvatar] = useState("");
-
-  useEffect(() => {
-    const loadUserAvatar = async () => {
-      if (!currentUserId) return;
-      
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("photo_profil")
-          .eq("user_id", currentUserId)
-          .single();
-
-        if (data?.photo_profil) {
-          setUserAvatar(data.photo_profil);
-        }
-      } catch (error) {
-        console.log("Could not load user avatar:", error);
-      }
-    };
-
-    loadUserAvatar();
-  }, [currentUserId]);
   // Définir d'abord les variables nécessaires
   const currentTeamData = teams.find(team => team.id === selectedTeam);
   const isTeamOwner = currentTeamData && currentUserId && currentTeamData.created_by === currentUserId;
