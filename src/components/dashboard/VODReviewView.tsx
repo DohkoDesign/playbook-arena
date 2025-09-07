@@ -29,6 +29,8 @@ import { useToast } from "@/hooks/use-toast";
 import { YouTubePlayer } from "./vod/YouTubePlayer";
 import { TimestampManager } from "./vod/TimestampManager";
 import { CoachingNotes } from "./vod/CoachingNotes";
+import { FullscreenVideoPlayer } from "./vod/FullscreenVideoPlayer";
+import { useFullscreenVideo } from "@/hooks/useFullscreenVideo";
 import { VODFilters } from "./vod/VODFilters";
 
 import { MarkerModal } from "./vod/MarkerModal";
@@ -89,6 +91,12 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
   const [showMarkerModal, setShowMarkerModal] = useState(false);
   const [youtubePlayer, setYoutubePlayer] = useState<any>(null);
   const { toast } = useToast();
+
+  // Fonction utilitaire pour obtenir la VOD courante
+  const getCurrentVOD = () => {
+    if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
+    return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
+  };
 
   useEffect(() => {
     loadVODSessions();
@@ -325,6 +333,14 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
     }
   };
 
+  // Hook pour le plein écran (après les déclarations des fonctions)
+  const fullscreenVideo = useFullscreenVideo({
+    videoId: getYouTubeVideoId(getCurrentVOD()?.url) || "",
+    timestamps: currentReview?.timestamps || [],
+    isPlayerView: false,
+    onAddTimestamp: handleAddTimestamp
+  });
+
   const handleSaveMarker = (markerData: any) => {
     const timestamp: Timestamp = {
       id: Date.now().toString(),
@@ -342,10 +358,6 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
       setCurrentReview(updated);
       saveReviewSession({ timestamps: updatedTimestamps });
     }
-  };
-  const getCurrentVOD = () => {
-    if (!selectedVOD || !selectedVOD.vods || selectedVOD.vods.length === 0) return null;
-    return selectedVOD.vods[selectedVODIndex] || selectedVOD.vods[0];
   };
 
 
@@ -491,18 +503,38 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
             <CardContent className="p-0">
               {getCurrentVOD() && (
                 <div className="relative">
-                  <YouTubePlayer 
-                    videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
-                    onTimeUpdate={(time) => {
-                      setCurrentPlayerTime(time);
-                    }}
-                    onSeekTo={(time) => {
-                      setCurrentPlayerTime(time);
-                    }}
-                    onAddTimestamp={handleAddTimestamp}
-                    timestamps={currentReview?.timestamps || []}
-                    onPlayerReady={(playerInstance) => setYoutubePlayer(playerInstance)}
-                  />
+                  {/* Bouton plein écran */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={fullscreenVideo.openFullscreen}
+                      className="bg-black/70 hover:bg-black/90 text-white border-0"
+                    >
+                      <Maximize className="w-4 h-4 mr-1" />
+                      Plein Écran
+                    </Button>
+                  </div>
+
+                  {/* Lecteur avec double-clic pour plein écran */}
+                  <div 
+                    onDoubleClick={fullscreenVideo.openFullscreen}
+                    className="cursor-pointer"
+                    title="Double-cliquez pour passer en plein écran"
+                  >
+                    <YouTubePlayer 
+                      videoId={getYouTubeVideoId(getCurrentVOD()?.url) || ""}
+                      onTimeUpdate={(time) => {
+                        setCurrentPlayerTime(time);
+                      }}
+                      onSeekTo={(time) => {
+                        setCurrentPlayerTime(time);
+                      }}
+                      onAddTimestamp={handleAddTimestamp}
+                      timestamps={currentReview?.timestamps || []}
+                      onPlayerReady={(playerInstance) => setYoutubePlayer(playerInstance)}
+                    />
+                  </div>
                 </div>
               )}
             </CardContent>
@@ -606,6 +638,11 @@ export const VODReviewView = ({ teamId, gameType }: VODReviewViewProps) => {
         onSave={handleSaveMarker}
         currentTime={currentPlayerTime}
       />
+
+      {/* Player plein écran */}
+      {fullscreenVideo.isFullscreen && (
+        <FullscreenVideoPlayer {...fullscreenVideo.fullscreenProps} />
+      )}
     </div>
   );
 };
