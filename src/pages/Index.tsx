@@ -31,13 +31,17 @@ const Index = () => {
     console.log("🔍 Checking user teams for redirect");
     try {
       // Vérifier le profil de l'utilisateur
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("role")
         .eq("user_id", currentUser.id)
-        .single();
+        .maybeSingle();
 
       console.log("👤 Profile data:", profileData);
+      
+      if (profileError) {
+        console.error("❌ Profile error:", profileError);
+      }
 
       // Vérifier si l'utilisateur a créé des équipes
       const { data: createdTeams } = await supabase
@@ -76,7 +80,7 @@ const Index = () => {
       } 
       // Priorité 3: Si l'utilisateur est staff mais sans équipe
       else if (profileData?.role === "staff") {
-        console.log("🚀 Redirecting to management dashboard (staff role)");
+        console.log("👔 Staff detected without teams, redirecting to dashboard");
         navigate("/dashboard");
       } 
       else {
