@@ -293,87 +293,10 @@ export const RealTimeDashboard = ({
         </Card>
       )}
 
-      {/* Contenu détaillé avec onglets */}
-      <Tabs defaultValue="performance" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="game-stats">Statistiques {gameType ? gameType.replace('_', ' ').toUpperCase() : 'Jeu'}</TabsTrigger>
-          <TabsTrigger value="team-health">Santé de l'équipe</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="performance" className="space-y-6">
-          <PerformanceMetrics stats={stats} gameType={gameType} />
-        </TabsContent>
-        
-        <TabsContent value="game-stats" className="space-y-6">
-          {gameType ? (
-            <GameSpecificStats gameType={gameType} stats={stats} />
-          ) : (
-            <Card className="text-center p-12">
-              <Gamepad2 className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                Aucun jeu défini pour cette équipe
-              </p>
-              <Button 
-                onClick={() => onViewChange("settings")} 
-                className="mt-4"
-                variant="outline"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Configurer l'équipe
-              </Button>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="team-health" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Participation</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-primary mb-2">{stats.availabilityRate}%</div>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.currentWeekAvailabilities}/{stats.totalAvailabilitySlots} joueurs disponibles
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Analyse VOD</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-500 mb-2">
-                    {stats.totalVODs > 0 ? Math.round((stats.reviewedVODs / stats.totalVODs) * 100) : 0}%
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {stats.reviewedVODs}/{stats.totalVODs} VODs analysés
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Feedbacks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-orange-500 mb-2">{stats.pendingFeedbacks}</div>
-                  <p className="text-sm text-muted-foreground">
-                    en attente sur {stats.totalFeedbacks} total
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+      {/* Contenu détaillé - Performance uniquement */}
+      <div className="space-y-6">
+        <PerformanceMetrics stats={stats} gameType={gameType} />
+      </div>
 
       {/* Actions rapides en bas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
