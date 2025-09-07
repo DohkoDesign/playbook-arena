@@ -147,15 +147,15 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden">
+        <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center">
             <Video className="w-5 h-5 mr-2" />
             Analyse VOD - {session?.events?.titre}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col h-[calc(90vh-120px)]">
+        <div className="flex flex-col h-[calc(95vh-100px)]">
           {vodsWithIds.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center space-y-4">
@@ -172,14 +172,14 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
             </div>
           ) : (
             <div className="flex flex-1 gap-4 overflow-hidden">
-              {/* Liste des VODs */}
+              {/* Liste des VODs - taille adaptée */}
               <div className="w-80 flex-shrink-0">
                 <Card className="h-full">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">VODs disponibles</CardTitle>
+                    <CardTitle className="text-base">VODs disponibles</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <div className="space-y-2 max-h-[500px] overflow-y-auto px-6 pb-6">
+                    <div className="space-y-2 max-h-[65vh] overflow-y-auto px-6 pb-6">
                       {vodsWithIds.map((vod: any) => {
                         const review = vodReviews.find(r => r.vod_id === vod.id);
                         const hasAnalysis = review && (review.timestamps?.length > 0 || review.notes);
@@ -300,13 +300,13 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                               </div>
                             </TabsContent>
                             
-                            <TabsContent value="analysis" className="flex-1 mt-4 overflow-y-auto">
-                              <div className="space-y-4">
-                                {selectedReview.timestamps && selectedReview.timestamps.length > 0 && (
+                            <TabsContent value="analysis" className="flex-1 overflow-y-auto">
+                              <div className="space-y-4 pr-2">
+                                {parsedTimestamps && parsedTimestamps.length > 0 && (
                                   <div>
                                     <h4 className="font-semibold mb-3 flex items-center">
                                       <Clock className="w-4 h-4 mr-2" />
-                                      Markers temporels ({selectedReview.timestamps.length})
+                                      Markers temporels ({parsedTimestamps.length})
                                     </h4>
                                     <div className="space-y-2">
                                       {parsedTimestamps.map((timestamp: any, index: number) => (
@@ -349,7 +349,7 @@ export const VODAnalysisModal = ({ isOpen, onClose, session, teamId, currentUser
                                   </div>
                                 )}
 
-                                {(!selectedReview.timestamps || selectedReview.timestamps.length === 0) && !selectedReview.notes && (
+                                {(!parsedTimestamps || parsedTimestamps.length === 0) && !selectedReview.notes && (
                                   <div className="text-center py-8">
                                     <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                                     <p className="text-muted-foreground">

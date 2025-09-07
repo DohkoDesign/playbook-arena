@@ -4,10 +4,9 @@ import { fr } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Clock, Users, User, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar, Clock, Users, Settings, ChevronLeft, ChevronRight, Sun, Sunset, Moon, Coffee } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SimpleAvailabilityManager } from "./SimpleAvailabilityManager";
@@ -24,8 +23,6 @@ interface PlayerAvailability {
   start_time: string;
   end_time: string;
   week_start: string;
-  pseudo?: string;
-  photo_profil?: string;
 }
 
 interface PlayerInfo {
@@ -34,19 +31,28 @@ interface PlayerInfo {
   photo_profil?: string;
 }
 
-const dayNames = {
-  1: 'Lundi',
-  2: 'Mardi', 
-  3: 'Mercredi',
-  4: 'Jeudi',
-  5: 'Vendredi',
-  6: 'Samedi',
-  0: 'Dimanche'
-};
+const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const shortDayNames = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'];
 
 const getWeekStart = (date: Date = new Date()) => {
   const monday = startOfWeek(date, { weekStartsOn: 1 });
   return monday.toISOString().split('T')[0];
+};
+
+const getTimeSlotIcon = (time: string) => {
+  const hour = parseInt(time.split(':')[0]);
+  if (hour >= 6 && hour < 12) return <Sun className="w-3 h-3" />;
+  if (hour >= 12 && hour < 18) return <Sunset className="w-3 h-3" />;
+  if (hour >= 18 && hour < 22) return <Moon className="w-3 h-3" />;
+  return <Coffee className="w-3 h-3" />;
+};
+
+const getTimeSlotColor = (time: string) => {
+  const hour = parseInt(time.split(':')[0]);
+  if (hour >= 6 && hour < 12) return "bg-yellow-100 text-yellow-800 border-yellow-200";
+  if (hour >= 12 && hour < 18) return "bg-orange-100 text-orange-800 border-orange-200";
+  if (hour >= 18 && hour < 22) return "bg-blue-100 text-blue-800 border-blue-200";
+  return "bg-purple-100 text-purple-800 border-purple-200";
 };
 
 export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailabilitiesProps) => {
@@ -61,7 +67,6 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     fetchData();
   }, [teamId, selectedWeek]);
 
-  // Rafraîchir quand le modal se ferme
   useEffect(() => {
     if (!showAvailabilityModal) {
       fetchData();
@@ -72,27 +77,23 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     try {
       setLoading(true);
       
-      // Récupérer les membres de l'équipe
+      // Récupérer les membres avec leurs profils
       const { data: teamMembers, error: membersError } = await supabase
         .from("team_members")
         .select("user_id, role")
         .eq("team_id", teamId)
         .in("role", ["joueur", "remplacant", "capitaine", "owner"]);
 
-      if (membersError) {
-        throw membersError;
-      }
+      if (membersError) throw membersError;
 
-      // Récupérer les profils des joueurs
+      // Récupérer les profils séparément
       const userIds = teamMembers?.map(m => m.user_id) || [];
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, pseudo, photo_profil")
         .in("user_id", userIds);
 
-      if (profilesError) {
-        throw profilesError;
-      }
+      if (profilesError) throw profilesError;
 
       const playersData: PlayerInfo[] = teamMembers?.map(member => {
         const profile = profiles?.find(p => p.user_id === member.user_id);
@@ -105,7 +106,7 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
 
       setPlayers(playersData);
 
-      // Récupérer les disponibilités de la semaine
+      // Récupérer les disponibilités
       const weekStart = getWeekStart(selectedWeek);
       const { data: availabilitiesData, error: availabilitiesError } = await supabase
         .from("player_availabilities")
@@ -113,24 +114,11 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
         .eq("team_id", teamId)
         .eq("week_start", weekStart);
 
-      if (availabilitiesError) {
-        throw availabilitiesError;
-      }
-
-      // Enrichir avec les infos des joueurs
-      const enrichedAvailabilities = availabilitiesData?.map(avail => {
-        const player = playersData.find(p => p.id === avail.user_id);
-        return {
-          ...avail,
-          pseudo: player?.pseudo || "Joueur",
-          photo_profil: player?.photo_profil
-        };
-      }) || [];
-
-      setAvailabilities(enrichedAvailabilities);
+      if (availabilitiesError) throw availabilitiesError;
+      setAvailabilities(availabilitiesData || []);
 
     } catch (error: any) {
-      console.error("Erreur chargement disponibilités:", error);
+      console.error("Erreur chargement:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les disponibilités",
@@ -141,18 +129,13 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     }
   };
 
-  const groupedByPlayer = availabilities.reduce((acc, avail) => {
-    const key = avail.user_id;
-    if (!acc[key]) {
-      acc[key] = {
-        pseudo: avail.pseudo || "Joueur",
-        photo_profil: avail.photo_profil,
-        availabilities: []
-      };
-    }
-    acc[key].availabilities.push(avail);
-    return acc;
-  }, {} as Record<string, { pseudo: string; photo_profil?: string; availabilities: PlayerAvailability[] }>);
+  const getPlayerAvailabilities = (playerId: string) => {
+    return availabilities.filter(avail => avail.user_id === playerId);
+  };
+
+  const getPlayerInfo = (playerId: string) => {
+    return players.find(p => p.id === playerId);
+  };
 
   const formatTime = (time: string) => time.slice(0, 5);
 
@@ -166,17 +149,31 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
     return `${format(start, 'dd MMM', { locale: fr })} - ${format(end, 'dd MMM yyyy', { locale: fr })}`;
   };
 
+  // Organiser les données pour l'affichage en calendrier
+  const weekCalendarData = () => {
+    const calendar: Record<number, Record<string, PlayerAvailability[]>> = {};
+    
+    // Initialiser pour chaque jour de la semaine (1-7, lundi-dimanche)
+    for (let day = 1; day <= 7; day++) {
+      calendar[day] = {};
+      players.forEach(player => {
+        calendar[day][player.id] = getPlayerAvailabilities(player.id)
+          .filter(avail => avail.day_of_week === (day === 7 ? 0 : day))
+          .sort((a, b) => a.start_time.localeCompare(b.start_time));
+      });
+    }
+    
+    return calendar;
+  };
+
+  const calendarData = weekCalendarData();
+
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-1/3"></div>
-          <div className="h-32 bg-muted rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-24 bg-muted rounded"></div>
-            ))}
-          </div>
+          <div className="h-40 bg-muted rounded"></div>
         </div>
       </div>
     );
@@ -184,15 +181,19 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Disponibilités de l'équipe</h2>
+        <div className="flex items-center space-x-3">
+          <Users className="w-6 h-6" />
+          <h2 className="text-2xl font-bold">Disponibilités de l'équipe</h2>
+        </div>
         <Button onClick={() => setShowAvailabilityModal(true)}>
           <Settings className="w-4 h-4 mr-2" />
           Mes disponibilités
         </Button>
       </div>
 
-      {/* Sélecteur de semaine simplifié */}
+      {/* Navigation de semaine */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -201,12 +202,15 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
               size="sm"
               onClick={() => navigateWeek('prev')}
             >
-              <ChevronLeft className="w-4 h-4" />
-              Précédent
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              Semaine précédente
             </Button>
             
             <div className="text-center">
-              <p className="font-semibold">{getWeekRange()}</p>
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4" />
+                <span className="font-semibold text-lg">{getWeekRange()}</span>
+              </div>
               <p className="text-sm text-muted-foreground">
                 {format(selectedWeek, 'yyyy') === format(new Date(), 'yyyy') && 
                  Math.abs(selectedWeek.getTime() - new Date().getTime()) < 7 * 24 * 60 * 60 * 1000 
@@ -220,80 +224,130 @@ export const PlayerTeamAvailabilities = ({ teamId, playerId }: PlayerTeamAvailab
               size="sm"
               onClick={() => navigateWeek('next')}
             >
-              Suivant
-              <ChevronRight className="w-4 h-4" />
+              Semaine suivante
+              <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Disponibilités par joueur */}
-      {Object.keys(groupedByPlayer).length === 0 ? (
+      {/* Vue calendrier */}
+      {players.length === 0 ? (
         <Card>
           <CardContent className="p-8 text-center">
-            <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-semibold mb-2">Aucune disponibilité</h3>
+            <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">Aucun membre d'équipe</h3>
             <p className="text-muted-foreground">
-              Aucune disponibilité n'a été renseignée pour cette semaine.
+              Il n'y a pas encore de membres dans cette équipe.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {Object.entries(groupedByPlayer).map(([playerId, playerData]) => (
-            <Card key={playerId}>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center space-x-3">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={playerData.photo_profil} alt={playerData.pseudo} />
-                    <AvatarFallback className="text-sm">
-                      {playerData.pseudo.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <span className="font-semibold">{playerData.pseudo}</span>
-                    <Badge variant="secondary" className="ml-2 text-xs">
-                      {playerData.availabilities.length} créneaux
-                    </Badge>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Calendar className="w-5 h-5" />
+              <span>Planning hebdomadaire</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Grille du calendrier */}
+            <div className="grid grid-cols-8 gap-2 text-sm">
+              {/* En-tête avec les jours */}
+              <div className="font-semibold text-center p-2 bg-muted/30 rounded">
+                Équipe
+              </div>
+              {[1, 2, 3, 4, 5, 6, 0].map(dayOfWeek => (
+                <div key={dayOfWeek} className="font-semibold text-center p-2 bg-muted/30 rounded">
+                  <div>{dayNames[dayOfWeek === 0 ? 0 : dayOfWeek]}</div>
+                  <div className="text-xs text-muted-foreground">{shortDayNames[dayOfWeek === 0 ? 0 : dayOfWeek]}</div>
+                </div>
+              ))}
+              
+              {/* Lignes pour chaque joueur */}
+              {players.map(player => (
+                <div key={player.id} className="contents">
+                  {/* Colonne du joueur */}
+                  <div className="p-3 border rounded-lg bg-card">
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="w-8 h-8">
+                        <AvatarImage src={player.photo_profil} alt={player.pseudo} />
+                        <AvatarFallback className="text-xs">
+                          {player.pseudo.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-sm leading-tight">{player.pseudo}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {getPlayerAvailabilities(player.id).length} créneaux
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+                  
+                  {/* Colonnes pour chaque jour */}
                   {[1, 2, 3, 4, 5, 6, 0].map(dayOfWeek => {
-                    const dayAvailabilities = playerData.availabilities
-                      .filter(avail => avail.day_of_week === dayOfWeek)
-                      .sort((a, b) => a.start_time.localeCompare(b.start_time));
-                    
-                    if (dayAvailabilities.length === 0) return null;
+                    const dayAvails = calendarData[dayOfWeek === 0 ? 7 : dayOfWeek][player.id] || [];
+                    const adjustedDayOfWeek = dayOfWeek === 0 ? 0 : dayOfWeek;
                     
                     return (
-                      <div key={dayOfWeek} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
-                        <span className="font-medium text-sm min-w-[80px]">
-                          {dayNames[dayOfWeek as keyof typeof dayNames]}
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {dayAvailabilities.map((availability) => (
-                            <Badge 
-                              key={availability.id}
-                              variant="outline"
-                              className="text-xs px-2 py-1"
-                            >
-                              {formatTime(availability.start_time)} - {formatTime(availability.end_time)}
-                            </Badge>
-                          ))}
+                      <div key={`${player.id}-${dayOfWeek}`} className="p-2 border rounded-lg bg-card min-h-[80px]">
+                        <div className="space-y-1">
+                          {dayAvails.length === 0 ? (
+                            <div className="text-xs text-muted-foreground text-center py-2">
+                              Indisponible
+                            </div>
+                          ) : (
+                            dayAvails.map((avail, index) => (
+                              <div 
+                                key={avail.id}
+                                className={`text-xs px-2 py-1 rounded border ${getTimeSlotColor(avail.start_time)}`}
+                              >
+                                <div className="flex items-center space-x-1">
+                                  {getTimeSlotIcon(avail.start_time)}
+                                  <span className="font-medium">
+                                    {formatTime(avail.start_time)}-{formatTime(avail.end_time)}
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Modal pour gérer ses propres disponibilités */}
+      {/* Légende des créneaux */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-center space-x-6 text-sm">
+            <div className="flex items-center space-x-2">
+              <Sun className="w-4 h-4 text-yellow-600" />
+              <span>Matin (6h-12h)</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Sunset className="w-4 h-4 text-orange-600" />
+              <span>Après-midi (12h-18h)</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Moon className="w-4 h-4 text-blue-600" />
+              <span>Soirée (18h-22h)</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Coffee className="w-4 h-4 text-purple-600" />
+              <span>Nuit (22h-6h)</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal pour gérer ses disponibilités */}
       <Dialog open={showAvailabilityModal} onOpenChange={setShowAvailabilityModal}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
