@@ -57,7 +57,7 @@ export const YouTubePlayer = ({
   const intervalRef = useRef<NodeJS.Timeout>();
 
   const opts: YouTubeProps['opts'] = {
-    height: '450',
+    height: '320',
     width: '100%',
     playerVars: {
       autoplay: 0,
@@ -192,7 +192,7 @@ export const YouTubePlayer = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Lecteur YouTube */}
       <div className="relative">
         <YouTube
@@ -205,7 +205,7 @@ export const YouTubePlayer = ({
       </div>
 
         {/* Contrôles personnalisés avec fond plus visible */}
-        <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
+        <div className="space-y-2 p-2 bg-muted/30 rounded-lg border border-border/50 backdrop-blur-sm">
           {/* Timeline avec markers - fond plus contrasté */}
         <div className="space-y-1">
           <div className="relative bg-secondary/40 p-2 rounded-lg border border-border/30">
@@ -335,8 +335,8 @@ export const YouTubePlayer = ({
         {/* Actions rapides pour le coaching */}
         {!isPlayerView && (
           <div className="border-t pt-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-muted-foreground">Actions rapides:</span>
+            <div className="flex items-center space-x-1">
+              <span className="text-xs font-medium text-muted-foreground">Actions:</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -382,8 +382,8 @@ export const YouTubePlayer = ({
         {/* Navigation rapide pour les joueurs */}
         {isPlayerView && (
           <div className="border-t pt-2">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-muted-foreground">Navigation rapide:</span>
+            <div className="flex items-center space-x-1">
+              <span className="text-xs font-medium text-muted-foreground">Navigation:</span>
               <Button
                 variant="outline"
                 size="sm"

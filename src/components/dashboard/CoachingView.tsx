@@ -147,7 +147,10 @@ export const CoachingView = ({ teamId, gameType, isPlayerView = false, currentUs
                 Coaching & Analyse {gameConfig && `- ${gameConfig.name}`}
               </h2>
               <p className="text-muted-foreground">
-                Analysez vos performances et améliorez votre jeu
+                {isPlayerView 
+                  ? "Consultez les analyses et commentaires de vos coachs pour améliorer votre jeu"
+                  : "Analysez vos performances et améliorez votre jeu"
+                }
               </p>
             </div>
           </div>
