@@ -17,46 +17,56 @@ const EmailVerified = () => {
   useEffect(() => {
     const handleEmailVerification = async () => {
       try {
-        console.log("🔗 Processing email verification...");
-        console.log("📍 Current URL:", window.location.href);
-        
-        // Récupérer les paramètres depuis le hash (#) ET la query string
+        // Récupérer les paramètres d'URL
         const hash = window.location.hash;
         const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : '');
         
-        // Vérifier d'abord s'il y a des erreurs dans l'URL
+        // Vérifier s'il y a des erreurs
         const errorCode = searchParams.get('error_code') || hashParams.get('error_code');
-        const errorDescription = searchParams.get('error_description') || hashParams.get('error_description');
         const error = searchParams.get('error') || hashParams.get('error');
         
         if (error || errorCode) {
-          console.log("❌ Email verification error:", { error, errorCode, errorDescription });
-          
-          let friendlyError = "Le lien de vérification est invalide ou a expiré.";
-          if (errorCode === 'otp_expired') {
-            friendlyError = "Le lien de vérification a expiré. Veuillez vous réinscrire.";
-          } else if (error === 'access_denied') {
-            friendlyError = "Accès refusé. Le lien de vérification est invalide.";
-          }
-          
-          throw new Error(friendlyError);
+          throw new Error("Le lien de vérification est invalide ou a expiré.");
         }
 
-        // Vérifier le code d'échange (nouveau système OAuth/PKCE)
+        // Vérifier le code d'échange
         const code = searchParams.get('code') || hashParams.get('code');
         
         if (code) {
-          console.log("🔄 Exchanging code for session...");
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           
           if (exchangeError) {
-            console.error("❌ Code exchange error:", exchangeError);
             throw exchangeError;
           }
 
           if (data?.user) {
-            console.log("✅ User verified via code exchange:", data.user.id);
-            await handleSuccessfulVerification(data.user.id);
+            setVerified(true);
+            
+            // Gérer la jointure d'équipe si nécessaire
+            const pendingCode = localStorage.getItem("pending_team_code");
+            if (pendingCode) {
+              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { 
+                p_code: pendingCode 
+              });
+
+              if (!joinError && joinResult?.[0]) {
+                const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+                const roleText = joinResult[0].assigned_role || 'joueur';
+                localStorage.removeItem("pending_team_code");
+                localStorage.removeItem("pending_team_name");
+                
+                toast({ 
+                  title: "Compte créé et équipe rejointe !", 
+                  description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` 
+                });
+                return;
+              }
+            }
+
+            toast({ 
+              title: "Email vérifié !", 
+              description: "Votre compte a été créé avec succès." 
+            });
             return;
           }
         }
@@ -67,29 +77,50 @@ const EmailVerified = () => {
         const type = hashParams.get('type') || searchParams.get('type');
 
         if (type === 'signup' && access_token && refresh_token) {
-          console.log("📧 Setting session from email verification tokens");
           const { data: { user }, error: sessionError } = await supabase.auth.setSession({ 
             access_token, 
             refresh_token 
           });
           
           if (sessionError) {
-            console.error("❌ Session error:", sessionError);
             throw sessionError;
           }
 
           if (user) {
-            console.log("✅ User verified successfully:", user.id);
-            await handleSuccessfulVerification(user.id);
+            setVerified(true);
+            
+            // Gérer la jointure d'équipe si nécessaire
+            const pendingCode = localStorage.getItem("pending_team_code");
+            if (pendingCode) {
+              const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { 
+                p_code: pendingCode 
+              });
+
+              if (!joinError && joinResult?.[0]) {
+                const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
+                const roleText = joinResult[0].assigned_role || 'joueur';
+                localStorage.removeItem("pending_team_code");
+                localStorage.removeItem("pending_team_name");
+                
+                toast({ 
+                  title: "Compte créé et équipe rejointe !", 
+                  description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` 
+                });
+                return;
+              }
+            }
+
+            toast({ 
+              title: "Email vérifié !", 
+              description: "Votre compte a été créé avec succès." 
+            });
             return;
           }
         }
         
-        // Si aucun paramètre valide n'est trouvé
-        throw new Error("Aucun paramètre de validation valide trouvé dans l'URL.");
+        throw new Error("Aucun paramètre de validation valide trouvé.");
         
       } catch (error: any) {
-        console.error("❌ Email verification failed:", error);
         setError(error.message || "Erreur lors de la vérification");
         setVerified(false);
       } finally {
@@ -97,49 +128,8 @@ const EmailVerified = () => {
       }
     };
 
-    const handleSuccessfulVerification = async (userId: string) => {
-      setVerified(true);
-
-      // Vérifier si l'utilisateur doit rejoindre une équipe
-      const pendingCode = localStorage.getItem("pending_team_code");
-      if (pendingCode) {
-        console.log("🏃 Joining team with code:", pendingCode);
-        try {
-          const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', { 
-            p_code: pendingCode 
-          });
-
-          if (!joinError && joinResult?.[0]) {
-            const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
-            const roleText = joinResult[0].assigned_role || 'joueur';
-            localStorage.removeItem("pending_team_code");
-            localStorage.removeItem("pending_team_name");
-            
-            toast({ 
-              title: "Inscription réussie !", 
-              description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !` 
-            });
-            
-            setTimeout(() => navigate("/player"), 2000);
-            return;
-          } else {
-            console.error("❌ Failed to join team:", joinError);
-          }
-        } catch (error) {
-          console.error("❌ Error joining team:", error);
-        }
-      }
-
-      toast({ 
-        title: "Email vérifié !", 
-        description: "Votre compte a été créé avec succès." 
-      });
-      
-      setTimeout(() => navigate("/"), 2000);
-    };
-
     handleEmailVerification();
-  }, [searchParams, navigate, toast]);
+  }, [searchParams, toast]);
 
   if (loading) {
     return (
@@ -169,7 +159,7 @@ const EmailVerified = () => {
             {verified ? (
               <>
                 <CheckCircle className="w-5 h-5 text-green-500" />
-                Email vérifié !
+                Email vérifié avec succès !
               </>
             ) : (
               <>
@@ -181,9 +171,17 @@ const EmailVerified = () => {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           {verified ? (
-            <p className="text-muted-foreground">
-              Votre email a été vérifié avec succès. Redirection en cours...
-            </p>
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                Votre adresse email a été vérifiée avec succès. Votre compte est maintenant actif et vous pouvez vous connecter.
+              </p>
+              <Button 
+                onClick={() => navigate("/auth")} 
+                className="w-full"
+              >
+                Se connecter
+              </Button>
+            </div>
           ) : (
             <div className="space-y-4">
               <p className="text-muted-foreground">
@@ -192,6 +190,7 @@ const EmailVerified = () => {
               <Button 
                 onClick={() => navigate("/auth")} 
                 className="w-full"
+                variant="outline"
               >
                 Retourner à la connexion
               </Button>

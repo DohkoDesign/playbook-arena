@@ -7,8 +7,9 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Calendar } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Mail, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
@@ -25,89 +26,17 @@ const Auth = () => {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [teamInfo, setTeamInfo] = useState<{id: string, name: string, role?: string} | null>(null);
+  const [showEmailPopup, setShowEmailPopup] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
 
   // Rediriger si déjà connecté
   useEffect(() => {
-    const checkAuthStatusAndRedirect = async () => {
-      if (user) {
-        // Vérifier si l'utilisateur a un code d'équipe en attente
-        const pendingCode = localStorage.getItem("pending_team_code");
-        if (pendingCode) {
-          // L'utilisateur vient de vérifier son email, rejoindre l'équipe automatiquement
-          try {
-            const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
-              p_code: pendingCode
-            });
-
-            if (!joinError && joinResult?.[0]) {
-              const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
-              const roleText = joinResult[0].assigned_role || 'joueur';
-              
-              // Nettoyer le localStorage
-              localStorage.removeItem("pending_team_code");
-              localStorage.removeItem("pending_team_name");
-
-              toast({
-                title: "Bienvenue !",
-                description: `Vous avez rejoint ${teamName} en tant que ${roleText} !`,
-              });
-
-              // Redirection vers le dashboard joueur
-              navigate("/player");
-              return;
-            }
-          } catch (error) {
-            console.error("Erreur jointure équipe:", error);
-          }
-        } else {
-          navigate("/");
-        }
-      }
-    };
-
-    checkAuthStatusAndRedirect();
-  }, [user, navigate, toast]);
-
-  // Écouter les changements d'auth pour détecter la vérification email
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        // L'utilisateur vient de se connecter (probablement via email verification)
-        const pendingCode = localStorage.getItem("pending_team_code");
-        if (pendingCode) {
-          try {
-            const { data: joinResult, error: joinError } = await supabase.rpc('join_team_with_code', {
-              p_code: pendingCode
-            });
-
-            if (!joinError && joinResult?.[0]) {
-              const teamName = localStorage.getItem("pending_team_name") || "votre équipe";
-              const roleText = joinResult[0].assigned_role || 'joueur';
-              
-              // Nettoyer le localStorage
-              localStorage.removeItem("pending_team_code");
-              localStorage.removeItem("pending_team_name");
-
-              toast({
-                title: "Inscription réussie !",
-                description: `Bienvenue dans l'équipe ${teamName} en tant que ${roleText} !`,
-              });
-
-              // Redirection vers le dashboard joueur
-              navigate("/player");
-            }
-          } catch (error) {
-            console.error("Erreur jointure équipe après vérification:", error);
-          }
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   // Valider le code d'équipe en temps réel pour les joueurs
   useEffect(() => {
@@ -284,7 +213,7 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/`
+        emailRedirectTo: `${window.location.origin}/email-verified`
       },
     });
 
@@ -302,10 +231,8 @@ const Auth = () => {
       }
     }
 
-    toast({
-      title: "Inscription réussie !",
-      description: "Vérifiez votre email pour confirmer votre compte.",
-    });
+    // Afficher popup de confirmation
+    showEmailConfirmationPopup();
   };
 
   const handlePlayerSignup = async () => {
@@ -318,7 +245,7 @@ const Auth = () => {
     localStorage.setItem("pending_team_code", code.trim().toUpperCase());
     if (teamInfo?.name) localStorage.setItem("pending_team_name", teamInfo.name);
 
-    // Inscription avec redirection vers l'accueil
+    // Inscription
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -327,16 +254,14 @@ const Auth = () => {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
         },
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/email-verified`,
       },
     });
 
     if (error) throw error;
 
-    toast({
-      title: "Email envoyé !",
-      description: "Vérifiez votre boîte mail et cliquez sur le lien pour créer votre compte et rejoindre l'équipe.",
-    });
+    // Afficher popup de confirmation
+    showEmailConfirmationPopup();
   };
 
   const resetForm = () => {
@@ -346,6 +271,16 @@ const Auth = () => {
     setPassword("");
     setCode("");
     setTeamInfo(null);
+  };
+
+  const showEmailConfirmationPopup = () => {
+    setShowEmailPopup(true);
+    // Auto-fermeture après 5 secondes
+    setTimeout(() => {
+      setShowEmailPopup(false);
+      setIsLogin(true); // Basculer vers l'onglet connexion
+      resetForm(); // Nettoyer le formulaire
+    }, 5000);
   };
 
   return (
