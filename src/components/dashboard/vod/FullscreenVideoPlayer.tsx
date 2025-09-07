@@ -261,35 +261,61 @@ export const FullscreenVideoPlayer = ({
             {/* Timeline */}
             <div className="mb-4">
               <div className="relative">
-                <Slider
-                  value={[currentTime]}
-                  max={duration}
-                  step={0.1}
-                  onValueChange={(value) => seekTo(value[0])}
-                  className="w-full cursor-pointer"
-                />
+                {/* Timeline personnalisée avec style premium */}
+                <div className="relative w-full h-2">
+                  {/* Piste de fond avec gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/30 to-white/20 rounded-full backdrop-blur-sm border border-white/20" />
+                  
+                  {/* Barre de progression */}
+                  <div 
+                    className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary via-primary/90 to-primary rounded-full shadow-lg shadow-primary/30"
+                    style={{ 
+                      width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` 
+                    }}
+                  />
+                  
+                  {/* Zone cliquable invisible */}
+                  <div 
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const clickX = e.clientX - rect.left;
+                      const percentage = clickX / rect.width;
+                      seekTo(duration * percentage);
+                    }}
+                  />
+                  
+                  {/* Thumb / curseur */}
+                  <div 
+                    className="absolute top-1/2 w-4 h-4 -mt-2 bg-white rounded-full shadow-xl border-2 border-primary cursor-pointer transition-transform hover:scale-110"
+                    style={{ 
+                      left: `${duration > 0 ? (currentTime / duration) * 100 : 0}%`,
+                      transform: 'translateX(-50%)'
+                    }}
+                  />
+                </div>
                 
                 {/* Markers sur la timeline */}
                 {timestamps && timestamps.length > 0 && (
-                  <div className="absolute -top-1 left-0 right-0 h-3 pointer-events-none">
+                  <div className="absolute -top-2 left-0 right-0 h-6 pointer-events-none">
                     {timestamps.map((timestamp) => {
                       const position = duration > 0 ? (timestamp.time / duration) * 100 : 0;
                       const markerColors = {
-                        important: "bg-blue-400",
-                        error: "bg-red-400", 
-                        success: "bg-green-400",
-                        strategy: "bg-yellow-400",
-                        "player-specific": "bg-orange-400"
+                        important: "bg-gradient-to-t from-blue-500 to-blue-400 shadow-blue-400/50",
+                        error: "bg-gradient-to-t from-red-500 to-red-400 shadow-red-400/50", 
+                        success: "bg-gradient-to-t from-green-500 to-green-400 shadow-green-400/50",
+                        strategy: "bg-gradient-to-t from-yellow-500 to-yellow-400 shadow-yellow-400/50",
+                        "player-specific": "bg-gradient-to-t from-orange-500 to-orange-400 shadow-orange-400/50"
                       };
                       
                       return (
                         <div
                           key={timestamp.id}
-                          className={`absolute w-2 h-3 ${markerColors[timestamp.type]} rounded-sm cursor-pointer pointer-events-auto hover:scale-125 transition-transform`}
+                          className={`absolute w-3 h-5 ${markerColors[timestamp.type]} rounded-sm cursor-pointer pointer-events-auto hover:scale-125 transition-all duration-200 shadow-lg border border-white/30`}
                           style={{ 
                             left: `${position}%`, 
                             transform: 'translateX(-50%)',
-                            top: '0px'
+                            top: '-2px'
                           }}
                           onClick={() => seekTo(timestamp.time)}
                           title={`${formatTime(timestamp.time)} - ${timestamp.comment}`}
