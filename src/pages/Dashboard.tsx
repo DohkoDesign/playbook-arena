@@ -70,6 +70,22 @@ const Dashboard = () => {
   const checkUserTeams = async (userId: string) => {
     console.log("🔍 Checking user teams for:", userId);
     try {
+      // D'abord vérifier le profil utilisateur pour déterminer son rôle
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", userId)
+        .single();
+
+      console.log("👤 User profile:", profileData);
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      const isStaff = profileData?.role === 'staff';
+      console.log("🏷️ Is staff:", isStaff);
+
       // Récupérer toutes les équipes créées par l'utilisateur OU où il est membre avec rôle de management
       const [teamsCreated, teamsMember] = await Promise.all([
         // Équipes créées par l'utilisateur
@@ -107,6 +123,13 @@ const Dashboard = () => {
       console.log("✅ All teams loaded:", allTeams.length);
       
       if (!allTeams || allTeams.length === 0) {
+        // Si c'est un staff, ouvrir directement la modal de création d'équipe
+        if (isStaff) {
+          console.log("👔 Staff detected without team, opening team creation modal");
+          setShowTeamSetup(true);
+          return;
+        }
+
         console.log("🚨 No management teams found. Checking if user is a player to redirect to /player...");
         const { data: anyMembership, error: membershipError } = await supabase
           .from("team_members")
