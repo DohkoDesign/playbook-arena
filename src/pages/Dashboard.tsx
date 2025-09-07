@@ -33,6 +33,7 @@ const Dashboard = () => {
     return localStorage.getItem('dashboard-selected-team') || null;
   });
   const [teams, setTeams] = useState<any[]>([]);
+  const [userName, setUserName] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,6 +46,7 @@ const Dashboard = () => {
         navigate("/auth");
       } else {
         checkUserTeams(session.user.id);
+        loadUserProfile(session.user.id);
       }
       setLoading(false);
     });
@@ -59,6 +61,7 @@ const Dashboard = () => {
         } else if (event === 'SIGNED_IN') {
           setTimeout(() => {
             checkUserTeams(session.user.id);
+            loadUserProfile(session.user.id);
           }, 0);
         }
       }
@@ -195,6 +198,22 @@ const Dashboard = () => {
     }
   };
 
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("pseudo")
+        .eq("user_id", userId)
+        .single();
+
+      if (data?.pseudo) {
+        setUserName(data.pseudo);
+      }
+    } catch (error) {
+      console.log("Could not load user profile:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -256,6 +275,7 @@ const Dashboard = () => {
           }}
           onNewTeam={() => setShowTeamSetup(true)}
           currentUserId={user?.id}
+          userName={userName}
         />
         
         <div className="flex-1 ml-72">

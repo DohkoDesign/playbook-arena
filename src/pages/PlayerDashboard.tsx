@@ -28,6 +28,7 @@ const PlayerDashboard = () => {
   });
   const [teamData, setTeamData] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [userName, setUserName] = useState<string>("");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -55,6 +56,7 @@ const PlayerDashboard = () => {
       
       if (session?.user) {
         loadPlayerData(session.user);
+        loadUserProfile(session.user.id);
       } else {
         navigate("/auth");
       }
@@ -184,6 +186,22 @@ const PlayerDashboard = () => {
     }
   };
 
+  const loadUserProfile = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("pseudo")
+        .eq("user_id", userId)
+        .single();
+
+      if (data?.pseudo) {
+        setUserName(data.pseudo);
+      }
+    } catch (error) {
+      console.log("Could not load user profile:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -250,6 +268,8 @@ const PlayerDashboard = () => {
             setCurrentView(playerView);
             localStorage.setItem('player-dashboard-current-view', playerView);
           }}
+          userId={user?.id}
+          userName={userName}
         />
         
         <div className="flex-1 ml-72">

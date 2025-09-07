@@ -1,18 +1,48 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Users, BookOpen, Video, Settings, Target, TrendingUp, User, MessageSquare, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlayerSidebarProps {
   teamData: any;
   currentView: string;
   onViewChange: (view: string) => void;
+  userId?: string;
+  userName?: string;
 }
 
 export const PlayerSidebar = ({
   teamData,
   currentView,
   onViewChange,
+  userId,
+  userName,
 }: PlayerSidebarProps) => {
+  const [userAvatar, setUserAvatar] = useState("");
+
+  useEffect(() => {
+    const loadUserAvatar = async () => {
+      if (!userId) return;
+      
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("photo_profil")
+          .eq("user_id", userId)
+          .single();
+
+        if (data?.photo_profil) {
+          setUserAvatar(data.photo_profil);
+        }
+      } catch (error) {
+        console.log("Could not load user avatar:", error);
+      }
+    };
+
+    loadUserAvatar();
+  }, [userId]);
   // Navigation pour les joueurs avec sections personnelles
   const navigationSections = [
     {
@@ -59,27 +89,41 @@ export const PlayerSidebar = ({
   };
 
   return (
-    <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-8">
-      {/* Header avec logo de l'équipe */}
+    <div className="sidebar-apple fixed left-0 top-0 h-full w-72 p-6 space-y-6">
+      {/* Header avec photo de profil joueur */}
       <div className="flex items-center space-x-3">
+        <Avatar className="w-10 h-10 ring-2 ring-border">
+          <AvatarImage src={userAvatar} />
+          <AvatarFallback className="bg-gradient-brand text-white font-medium">
+            {userName ? userName.charAt(0).toUpperCase() : "J"}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight">{userName || "Joueur"}</h1>
+          <p className="text-xs text-muted-foreground">Joueur</p>
+        </div>
+      </div>
+
+      {/* Team info */}
+      <div className="flex items-center space-x-3 p-3 bg-accent/30 rounded-xl border border-border/50">
         {teamLogo ? (
           <img 
             src={teamLogo} 
             alt={`Logo de ${teamName}`} 
-            className="w-10 h-10 rounded-2xl object-cover shadow-md"
+            className="w-8 h-8 rounded-xl object-cover shadow-sm"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
             }}
           />
         ) : (
-          <div className="w-10 h-10 bg-gradient-brand rounded-2xl flex items-center justify-center shadow-md">
-            <span className="text-white font-bold text-lg">
+          <div className="w-8 h-8 bg-gradient-brand rounded-xl flex items-center justify-center shadow-sm">
+            <span className="text-white font-bold text-sm">
               {teamName.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{teamName}</h1>
+          <h2 className="text-sm font-medium">{teamName}</h2>
           <p className="text-xs text-muted-foreground">
             {teamData ? getGameDisplayName(teamData.jeu) : "Esport Manager"}
           </p>
