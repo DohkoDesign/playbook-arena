@@ -219,6 +219,7 @@ const Auth = () => {
         data: {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
+          user_type: 'staff', // Préciser le type d'utilisateur
         },
         emailRedirectTo: `${window.location.origin}/email-verified`
       },
@@ -260,6 +261,7 @@ const Auth = () => {
         data: {
           pseudo: pseudo.trim(),
           birth_date: format(birthDate!, 'yyyy-MM-dd'),
+          user_type: 'player', // Préciser le type d'utilisateur
         },
         emailRedirectTo: `${window.location.origin}/email-verified`,
       },
