@@ -144,8 +144,32 @@ const Dashboard = () => {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    try {
+      console.log("🚪 Logging out...");
+      
+      // Nettoyer le localStorage
+      localStorage.removeItem('dashboard-selected-team');
+      localStorage.removeItem('dashboard-current-view');
+      localStorage.removeItem('player-dashboard-current-view');
+      localStorage.removeItem('organization_logo');
+      localStorage.removeItem('organization_name');
+      
+      // Reset states
+      setUser(null);
+      setSession(null);
+      setTeams([]);
+      setSelectedTeam(null);
+      
+      // Déconnexion Supabase avec scope 'local' pour éviter la reconnexion automatique
+      await supabase.auth.signOut({ scope: 'local' });
+      
+      console.log("✅ Logout completed");
+      navigate("/");
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+      // Force la navigation même en cas d'erreur
+      navigate("/");
+    }
   };
 
   if (loading) {
